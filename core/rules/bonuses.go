@@ -320,7 +320,7 @@ func calcStackBonus(kind TypeBonus, target CombatBonus, sourceDescription *map[C
 	return endValue
 }
 
-func (c *TemporaryCombatBonuses) DecreaseTTL(kind TypeBonus, target CombatBonus, value int, source string) {
+func (c *TemporaryCombatBonuses) DecreaseTTL(kind TypeBonus, target CombatBonus, source string) {
 	var markToDelete bool
 	if d, ok := c.Source[target]; ok {
 		if d.WithTTL[source] != NotApplicableTTL {

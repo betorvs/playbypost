@@ -77,4 +77,31 @@ func TestBonuses(t *testing.T) {
 			t.Fatalf("\t Total defens bonus should be %d not %d", aTotal, temp2.GetBonus(DefenseBonus))
 		}
 	}
+	t.Log("Check TemporaryCombatBonuses methods related to stackable bonus with TTL")
+	{
+		t.Log("Check factory function again")
+		temp3 := NewTemporaryCombatBonuses()
+		if temp3 == nil {
+			t.Fatalf("\t Factory function should create a pointer")
+		}
+		t.Log("Add 3 different Attack bonuses")
+		a1 := 2
+		temp3.AddBonuses(CircumstanceBonus, AttackBonus, a1, 1, "aid-another-1")
+		a2 := 3
+		temp3.AddBonuses(CircumstanceBonus, AttackBonus, a2, 1, "aid-another-2")
+		a3 := 1
+		temp3.AddBonuses(CircumstanceBonus, AttackBonus, a3, 1, "aid-another-3")
+		aTotal := a1 + a2 + a3
+		if aTotal != temp3.GetBonus(AttackBonus) {
+			// t.Log("Example", temp2.Source)
+			t.Fatalf("\t Total attack bonus should be %d not %d", aTotal, temp3.GetBonus(AttackBonus))
+		}
+		t.Log("Decrease TTL for 2 bonus")
+		temp3.DecreaseTTL(CircumstanceBonus, AttackBonus, "aid-another-1")
+		temp3.DecreaseTTL(CircumstanceBonus, AttackBonus, "aid-another-2")
+		if a3 != temp3.GetBonus(AttackBonus) {
+			// t.Log("Example", temp2.Source)
+			t.Fatalf("\t Total attack bonus should be %d not %d", a3, temp3.GetBonus(AttackBonus))
+		}
+	}
 }
