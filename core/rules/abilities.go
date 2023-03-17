@@ -15,3 +15,12 @@ func CalcAbilityModifier(attr int) int {
 	result := math.Floor((float64(attr) - 10) / 2)
 	return int(result)
 }
+
+type Ability struct {
+	Strength     int
+	Dexterity    int
+	Constitution int
+	Intelligence int
+	Wisdom       int
+	Charisma     int
+}

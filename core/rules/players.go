@@ -7,30 +7,31 @@ import (
 )
 
 type Player struct {
-	Name                  string
-	PlayerName            string
-	MultiClass            bool
-	Class                 []Class
-	Level                 int
-	Race                  Race
-	Aligment              Aligment
-	Metadata              Metadata
-	Abilities             Ability
-	HitPoints             int
-	ArmorClass            int
-	SpellResistance       int
-	PreferenceAttackIndex int
-	AttackOption          []AttackOption
-	Mounted               bool
-	SkillsList            []Skills
-	Feats                 []string
-	SpecialAbilities      []string
-	Spells                map[int][]string
-	Languages             []string
-	Gear                  Gear
-	Bonuses               *TemporaryCombatBonuses
-	totalDefense          bool
-	state                 types.State
+	Name       string
+	PlayerName string
+	MultiClass bool
+	Class      []Class
+	Level      int
+	Race       string
+	Aligment   Aligment
+	Metadata   Metadata
+	Creature
+	// Abilities             Ability
+	// HitPoints             int
+	// ArmorClass            int
+	// SpellResistance       int
+	// PreferenceAttackIndex int
+	// AttackOption          []AttackOption
+	// Mounted               bool
+	// SkillsList            []Skills
+	// Feats                 []string
+	// SpecialAbilities      []string
+	Spells    map[int][]string
+	Languages []string
+	Gear      Gear
+	// Bonuses               *TemporaryCombatBonuses
+	// totalDefense          bool
+	// state                 types.State
 }
 
 type Metadata struct {
@@ -42,15 +43,6 @@ type Metadata struct {
 	Eyes   string
 	Hair   string
 	Skin   string
-}
-
-type Ability struct {
-	Strength     int
-	Dexterity    int
-	Constitution int
-	Intelligence int
-	Wisdom       int
-	Charisma     int
 }
 
 /*
@@ -85,7 +77,7 @@ func (p Player) CalcSavingThrowsTotal(r string) int {
 				bonus += c.SavingThrowsCalcBonus(Fortitude)
 			}
 		}
-		return bonus + CalcAbilityModifier(p.Abilities.Constitution)
+		return bonus + CalcAbilityModifier(p.Constitution)
 	case Reflex:
 		// Dexterity
 		bonus := p.Class[0].SavingThrowsCalcBonus(Dexterity)
@@ -94,7 +86,7 @@ func (p Player) CalcSavingThrowsTotal(r string) int {
 				bonus += c.SavingThrowsCalcBonus(Dexterity)
 			}
 		}
-		return bonus + CalcAbilityModifier(p.Abilities.Dexterity)
+		return bonus + CalcAbilityModifier(p.Dexterity)
 	case Will:
 		// Wisdom
 		bonus := p.Class[0].SavingThrowsCalcBonus(Wisdom)
@@ -103,7 +95,7 @@ func (p Player) CalcSavingThrowsTotal(r string) int {
 				bonus += c.SavingThrowsCalcBonus(Wisdom)
 			}
 		}
-		return bonus + CalcAbilityModifier(p.Abilities.Wisdom)
+		return bonus + CalcAbilityModifier(p.Wisdom)
 	}
 	return 0
 }
@@ -114,17 +106,17 @@ func (p Player) CalcSkillTotal(s Skills) int {
 	if ability != types.Unknown {
 		switch ability {
 		case Strength:
-			value = p.Abilities.Strength
+			value = p.Strength
 		case Dexterity:
-			value = p.Abilities.Strength
+			value = p.Strength
 		case Constitution:
-			value = p.Abilities.Strength
+			value = p.Strength
 		case Intelligence:
-			value = p.Abilities.Strength
+			value = p.Strength
 		case Wisdom:
-			value = p.Abilities.Strength
+			value = p.Strength
 		case Charisma:
-			value = p.Abilities.Strength
+			value = p.Strength
 		default:
 			value = 0
 		}
@@ -159,12 +151,12 @@ func (p Player) CalcAttackTotal(kind AttackTypes) int {
 		}
 		bonus = multiclassBonus
 	}
-	fmt.Println("bonus", bonus, "calc", CalcAbilityModifier(p.Abilities.Strength), "size", p.Race.Size.AttackModifier())
+	fmt.Println("bonus", bonus, "calc", CalcAbilityModifier(p.Strength), "size", p.Size.AttackModifier())
 	switch kind {
 	case Melee:
-		return bonus + CalcAbilityModifier(p.Abilities.Strength) + p.Race.Size.AttackModifier()
+		return bonus + CalcAbilityModifier(p.Strength) + p.Size.AttackModifier()
 	case Ranged:
-		return bonus + CalcAbilityModifier(p.Abilities.Dexterity) + p.Race.Size.AttackModifier()
+		return bonus + CalcAbilityModifier(p.Dexterity) + p.Size.AttackModifier()
 	}
 
 	return bonus
@@ -181,4 +173,52 @@ func (p *Player) SetTotalDefense() {
 
 func (p *Player) RemoveTotalDefense() {
 	p.totalDefense = false
+}
+
+func NewPlayer(name, playerName, race string, multiclass bool, classes []Class) *Player {
+	player := Player{
+		Name:       name,
+		PlayerName: playerName,
+		MultiClass: multiclass,
+		Class:      classes,
+		Level:      0,
+		Race:       race,
+		Aligment:   Neutral,
+		Metadata:   Metadata{},
+		Creature: Creature{
+			HitPoints:             0,
+			ArmorClass:            10,
+			Speed:                 0,
+			SpellResistance:       0,
+			PreferenceAttackIndex: 0,
+			AttackOption:          []AttackOption{},
+			Mounted:               false,
+			SkillsList:            []Skills{},
+			Feats:                 []string{},
+			SpecialAbilities:      []string{},
+			Bonuses:               &TemporaryCombatBonuses{},
+			Type:                  Humanoid,
+			Size:                  Medium,
+			Ability: Ability{
+				Strength:     10,
+				Dexterity:    10,
+				Constitution: 10,
+				Intelligence: 10,
+				Wisdom:       10,
+				Charisma:     10,
+			},
+			SavingThrows: SavingThrows{
+				Fortitude: 0,
+				Reflex:    0,
+				Will:      0,
+			},
+			totalDefense: false,
+			state:        types.Alive,
+		},
+		Spells:    map[int][]string{},
+		Languages: []string{},
+		Gear:      Gear{},
+	}
+
+	return &player
 }

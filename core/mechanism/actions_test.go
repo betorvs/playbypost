@@ -40,14 +40,16 @@ func TestActions(t *testing.T) {
 		AttackBonus: rules.Good,
 	}
 	player1 := &rules.Player{
-		Name:                  "pc1",
-		Level:                 1,
-		ArmorClass:            13,
-		PreferenceAttackIndex: 0,
-		HitPoints:             10,
-		Class:                 []rules.Class{fighter},
-		AttackOption: []rules.AttackOption{
-			pc1Attack,
+		Name:  "pc1",
+		Level: 1,
+		Class: []rules.Class{fighter},
+		Creature: rules.Creature{
+			ArmorClass:            13,
+			PreferenceAttackIndex: 0,
+			HitPoints:             10,
+			AttackOption: []rules.AttackOption{
+				pc1Attack,
+			},
 		},
 	}
 	pc1 := rules.NewPCCombatParticipant(player1)
@@ -64,13 +66,15 @@ func TestActions(t *testing.T) {
 		Type:         rules.Melee,
 	}
 	monster1 := &rules.Monster{
-		Name:                  "npc1",
-		Title:                 "Goblin",
-		ArmorClass:            15,
-		HitPoints:             5,
-		PreferenceAttackIndex: 0,
-		AttackOption: []rules.AttackOption{
-			npc1Attack,
+		Name:  "npc1",
+		Title: "Goblin",
+		Creature: rules.Creature{
+			ArmorClass:            15,
+			HitPoints:             5,
+			PreferenceAttackIndex: 0,
+			AttackOption: []rules.AttackOption{
+				npc1Attack,
+			},
 		},
 	}
 	// "npc1"
