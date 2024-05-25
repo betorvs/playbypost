@@ -1,5 +1,8 @@
 package types
 
+/*
+State represents state of character: alive, dead, blinded, confused
+*/
 type State int
 
 const (

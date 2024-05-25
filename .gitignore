@@ -1,0 +1,7 @@
+.env
+.env.task
+play
+playbypost
+slack-plugin
+admin-ctl
+creds

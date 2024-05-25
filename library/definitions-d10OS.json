@@ -1,0 +1,284 @@
+[
+    {
+        "name": "perception",
+        "display_name": "per",
+        "kind": "Ability",
+        "system": "D10OldSchool",
+        "base": null,
+        "group": "mental"
+    },
+    {
+        "name": "intelligence",
+        "display_name": "int",
+        "kind": "Ability",
+        "system": "D10OldSchool",
+        "base": null,
+        "group": "mental"
+    },
+    {
+        "name": "wits",
+        "display_name": "wit",
+        "kind": "Ability",
+        "system": "D10OldSchool",
+        "base": null,
+        "group": "mental"
+    },
+    {
+        "name": "strenght",
+        "display_name": "str",
+        "kind": "Ability",
+        "system": "D10OldSchool",
+        "base": null,
+        "group": "physical"
+    },
+    {
+        "name": "dexterity",
+        "display_name": "dex",
+        "kind": "Ability",
+        "system": "D10OldSchool",
+        "base": null,
+        "group": "physical"
+    },
+    {
+        "name": "stamina",
+        "display_name": "int",
+        "kind": "Ability",
+        "system": "D10OldSchool",
+        "base": null,
+        "group": "physical"
+    },
+    {
+        "name": "charisma",
+        "display_name": "cha",
+        "kind": "Ability",
+        "system": "D10OldSchool",
+        "base": null,
+        "group": "social"
+    },
+    {
+        "name": "manipulation",
+        "display_name": "man",
+        "kind": "Ability",
+        "system": "D10OldSchool",
+        "base": null,
+        "group": "social"
+    },
+    {
+        "name": "appearance",
+        "display_name": "com",
+        "kind": "Ability",
+        "system": "D10OldSchool",
+        "base": null,
+        "group": "social"
+    },
+    {
+        "name": "alertness",
+        "kind": "Skill",
+        "system": "D10OldSchool",
+        "base": "",
+        "group": "talents"
+    },
+    {
+        "name": "athletics",
+        "kind": "Skill",
+        "system": "D10OldSchool",
+        "base": "",
+        "group": "talents"
+    },
+    {
+        "name": "brawl",
+        "kind": "Skill",
+        "system": "D10OldSchool",
+        "base": "",
+        "group": "talents"
+    },
+    {
+        "name": "dodge",
+        "kind": "Skill",
+        "system": "D10OldSchool",
+        "base": "",
+        "group": "talents"
+    },
+    {
+        "name": "empathy",
+        "kind": "Skill",
+        "system": "D10OldSchool",
+        "base": "",
+        "group": "talents"
+    },
+    {
+        "name": "expression",
+        "kind": "Skill",
+        "system": "D10OldSchool",
+        "base": "",
+        "group": "talents"
+    },
+    {
+        "name": "intimidation",
+        "kind": "Skill",
+        "system": "D10OldSchool",
+        "base": "",
+        "group": "talents"
+    },
+    {
+        "name": "leadership",
+        "kind": "Skill",
+        "system": "D10OldSchool",
+        "base": "",
+        "group": "talents"
+    },
+    {
+        "name": "streetwise",
+        "kind": "Skill",
+        "system": "D10OldSchool",
+        "base": "",
+        "group": "talents"
+    },
+    {
+        "name": "subterfuge",
+        "kind": "Skill",
+        "system": "D10OldSchool",
+        "base": "",
+        "group": "talents"
+    },
+    {
+        "name": "animal ken",
+        "kind": "Skill",
+        "system": "D10OldSchool",
+        "base": "",
+        "group": "skills"
+    },
+    {
+        "name": "crafts",
+        "kind": "Skill",
+        "system": "D10OldSchool",
+        "base": "",
+        "group": "skills"
+    },
+    {
+        "name": "drive",
+        "kind": "Skill",
+        "system": "D10OldSchool",
+        "base": "",
+        "group": "skills"
+    },
+    {
+        "name": "etiquette",
+        "kind": "Skill",
+        "system": "D10OldSchool",
+        "base": "",
+        "group": "skills"
+    },
+    {
+        "name": "firearms",
+        "kind": "Skill",
+        "system": "D10OldSchool",
+        "base": "",
+        "group": "skills"
+    },
+    {
+        "name": "melee",
+        "kind": "Skill",
+        "system": "D10OldSchool",
+        "base": "",
+        "group": "skills"
+    },
+    {
+        "name": "performance",
+        "kind": "Skill",
+        "system": "D10OldSchool",
+        "base": "",
+        "group": "skills"
+    },
+    {
+        "name": "security",
+        "kind": "Skill",
+        "system": "D10OldSchool",
+        "base": "",
+        "group": "skills"
+    },
+    {
+        "name": "stealth",
+        "kind": "Skill",
+        "system": "D10OldSchool",
+        "base": "",
+        "group": "skills"
+    },
+    {
+        "name": "survival",
+        "kind": "Skill",
+        "system": "D10OldSchool",
+        "base": "",
+        "group": "skills"
+    },
+    {
+        "name": "academics",
+        "kind": "Skill",
+        "system": "D10OldSchool",
+        "base": "",
+        "group": "knowledges"
+    },
+    {
+        "name": "computer",
+        "kind": "Skill",
+        "system": "D10OldSchool",
+        "base": "",
+        "group": "knowledges"
+    },
+    {
+        "name": "finance",
+        "kind": "Skill",
+        "system": "D10OldSchool",
+        "base": "",
+        "group": "knowledges"
+    },
+    {
+        "name": "investigation",
+        "kind": "Skill",
+        "system": "D10OldSchool",
+        "base": "",
+        "group": "knowledges"
+    },
+    {
+        "name": "law",
+        "kind": "Skill",
+        "system": "D10OldSchool",
+        "base": "",
+        "group": "knowledges"
+    },
+    {
+        "name": "linguistics",
+        "kind": "Skill",
+        "system": "D10OldSchool",
+        "base": "",
+        "group": "knowledges"
+    },
+    {
+        "name": "medicine",
+        "kind": "Skill",
+        "system": "D10OldSchool",
+        "base": "",
+        "group": "knowledges"
+    },
+    {
+        "name": "occult",
+        "kind": "Skill",
+        "system": "D10OldSchool",
+        "base": "",
+        "group": "knowledges"
+    },
+    {
+        "name": "politics",
+        "kind": "Skill",
+        "system": "D10OldSchool",
+        "base": "",
+        "group": "knowledges"
+    },
+    {
+        "name": "science",
+        "kind": "Skill",
+        "system": "D10OldSchool",
+        "base": "",
+        "group": "knowledges"
+    }
+]

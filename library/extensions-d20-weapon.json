@@ -1,0 +1,8 @@
+[
+    {
+        "name": "longsword",
+        "attack_bonus": 0,
+        "description": "https://www.dandwiki.com/wiki/3e_SRD:Longsword",
+        "damage": "1d8"
+    }
+]

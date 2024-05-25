@@ -1,0 +1,69 @@
+@startuml
+namespace rpg {
+    class Ability << (S,Aquamarine) >> {
+        + Grouped <font color=blue>map</font>[string][]string
+        + List []string
+        + Tags <font color=blue>map</font>[string][]string
+
+    }
+    interface ExtendedSystem  {
+        + SkillBonus(s string) (int, error)
+        + InitiativeBonus() (int, error)
+        + AttackBonus(s string) (int, error)
+        + DefenseBonus(s string) (int, error)
+        + WeaponBonus(s string) (int, string, error)
+        + Damage(v int) error
+        + HealthStatus() int
+        + String() string
+
+    }
+    class RPGSystem << (S,Aquamarine) >> {
+        + Name string
+        + BaseSystem string
+        + BaseDice string
+        + SuccessRule Measurement
+        + AbilityRank RankingSystem
+        + SkillRank RankingSystem
+        + DamageCalculation Measurement
+        + Ability Ability
+        + Skill Skill
+        + Logger *slog.Logger
+
+        + String() string
+        + AppendSkills(s string) 
+        + AppendAbilities(s string) 
+        + AppendSkillBase(skillName string, abilityName string) 
+        + AppendAbilityPerGroup(group string, ability string) 
+        + AppendAbilityTags(ability string, tags []string) 
+        + AppendSkillPerGroup(group string, skill string) 
+        + AppendSkillTags(skill string, tags []string) 
+        + GetSkillBase(skillName string) string
+        + InitiativeDice() string
+        + InitDefinitions(f string, logger *slog.Logger) 
+
+    }
+    class Roll << (S,Aquamarine) >> {
+        + RPGSystem *RPGSystem
+
+        + FreeRoll(name string, text string) (int, string, error)
+        + Check(name string) (int, string, error)
+        + Dice(m int, target int) string
+
+    }
+    class Skill << (S,Aquamarine) >> {
+        + List []string
+        + SkillBase <font color=blue>map</font>[string]string
+        + Grouped <font color=blue>map</font>[string][]string
+        + Tags <font color=blue>map</font>[string][]string
+
+    }
+    class rpg.Measurement << (T, #FF7700) >>  {
+    }
+    class rpg.RankingSystem << (T, #FF7700) >>  {
+    }
+}
+
+
+"__builtin__.int" #.. "rpg.Measurement"
+"__builtin__.int" #.. "rpg.RankingSystem"
+@enduml
