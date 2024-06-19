@@ -215,59 +215,6 @@ func (a *app) middlewareSlashCommand(evt *socketmode.Event, client *socketmode.C
 	client.Debugf("Slash command received: %+v", cmd)
 	a.logger.Info(fmt.Sprintf("slash command from %v by %s", cmd.ChannelID, cmd.UserID))
 
-	// button := slack.NewButtonBlockElement(
-	// 	"test1",
-	// 	"somevalue",
-	// 	&slack.TextBlockObject{
-	// 		Type: slack.PlainTextType,
-	// 		Text: "bar",
-	// 	},
-	// )
-	// payload := map[string]interface{}{
-	// 	"blocks": []slack.Block{
-	// 		slack.NewSectionBlock(
-	// 			&slack.TextBlockObject{
-	// 				Type: slack.MarkdownType,
-	// 				Text: "foo",
-	// 			},
-	// 			nil,
-	// 			slack.NewAccessory(button),
-	// 		),
-	// 	}}
-
-	// selectionText := slack.NewTextBlockObject("mrkdwn", "Select an item", false, false)
-	// accessory := slack.NewAccessory(slack.NewOptionsSelectBlockElement("static_select",
-	// 	selectionText,
-	// 	"static_selection",
-	// 	&slack.OptionBlockObject{
-	// 		Text: &slack.TextBlockObject{
-	// 			Type:  slack.PlainTextType,
-	// 			Text:  "opt 1",
-	// 			Emoji: true,
-	// 		},
-	// 		Value:       "opt-1",
-	// 		Description: &slack.TextBlockObject{},
-	// 		URL:         "",
-	// 	},
-	// 	// &slack.OptionBlockObject{
-	// 	// 	Text: &slack.TextBlockObject{
-	// 	// 		Type:  slack.PlainTextType,
-	// 	// 		Text:  "opt 2",
-	// 	// 		Emoji: true,
-	// 	// 	},
-	// 	// 	Value:       "opt-2",
-	// 	// 	Description: &slack.TextBlockObject{},
-	// 	// 	URL:         "",
-	// 	// },
-	// ))
-	// headerText := slack.NewTextBlockObject("mrkdwn", "Hello", false, false)
-	// headerSection := slack.NewSectionBlock(headerText, nil, nil)
-	// bodyText := slack.NewTextBlockObject("mrkdwn", "Options", false, false)
-	// bodySection := slack.NewSectionBlock(bodyText, nil, accessory)
-	// payload2 := slack.NewBlockMessage(
-	// 	headerSection,
-	// 	bodySection,
-	// )
 	payload2 := map[string]interface{}{
 		"blocks": []slack.Block{
 			slack.SectionBlock{
@@ -317,80 +264,38 @@ func (a *app) middlewareSlashCommand(evt *socketmode.Event, client *socketmode.C
 		},
 	}
 
-	// blocks := `{
-	// 	"blocks": [
-	// 		{
-	// 			"type": "section",
-	// 			"text": {
-	// 				"type": "mrkdwn",
-	// 				"text": "Pick an item "
-	// 			},
-	// 			"accessory": {
-	// 				"type": "static_select",
-	// 				"placeholder": {
-	// 					"type": "plain_text",
-	// 					"text": "Select an item",
-	// 					"emoji": true
-	// 				},
-	// 				"options": [
-	// 					{
-	// 						"text": {
-	// 							"type": "plain_text",
-	// 							"text": "*plain_text option 0*",
-	// 							"emoji": true
-	// 						},
-	// 						"value": "value-0"
-	// 					},
-	// 					{
-	// 						"text": {
-	// 							"type": "plain_text",
-	// 							"text": "*plain_text option 1*",
-	// 							"emoji": true
-	// 						},
-	// 						"value": "value-1"
-	// 					},
-	// 					{
-	// 						"text": {
-	// 							"type": "plain_text",
-	// 							"text": "*plain_text option 2*",
-	// 							"emoji": true
-	// 						},
-	// 						"value": "value-2"
-	// 					}
-	// 				],
-	// 				"action_id": "static_select-action"
-	// 			}
-	// 		}
-	// 	]
-	// }`
-	// payload := make(map[string]interface{})
-	// _ = json.Unmarshal([]byte(blocks), &payload)
-
-	// p2, _ := json.Marshal(payload2)
-
-	// fmt.Println("blocks static")
-	// fmt.Println(blocks)
-	// fmt.Println("struct")
-	// fmt.Println(string(p2))
-
 	client.Ack(*evt.Request, payload2)
 }
 
 func (a *app) middlewareInteractive(evt *socketmode.Event, client *socketmode.Client) {
 	interactiveEvent, ok := evt.Data.(slack.InteractionCallback)
 	if !ok {
-		fmt.Printf("Ignored %+v\n", evt)
+		a.logger.Debug(fmt.Sprintf("Ignored %+v\n", evt))
 		return
 	}
+	option := ""
 	for _, action := range interactiveEvent.ActionCallback.BlockActions {
-		fmt.Printf("%+v", action)
-		fmt.Println("Selected option: ", action.SelectedOptions)
-
+		a.logger.Debug(fmt.Sprintf("action: %+v\n", action))
+		if action.SelectedOption.Value != "" {
+			a.logger.Debug(fmt.Sprintln("value: ", action.SelectedOption.Value))
+			option = action.SelectedOption.Value
+			break
+		}
+	}
+	attachment := slack.Attachment{
+		Text: fmt.Sprintf("Value received: %s", option),
+	}
+	_, _, err := a.slack.PostMessage(
+		interactiveEvent.Container.ChannelID,
+		slack.MsgOptionAttachments(attachment),
+		slack.MsgOptionResponseURL(interactiveEvent.ResponseURL, slack.ResponseTypeInChannel),
+		slack.MsgOptionReplaceOriginal(interactiveEvent.ResponseURL),
+	)
+	if err != nil {
+		a.logger.Error("error sending message to slack", "error", err.Error())
 	}
 
 	client.Ack(*evt.Request)
-	// a.logger.Info(fmt.Sprintf("Event received: %+v\n", interactiveEvent))
-
 }
 
 func read(file string) (string, error) {
