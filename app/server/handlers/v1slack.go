@@ -23,7 +23,7 @@ func (a MainApi) AddSlackInfo(w http.ResponseWriter, r *http.Request) {
 		a.s.ErrJSON(w, http.StatusBadRequest, "empty body")
 		return
 	}
-	_, err = a.db.AddSlackInformation(a.ctx, obj.UserID, obj.Username, obj.Channel)
+	_, err = a.db.AddSlackInformation(a.ctx, obj.Username, obj.UserID, obj.Channel)
 	if err != nil {
 		pgErr, ok := err.(*pq.Error)
 		if ok {
@@ -36,4 +36,17 @@ func (a MainApi) AddSlackInfo(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	a.s.JSON(w, types.Msg{Msg: "added"})
+}
+
+func (a MainApi) GetUsersCard(w http.ResponseWriter, r *http.Request) {
+	// if a.checkAuth(r) {
+	// 	a.s.ErrJSON(w, http.StatusForbidden, "required authentication headers")
+	// 	return
+	// }
+	obj, err := a.db.GetSlackInformation(a.ctx)
+	if err != nil {
+		a.s.ErrJSON(w, http.StatusBadRequest, "slack information database issue")
+		return
+	}
+	a.s.JSON(w, obj)
 }

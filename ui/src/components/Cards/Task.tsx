@@ -1,5 +1,4 @@
 import UsersCard from "../../types/UserCard";
-import NavigateButton from "../Button/NavigateButton";
 
 interface props {
   user: UsersCard;
@@ -18,12 +17,9 @@ const UserCards = ({ user }: props) => {
             <li className="list-group-item">Channel: {user.channel}</li>
           </ul>
           <div className="card-footer">
-          <NavigateButton link={``} variant="primary">
-            Add as Storyteller
-          </NavigateButton>{" "}
-          <NavigateButton link={``} variant="primary">
-            Add as Player
-          </NavigateButton>{" "}
+            {/* <a href="#" className="btn btn-primary">
+              Invite
+            </a> */}
           </div>
         </div>
       </div>

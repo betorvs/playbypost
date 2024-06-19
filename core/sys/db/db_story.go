@@ -64,33 +64,39 @@ func (db *DBX) CreateStoryTx(ctx context.Context, title, announcement, notes, en
 	}
 	defer stmtStory.Close()
 	var storyID int
-	err = stmtStory.QueryRow(title, notes, announcement, storytellerID).Scan(&storyID)
+	err = tx.StmtContext(ctx, stmtStory).QueryRow(title, notes, announcement, storytellerID).Scan(&storyID)
 	if err != nil {
-		db.logger.Error("query row insert into story failed", "error", err.Error())
+		db.logger.Error("query row insert into story failed", "error", err.Error(), "title", title, "notes", notes, "announcement", announcement, "storytellerID", storytellerID)
 		return -1, err
 	}
 	// insert story key
 	queryKey := "INSERT INTO story_keys(encoding_key, story_id) VALUES($1, $2) RETURNING id"
-	stmt, err := db.Conn.PrepareContext(ctx, queryKey)
+	stmtStoryKeys, err := db.Conn.PrepareContext(ctx, queryKey)
 	if err != nil {
 		db.logger.Error("tx prepare on story_keys failed", "error", err.Error())
 		return -1, err
 	}
-	defer stmt.Close()
+	defer stmtStoryKeys.Close()
 	var encodingKeyID int
-	err = stmt.QueryRow(encodingKey, storyID).Scan(&encodingKeyID)
+	err = tx.StmtContext(ctx, stmtStoryKeys).QueryRow(encodingKey, storyID).Scan(&encodingKeyID)
 	if err != nil {
 		db.logger.Error("query row insert into story_keys failed", "error", err.Error())
 		return -1, err
 	}
 	// grant access to storyteller to story_key
-	queryAccess := "INSERT INTO access_story_keys(storyteller_id, story_keys_id) VALUES($1, $2) RETURNING id"
-	_, err = tx.ExecContext(ctx, queryAccess, storytellerID, encodingKeyID)
+	queryAccess := "INSERT INTO access_story_keys(writer_id, story_keys_id) VALUES($1, $2) RETURNING id"
+	stmtAccessStoryKeys, err := db.Conn.PrepareContext(ctx, queryAccess)
 	if err != nil {
-		db.logger.Error("tx on access_story_keys failed", "error", err.Error())
+		db.logger.Error("tx prepare on story_keys failed", "error", err.Error())
 		return -1, err
 	}
-
+	defer stmtAccessStoryKeys.Close()
+	var accessStoryID int
+	err = tx.StmtContext(ctx, stmtAccessStoryKeys).QueryRow(storytellerID, encodingKeyID).Scan(&accessStoryID)
+	if err != nil {
+		db.logger.Error("query row insert into access_story_keys failed", "error", err.Error())
+		return -1, err
+	}
 	// commit if everything is okay
 	if err = tx.Commit(); err != nil {
 		db.logger.Error("tx commit on CreateStoryTx failed", "error", err.Error())
@@ -142,22 +148,22 @@ func (db *DBX) GetStoryByID(ctx context.Context, id int) (types.Story, error) {
 
 func (db *DBX) GetStoriesByStorytellerID(ctx context.Context, id int) ([]types.Story, error) {
 	var stories []types.Story
-	rows, err := db.Conn.QueryContext(ctx, "SELECT id, title, announcement, notes, storyteller_id FROM story WHERE master_id = $1", id)
+	rows, err := db.Conn.QueryContext(ctx, "SELECT id, title, announcement, notes, storyteller_id FROM story WHERE storyteller_id = $1", id)
 	if err != nil {
-		db.logger.Error("query on story by id failed", "error", err.Error())
+		db.logger.Error("query on story by storyteller_id failed", "error", err.Error())
 		return stories, err
 	}
 	defer rows.Close()
 	for rows.Next() {
 		var story types.Story
 		if err := rows.Scan(&story.ID, &story.Title, &story.Announcement, &story.Notes, &story.StorytellerID); err != nil {
-			db.logger.Error("scan error on story by id", "error", err.Error())
+			db.logger.Error("scan error on story by storyteller_id", "error", err.Error())
 		}
 		stories = append(stories, story)
 	}
 	// Check for errors from iterating over rows.
 	if err := rows.Err(); err != nil {
-		db.logger.Error("rows error on story by id", "error", err.Error())
+		db.logger.Error("rows error on story by storyteller_id", "error", err.Error())
 	}
 	return stories, nil
 }

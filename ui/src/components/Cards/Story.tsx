@@ -22,11 +22,11 @@ const StoryCards = ({ ID, story, LinkText }: Props) => {
           {LinkText}
         </NavigateButton>{" "}
         <NavigateButton link={`/stories/players/${ID}`} variant="primary">
-          Players List
+          Stage List
         </NavigateButton>{" "}
       </div>
       <div className="card-footer text-body-secondary">
-        Master ID: {story.master_id}; Notes: {story.notes}
+        Storyteller ID: {story.storyteller_id}; Notes: {story.notes}
       </div>
     </div>
   );

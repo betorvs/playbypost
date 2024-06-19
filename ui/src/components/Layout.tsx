@@ -24,8 +24,18 @@ const Layout = ({ Logoff }: Props) => {
             </NavLink>{" "}
           </li>
           <li className="nav-item">
+            <NavLink className="nav-link" to="/tasks">
+              Tasks
+            </NavLink>{" "}
+          </li>
+          <li className="nav-item">
             <NavLink className="nav-link" to="/users">
               Users
+            </NavLink>{" "}
+          </li>
+          <li className="nav-item">
+            <NavLink className="nav-link" to="/stages">
+              Stages
             </NavLink>{" "}
           </li>
           <li></li>

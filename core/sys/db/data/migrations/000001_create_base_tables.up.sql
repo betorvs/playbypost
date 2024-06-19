@@ -23,7 +23,7 @@ CREATE TABLE story_keys (
 
 CREATE TABLE access_story_keys (
   id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-  storyteller_id int NOT NULL REFERENCES writers(id),
+  writer_id int NOT NULL REFERENCES writers(id),
   story_keys_id int NOT NULL REFERENCES story_keys(id)
 );
 
@@ -112,7 +112,7 @@ CREATE TABLE stage_storyteller_notes (
 CREATE TABLE players (
   id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   character_name VARCHAR(255) NOT NULL,
-  story_id int NOT NULL REFERENCES story(id),
+  stage_id int NOT NULL REFERENCES stage(id),
   player_id int NOT NULL REFERENCES users(id),
   destroyed BOOLEAN NOT NULL DEFAULT FALSE,
   abilities JSONB,
@@ -124,7 +124,7 @@ CREATE TABLE players (
 CREATE TABLE non_players (
   id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   npc_name VARCHAR(255) NOT NULL,
-  story_id int NOT NULL REFERENCES story(id),
+  stage_id int NOT NULL REFERENCES stage(id),
   storyteller_id int NOT NULL REFERENCES users(id),
   destroyed BOOLEAN NOT NULL DEFAULT FALSE,
   abilities JSONB,

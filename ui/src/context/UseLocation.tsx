@@ -6,7 +6,7 @@
 // }
 
 function UseLocation(): string {
-  let urlCur: string = window.location.href;
+  let urlCur: string = window.location.origin;
   // return "http://192.168.1.210:3000/";
   return urlCur;
 }

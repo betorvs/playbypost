@@ -18,7 +18,8 @@ type DBClient interface {
 	GetStorytellerByID(ctx context.Context, id int) (types.Storyteller, error)
 	// GetUserByUserID(ctx context.Context, userid string) (types.User, error)
 	GetStorytellerByUsername(ctx context.Context, username string) (types.Storyteller, error)
-	GetUserCard(ctx context.Context) ([]types.Card, error)
+	// Users - Slack
+	// GetUserCard(ctx context.Context) ([]types.Card, error)
 	// Story
 	// GetStory notfFinished true to get only not finished stories
 	GetStory(ctx context.Context) ([]types.Story, error)
@@ -58,4 +59,5 @@ type DBClient interface {
 	SaveExtension(ctx context.Context, playerId int, npc bool, rpg *rpg.RPGSystem, extension interface{}) (int, error)
 	// Slack
 	AddSlackInformation(ctx context.Context, username, userid, channel string) (int, error)
+	GetSlackInformation(ctx context.Context) ([]types.SlackInfo, error)
 }

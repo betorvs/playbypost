@@ -25,7 +25,7 @@ func (db *DBX) AddSlackInformation(ctx context.Context, username, userid, channe
 
 func (db *DBX) GetSlackInformation(ctx context.Context) ([]types.SlackInfo, error) {
 	info := []types.SlackInfo{}
-	query := "SELECT id, user_id, username, channel FROM slack_information"
+	query := "SELECT id, userid, username, channel FROM slack_information"
 	rows, err := db.Conn.QueryContext(ctx, query)
 	if err != nil {
 		db.logger.Error("query on slack_information failed", "error", err.Error())
@@ -45,3 +45,7 @@ func (db *DBX) GetSlackInformation(ctx context.Context) ([]types.SlackInfo, erro
 	}
 	return info, nil
 }
+
+// func (db *DBX) GetUserCard(ctx context.Context) ([]types.SlackInfo, error) {
+
+// }

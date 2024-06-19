@@ -33,7 +33,7 @@ var storytellersCmd = &cobra.Command{
 			}
 
 		case "create":
-			body, err := app.Web.CreateStoryteller(username, userid, password)
+			body, err := app.Web.CreateStoryteller(username, password)
 			if err != nil {
 				app.Logger.Error("create storytellersCmd", "error", err.Error())
 				os.Exit(1)
@@ -44,7 +44,7 @@ var storytellersCmd = &cobra.Command{
 				app.Logger.Error("json unmarsharl error", "error", err.Error())
 				os.Exit(1)
 			}
-			app.Logger.Info(msg.Msg, "username", username, "userid", userid)
+			app.Logger.Info(msg.Msg, "username", username)
 		default:
 			app.Logger.Info("storytellers command called")
 		}

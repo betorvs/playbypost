@@ -39,25 +39,26 @@ func (a MainApi) CreateStory(w http.ResponseWriter, r *http.Request) {
 		a.s.ErrJSON(w, http.StatusBadRequest, "title and master_id cannot be empty")
 		return
 	}
-	user, err := a.db.GetStorytellerByID(a.ctx, obj.StorytellerID)
-	if err != nil {
-		a.s.ErrJSON(w, http.StatusBadRequest, "master id not found")
-		return
-	}
+	// user, err := a.db.GetStorytellerByID(a.ctx, obj.StorytellerID)
+	// if err != nil {
+	// 	a.s.ErrJSON(w, http.StatusBadRequest, "Storyteller id not found")
+	// 	return
+	// }
 	newEncodingKey := utils.RandomString(16)
 	announce, err := utils.EncryptText(obj.Announcement, newEncodingKey)
 	if err != nil {
-		a.s.ErrJSON(w, http.StatusBadRequest, "announcement encoding fails")
+		a.s.ErrJSON(w, http.StatusInternalServerError, "announcement encoding fails")
 		return
 	}
 	notes, err := utils.EncryptText(obj.Notes, newEncodingKey)
 	if err != nil {
-		a.s.ErrJSON(w, http.StatusBadRequest, "notes encoding fails")
+		a.s.ErrJSON(w, http.StatusInternalServerError, "notes encoding fails")
 		return
 	}
-	res, err := a.db.CreateStoryTx(a.ctx, obj.Title, announce, notes, newEncodingKey, user.ID)
+	res, err := a.db.CreateStoryTx(a.ctx, obj.Title, announce, notes, newEncodingKey, obj.StorytellerID)
 	if err != nil {
-		a.s.ErrJSON(w, http.StatusBadRequest, "error creating story on database")
+		a.logger.Error("error ", "storyteller_id", obj.StorytellerID)
+		a.s.ErrJSON(w, http.StatusBadGateway, "error creating story on database")
 		return
 	}
 	msg := fmt.Sprintf("story id %v", res)
@@ -114,14 +115,20 @@ func (a MainApi) GetStoryByMasterId(w http.ResponseWriter, r *http.Request) {
 		a.s.ErrJSON(w, http.StatusBadRequest, "story issue")
 		return
 	}
-	if a.Sessions.Current[headerUsername].UserID != id {
+	user, err := a.db.GetStorytellerByID(a.ctx, id)
+	if err != nil {
+		a.s.ErrJSON(w, http.StatusBadRequest, "Storyteller id not found")
+		return
+	}
+	if user.Username != headerUsername {
+		a.logger.Info("username does not match with header")
 		a.s.JSON(w, obj)
 		return
 	}
 	stories := []types.Story{}
 	for _, v := range obj {
-		announce, _ := utils.DecryptText(v.Announcement, a.Sessions.Current[headerUsername].EncodingKey)
-		note, _ := utils.DecryptText(v.Notes, a.Sessions.Current[headerUsername].EncodingKey)
+		announce, _ := utils.DecryptText(v.Announcement, user.EncodingKeys[v.ID])
+		note, _ := utils.DecryptText(v.Notes, user.EncodingKeys[v.ID])
 		stories = append(stories, types.Story{
 			ID:            v.ID,
 			Title:         v.Title,

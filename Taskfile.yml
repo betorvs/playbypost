@@ -23,13 +23,18 @@ tasks:
     cmds:
       - docker start postgres
 
+  create_postgres:
+    cmds:
+      - docker run -p 5432:5432 --name postgres -e "POSTGRES_PASSWORD=$PGPASSWORD" -d postgres
+
   migrate_up:
     cmds:
-      - migrate -path=core/sys/db/data/migrations -database "postgresql://$PGUSER:$PGPASSWORD@$PGHOST:$PGPORT/$PGDATABASE?sslmode=disable" -verbose up
+      - ./admin-ctl db create
+      - ./admin-ctl db up
 
   migrate_down:
     cmds:
-      - migrate -path=core/sys/db/data/migrations -database "postgresql://$PGUSER:$PGPASSWORD@$PGHOST:$PGPORT/$PGDATABASE?sslmode=disable" -verbose down
+      - ./admin-ctl db down
 
   build:
     cmds:
@@ -90,9 +95,9 @@ tasks:
       TOKEN:
         sh: cat creds
 
-  load_users:
+  load_storytellers:
     cmds:
-      - for i in $(seq 1 5); do ./admin-ctl users create -u roberto${i} --user-id rvs0${i} --password r123qwe --token {{.TOKEN}}; done
+      - for i in $(seq 1 5); do ./admin-ctl storyteller create -u roberto${i} --password r123qwe --token {{.TOKEN}}; done
     vars:
       TOKEN:
         sh: cat creds
@@ -143,7 +148,7 @@ tasks:
 
   load:
     cmds:
-      - task: load_users
+      - task: load_storytellers
       - task: load_stories
       - task: load_players
       - task: load_encounters

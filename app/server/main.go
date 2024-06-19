@@ -61,8 +61,9 @@ func main() {
 
 	srv.Register("GET /api/v1/storyteller", app.GetStorytellers)
 	// srv.Register("OPTIONS /api/v1/storyteller", srv.Options)
-	srv.Register("GET /api/v1/storyteller/card", app.GetUsersCard)
 	srv.Register("POST /api/v1/storyteller", app.CreateStorytellers)
+
+	srv.Register("GET /api/v1/user/card", app.GetUsersCard)
 
 	srv.Register("GET /api/v1/story", app.GetStory)
 	srv.Register("GET /api/v1/story/{id}", app.GetStoryById)

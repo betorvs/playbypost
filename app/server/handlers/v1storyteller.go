@@ -51,16 +51,3 @@ func (a MainApi) CreateStorytellers(w http.ResponseWriter, r *http.Request) {
 	msg := fmt.Sprintf("user id %v", res)
 	a.s.JSON(w, types.Msg{Msg: msg})
 }
-
-func (a MainApi) GetUsersCard(w http.ResponseWriter, r *http.Request) {
-	// if a.checkAuth(r) {
-	// 	a.s.ErrJSON(w, http.StatusForbidden, "required authentication headers")
-	// 	return
-	// }
-	obj, err := a.db.GetUserCard(a.ctx)
-	if err != nil {
-		a.s.ErrJSON(w, http.StatusBadRequest, "users database issue")
-		return
-	}
-	a.s.JSON(w, obj)
-}

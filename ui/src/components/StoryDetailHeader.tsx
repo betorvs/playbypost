@@ -41,7 +41,10 @@ const StoryDetailHeader = ({ id, detail }: props) => {
               variant="primary"
             >
               New Encounter
-            </NavigateButton>
+            </NavigateButton>{" "}
+            <NavigateButton link={``} variant="primary">
+              Start a Story
+            </NavigateButton>{" "}
           </>
         ) : (
           <>

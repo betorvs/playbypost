@@ -16,8 +16,6 @@ const NewEncounter = () => {
   const [title, setTitle] = useState("");
   const [announce, setAnnouncement] = useState("");
   const [note, setNotes] = useState("");
-  const [reward, setReward] = useState("");
-  const [xp, setXP] = useState(0);
   const user_id = GetUserID();
 
   const safeID: string = id ?? "";
@@ -45,9 +43,7 @@ const NewEncounter = () => {
         announcement: announce,
         notes: note,
         story_id: Number(safeID),
-        reward: reward,
-        xp: xp,
-        master_id: user_id,
+        storyteller_id: user_id,
       }),
     });
     if (response.ok) {
@@ -103,30 +99,6 @@ const NewEncounter = () => {
             <Form.Text className="text-muted">
               It will be used only for you. Keep here good notes about what
               should happen.
-            </Form.Text>
-          </Form.Group>
-          <Form.Group className="mb-3" controlId="formReward">
-            <Form.Label>Reward</Form.Label>
-            <Form.Control
-              type="text"
-              placeholder="reward"
-              value={reward}
-              onChange={(e) => setReward(e.target.value)}
-            />
-            <Form.Text className="text-muted">
-              What your group of player will win in case of success
-            </Form.Text>
-          </Form.Group>
-          <Form.Group className="mb-3" controlId="formXP">
-            <Form.Label>XP</Form.Label>
-            <Form.Control
-              type="number"
-              placeholder="xp"
-              value={xp}
-              onChange={(e) => setXP(Number(e.target.value))}
-            />
-            <Form.Text className="text-muted">
-              What your group of player will win in case of success
             </Form.Text>
           </Form.Group>
           <Button variant="primary" type="submit">

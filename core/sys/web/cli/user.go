@@ -7,23 +7,23 @@ import (
 )
 
 const (
-	user string = "user"
+	storyteller string = "storyteller"
 )
 
 func (c *Cli) GetStoryteller() ([]types.Storyteller, error) {
-	var users []types.Storyteller
-	body, err := c.getGeneric(user)
+	var storytellers []types.Storyteller
+	body, err := c.getGeneric(storyteller)
 	if err != nil {
-		return users, err
+		return storytellers, err
 	}
-	err = json.Unmarshal(body, &users)
+	err = json.Unmarshal(body, &storytellers)
 	if err != nil {
-		return users, err
+		return storytellers, err
 	}
-	return users, nil
+	return storytellers, nil
 }
 
-func (c *Cli) CreateStoryteller(username, userid, password string) ([]byte, error) {
+func (c *Cli) CreateStoryteller(username, password string) ([]byte, error) {
 	u := types.Storyteller{
 		Username: username,
 		Password: password,
@@ -32,6 +32,6 @@ func (c *Cli) CreateStoryteller(username, userid, password string) ([]byte, erro
 	if err != nil {
 		return []byte{}, err
 	}
-	res, err := c.postGeneric(user, body)
+	res, err := c.postGeneric(storyteller, body)
 	return res, err
 }
