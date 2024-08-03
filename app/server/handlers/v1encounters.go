@@ -59,24 +59,35 @@ func (a MainApi) GetEncounterByStoryId(w http.ResponseWriter, r *http.Request) {
 		a.s.ErrJSON(w, http.StatusBadRequest, "encounters issue")
 		return
 	}
-	masterID := -1
+	writerID := -1
 	if len(obj) > 0 {
-		masterID = obj[0].StorytellerID
+		writerID = obj[0].WriterID
 	}
-	if a.Sessions.Current[headerUsername].UserID != masterID {
+	// if a.Sessions.Current[headerUsername].UserID != masterID {
+	// 	a.s.JSON(w, obj)
+	// 	return
+	// }
+	user, err := a.db.GetWriterByID(a.ctx, writerID)
+	if err != nil {
+		a.s.ErrJSON(w, http.StatusBadRequest, "writer id not found")
+		return
+	}
+	if user.Username != headerUsername {
+		a.logger.Info("username does not match with header", "username", user.Username, "header", headerUsername)
 		a.s.JSON(w, obj)
 		return
 	}
-	encounters := []types.Encounters{}
+	encounters := []types.Encounter{}
 	for _, v := range obj {
-		announce, _ := utils.DecryptText(v.Announcement, a.Sessions.Current[headerUsername].EncodingKey)
-		note, _ := utils.DecryptText(v.Notes, a.Sessions.Current[headerUsername].EncodingKey)
-		encounters = append(encounters, types.Encounters{
+		announce, _ := utils.DecryptText(v.Announcement, user.EncodingKeys[id])
+		note, _ := utils.DecryptText(v.Notes, user.EncodingKeys[id])
+		encounters = append(encounters, types.Encounter{
 			ID:           v.ID,
 			Title:        v.Title,
 			Announcement: announce,
 			Notes:        note,
 			StoryID:      v.StoryID,
+			WriterID:     v.WriterID,
 		})
 	}
 
@@ -84,7 +95,7 @@ func (a MainApi) GetEncounterByStoryId(w http.ResponseWriter, r *http.Request) {
 }
 
 func (a MainApi) CreateEncounter(w http.ResponseWriter, r *http.Request) {
-	obj := types.Encounters{}
+	obj := types.Encounter{}
 	err := json.NewDecoder(r.Body).Decode(&obj)
 	if err != nil {
 		a.s.ErrJSON(w, http.StatusBadRequest, "json decode error")
@@ -99,7 +110,7 @@ func (a MainApi) CreateEncounter(w http.ResponseWriter, r *http.Request) {
 		a.s.ErrJSON(w, http.StatusBadRequest, "story does not exist")
 		return
 	}
-	user, err := a.db.GetStorytellerByID(a.ctx, story.StorytellerID)
+	user, err := a.db.GetWriterByID(a.ctx, story.WriterID)
 	if err != nil {
 		a.s.ErrJSON(w, http.StatusBadRequest, "master id not found")
 		return
@@ -114,55 +125,11 @@ func (a MainApi) CreateEncounter(w http.ResponseWriter, r *http.Request) {
 		a.s.ErrJSON(w, http.StatusBadRequest, "notes encoding fails")
 		return
 	}
-	res, err := a.db.CreateEncounter(a.ctx, obj.Title, announce, notes, obj.StoryID, obj.StorytellerID)
+	res, err := a.db.CreateEncounter(a.ctx, obj.Title, announce, notes, obj.StoryID, obj.WriterID)
 	if err != nil {
 		a.s.ErrJSON(w, http.StatusBadRequest, "error creating encounter on database")
 		return
 	}
 	msg := fmt.Sprintf("encounter id %v", res)
-	a.s.JSON(w, types.Msg{Msg: msg})
-}
-
-// func (a MainApi) UpdateEncounterPhaseById(w http.ResponseWriter, r *http.Request) {
-// 	idString := r.PathValue("id")
-// 	id, err := strconv.Atoi(idString)
-// 	if err != nil {
-// 		a.s.ErrJSON(w, http.StatusBadRequest, "id should be a integer")
-// 		return
-// 	}
-// 	phaseString := r.PathValue("phase")
-// 	phase, err := strconv.Atoi(phaseString)
-// 	if err != nil {
-// 		a.s.ErrJSON(w, http.StatusBadRequest, "phase should be a integer")
-// 		return
-// 	}
-// 	err = a.db.UpdatePhase(a.ctx, id, phase)
-// 	if err != nil {
-// 		a.s.ErrJSON(w, http.StatusBadRequest, "encounters issue")
-// 		return
-// 	}
-// 	status := types.PhaseAtoi(phase)
-// 	a.logger.Info("change phase worked", "phase", status)
-// 	// starts a initiative
-// 	a.s.JSON(w, types.Msg{Msg: fmt.Sprintf("change to phase: %s", status)})
-// }
-
-func (a MainApi) AddParticipants(w http.ResponseWriter, r *http.Request) {
-	obj := types.Participants{}
-	err := json.NewDecoder(r.Body).Decode(&obj)
-	if err != nil {
-		a.s.ErrJSON(w, http.StatusBadRequest, "json decode error")
-		return
-	}
-	if len(obj.PlayersID) == 0 || obj.EncounterID == 0 {
-		a.s.ErrJSON(w, http.StatusBadRequest, "players id list and encounter id cannot be empty")
-		return
-	}
-	err = a.db.AddParticipants(a.ctx, obj.EncounterID, obj.NPC, obj.PlayersID)
-	if err != nil {
-		a.s.ErrJSON(w, http.StatusBadRequest, "error adding participants to encounter on database")
-		return
-	}
-	msg := fmt.Sprintf("encounter id %v participants updated", obj.EncounterID)
 	a.s.JSON(w, types.Msg{Msg: msg})
 }

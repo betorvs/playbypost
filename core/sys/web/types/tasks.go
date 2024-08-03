@@ -37,22 +37,19 @@ func (t TaskKind) String() string {
 }
 
 /*
-  title VARCHAR(50) UNIQUE NOT NULL,
-  encounters_id int NOT NULL REFERENCES encounters(id),
-  subject VARCHAR(50) NOT NULL, //could be notes or announcement
-  kind int NOT NULL DEFAULT 0,  //kind is related about what can be that task
-  target int NOT NULL DEFAULT 0, // rpg system target in dices
-  options JSONB, // map [display_text(encounters)] id next encounter
-  finished BOOLEAN NOT NULL DEFAULT FALSE // if this is finished or not
+  id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  description VARCHAR(50) UNIQUE NOT NULL,
+  kind int NOT NULL DEFAULT 0,
+  ability VARCHAR(50) NOT NULL,
+  skill VARCHAR(50) NOT NULL,
+  target int NOT NULL DEFAULT 0
 */
 
 type Task struct {
-	EncounterID int            `json:"encounter_id"`
-	Title       string         `json:"title"`
-	DisplayText string         `json:"display_text"`
-	Kind        TaskKind       `json:"kind"`
-	Checks      string         `json:"checks"`
-	Target      int            `json:"target"`
-	Options     map[string]int `json:"options"`
-	Finished    bool           `json:"finished"`
+	ID          int      `json:"id"`
+	Description string   `json:"description"`
+	Kind        TaskKind `json:"kind"`
+	Ability     string   `json:"ability"`
+	Skill       string   `json:"skill"`
+	Target      int      `json:"target"`
 }

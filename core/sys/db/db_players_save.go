@@ -33,9 +33,9 @@ func (db *DBX) SavePlayer(ctx context.Context, id, storyID int, npc bool, creatu
 }
 
 func (db *DBX) savePlayer(ctx context.Context, id, storyID int, npc bool, creature *rules.Creature) (int, error) {
-	query := "INSERT INTO players(character_name, player_id, story_id, destroyed, abilities, skills, rpg) VALUES($1, $2, $3, $4, $5, $6, $7) RETURNING id"
+	query := "INSERT INTO players(character_name, player_id, stage_id, destroyed, abilities, skills, rpg) VALUES($1, $2, $3, $4, $5, $6, $7) RETURNING id"
 	if npc {
-		query = "INSERT INTO non_players(npc_name, player_id, story_id, destroyed, abilities, skills, rpg) VALUES($1, $2, $3, $4, $5, $6, $7) RETURNING id"
+		query = "INSERT INTO non_players(npc_name, player_id, stage_id, destroyed, abilities, skills, rpg) VALUES($1, $2, $3, $4, $5, $6, $7) RETURNING id"
 	}
 	stmt, err := db.Conn.PrepareContext(ctx, query)
 	if err != nil {
@@ -63,9 +63,9 @@ func (db *DBX) SavePlayerTx(ctx context.Context, id, storyID int, npc bool, crea
 	// Defer a rollback in case anything fails.
 	defer tx.Rollback()
 
-	query := "INSERT INTO players(character_name, player_id, story_id, destroyed, abilities, skills, rpg) VALUES($1, $2, $3, $4, $5, $6, $7) RETURNING id"
+	query := "INSERT INTO players(character_name, player_id, stage_id, destroyed, abilities, skills, rpg) VALUES($1, $2, $3, $4, $5, $6, $7) RETURNING id"
 	if npc {
-		query = "INSERT INTO non_players(npc_name, player_id, story_id, destroyed, abilities, skills, rpg) VALUES($1, $2, $3, $4, $5, $6, $7) RETURNING id"
+		query = "INSERT INTO non_players(npc_name, player_id, stage_id, destroyed, abilities, skills, rpg) VALUES($1, $2, $3, $4, $5, $6, $7) RETURNING id"
 	}
 	stmt, err := db.Conn.PrepareContext(ctx, query)
 	if err != nil {
@@ -79,23 +79,23 @@ func (db *DBX) SavePlayerTx(ctx context.Context, id, storyID int, npc bool, crea
 		return -1, err
 	}
 
-	switch rpgSystem.Name {
-	case rpg.D2035:
-	case rpg.D10HM:
-		query := "INSERT INTO extension_d10_homemade_pc(player_id, health, defense, willpower, initiative, size, armor, weapon) VALUES($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id"
-		if npc {
-			query = "INSERT INTO extension_d10_homemade_npc(player_id, health, defense, willpower, initiative, size, armor, weapon) VALUES($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id"
-		}
-		extension := creature.Extension.(*d10hm.D10Extented)
-		_, err = tx.ExecContext(ctx, query, playerID, extension.Health, extension.Defense, extension.WillPower, extension.Initiative, extension.Size, extension.Armor, extension.Weapon)
-		if err != nil {
-			db.logger.Error("tx extension on players failed", "error", err.Error())
-			return -1, err
-		}
+	// switch rpgSystem.Name {
+	// case rpg.D2035:
+	// case rpg.D10HM:
+	// 	query := "INSERT INTO extension_d10_homemade_pc(player_id, health, defense, willpower, initiative, size, armor, weapon) VALUES($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id"
+	// 	if npc {
+	// 		query = "INSERT INTO extension_d10_homemade_npc(player_id, health, defense, willpower, initiative, size, armor, weapon) VALUES($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id"
+	// 	}
+	// 	extension := creature.Extension.(*d10hm.D10Extented)
+	// 	_, err = tx.ExecContext(ctx, query, playerID, extension.Health, extension.Defense, extension.WillPower, extension.Initiative, extension.Size, extension.Armor, extension.Weapon)
+	// 	if err != nil {
+	// 		db.logger.Error("tx extension on players failed", "error", err.Error())
+	// 		return -1, err
+	// 	}
 
-	case rpg.D10OS:
+	// case rpg.D10OS:
 
-	}
+	// }
 
 	if err = tx.Commit(); err != nil {
 		db.logger.Error("tx commit on initiative failed", "error", err.Error())

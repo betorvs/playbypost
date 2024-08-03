@@ -61,9 +61,10 @@ func (a *Skills) Scan(value interface{}) error {
 type Skills map[string]Skill
 
 type Skill struct {
-	Name  string
-	Value int
-	Base  string
+	Name        string
+	DisplayName string
+	Value       int
+	Base        string
 }
 
 func NewCreature(n string, r *rpg.RPGSystem) *Creature {

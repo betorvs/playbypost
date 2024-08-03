@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import Story from "../types/Story";
 import NavigateButton from "./Button/NavigateButton";
-import FetchStories from "../functions/Stories";
+import FetchStory from "../functions/Stories";
 
 interface props {
   id: string;
@@ -12,7 +12,7 @@ const StoryDetailHeader = ({ id, detail }: props) => {
   const [story, setStory] = useState<Story>();
 
   useEffect(() => {
-    FetchStories(id, setStory);
+    FetchStory(id, setStory);
   }, []);
   return (
     <div
@@ -33,17 +33,11 @@ const StoryDetailHeader = ({ id, detail }: props) => {
         </NavigateButton>{" "}
         {detail === true ? (
           <>
-            <NavigateButton link={`/stories/players/${id}`} variant="primary">
-              Players List
-            </NavigateButton>{" "}
             <NavigateButton
               link={`/stories/encounter/new/${id}`}
               variant="primary"
             >
               New Encounter
-            </NavigateButton>{" "}
-            <NavigateButton link={``} variant="primary">
-              Start a Story
             </NavigateButton>{" "}
           </>
         ) : (

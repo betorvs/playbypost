@@ -12,7 +12,7 @@ const FetchStoriesByUserID = async (
   requestHeaders.set("X-Username", GetUsername());
   requestHeaders.set("X-Access-Token", GetToken());
   const apiURL = UseLocation();
-  const urlAPI = new URL("api/v1/story/master/" + userID, apiURL);
+  const urlAPI = new URL("api/v1/story/writer/" + userID, apiURL);
   const response = await fetch(urlAPI, {
     method: "GET",
     headers: requestHeaders,

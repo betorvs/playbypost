@@ -18,7 +18,7 @@ func (a MainApi) Signin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user, err := a.db.GetStorytellerByUsername(a.ctx, creds.Username)
+	user, err := a.db.GetWriterByUsername(a.ctx, creds.Username)
 	if err != nil {
 		a.s.ErrJSON(w, http.StatusBadRequest, "user not found")
 		return

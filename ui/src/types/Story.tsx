@@ -1,7 +1,7 @@
 type Story = {
   id: number;
   title: string;
-  storyteller_id: number;
+  writer_id: number;
   announcement: string;
   notes: string;
 };

@@ -35,13 +35,13 @@ func (a MainApi) CreateStory(w http.ResponseWriter, r *http.Request) {
 		a.s.ErrJSON(w, http.StatusBadRequest, "invalid json")
 		return
 	}
-	if obj.StorytellerID == 0 || obj.Title == "" {
+	if obj.WriterID == 0 || obj.Title == "" {
 		a.s.ErrJSON(w, http.StatusBadRequest, "title and master_id cannot be empty")
 		return
 	}
-	// user, err := a.db.GetStorytellerByID(a.ctx, obj.StorytellerID)
+	// user, err := a.db.GetWriterByID(a.ctx, obj.WriterID)
 	// if err != nil {
-	// 	a.s.ErrJSON(w, http.StatusBadRequest, "Storyteller id not found")
+	// 	a.s.ErrJSON(w, http.StatusBadRequest, "Writer id not found")
 	// 	return
 	// }
 	newEncodingKey := utils.RandomString(16)
@@ -55,9 +55,9 @@ func (a MainApi) CreateStory(w http.ResponseWriter, r *http.Request) {
 		a.s.ErrJSON(w, http.StatusInternalServerError, "notes encoding fails")
 		return
 	}
-	res, err := a.db.CreateStoryTx(a.ctx, obj.Title, announce, notes, newEncodingKey, obj.StorytellerID)
+	res, err := a.db.CreateStoryTx(a.ctx, obj.Title, announce, notes, newEncodingKey, obj.WriterID)
 	if err != nil {
-		a.logger.Error("error ", "storyteller_id", obj.StorytellerID)
+		a.logger.Error("error ", "writer_id", obj.WriterID)
 		a.s.ErrJSON(w, http.StatusBadGateway, "error creating story on database")
 		return
 	}
@@ -82,23 +82,31 @@ func (a MainApi) GetStoryById(w http.ResponseWriter, r *http.Request) {
 		a.s.ErrJSON(w, http.StatusBadRequest, "story issue")
 		return
 	}
-	if a.Sessions.Current[headerUsername].UserID != obj.StorytellerID {
+	user, err := a.db.GetWriterByID(a.ctx, obj.WriterID)
+	if err != nil {
+		a.s.ErrJSON(w, http.StatusBadRequest, "writer id not found")
+		return
+	}
+	if user.Username != headerUsername {
+		a.logger.Info("username does not match with header", "username", user.Username, "header", headerUsername)
 		a.s.JSON(w, obj)
 		return
 	}
-	announce, _ := utils.DecryptText(obj.Announcement, a.Sessions.Current[headerUsername].EncodingKey)
-	note, _ := utils.DecryptText(obj.Notes, a.Sessions.Current[headerUsername].EncodingKey)
+	a.logger.Info("obj from db", "obj", obj)
+	a.logger.Info("used from db", "user", user)
+	announce, _ := utils.DecryptText(obj.Announcement, user.EncodingKeys[obj.ID])
+	note, _ := utils.DecryptText(obj.Notes, user.EncodingKeys[obj.ID])
 	story := types.Story{
-		ID:            obj.ID,
-		Title:         obj.Title,
-		Announcement:  announce,
-		Notes:         note,
-		StorytellerID: obj.StorytellerID,
+		ID:           obj.ID,
+		Title:        obj.Title,
+		Announcement: announce,
+		Notes:        note,
+		WriterID:     obj.WriterID,
 	}
 	a.s.JSON(w, story)
 }
 
-func (a MainApi) GetStoryByMasterId(w http.ResponseWriter, r *http.Request) {
+func (a MainApi) GetStoryByWriterId(w http.ResponseWriter, r *http.Request) {
 	if a.checkAuth(r) {
 		a.s.ErrJSON(w, http.StatusForbidden, "required authentication headers")
 		return
@@ -110,14 +118,14 @@ func (a MainApi) GetStoryByMasterId(w http.ResponseWriter, r *http.Request) {
 		a.s.ErrJSON(w, http.StatusBadRequest, "id should be a integer")
 		return
 	}
-	obj, err := a.db.GetStoriesByStorytellerID(a.ctx, id)
+	obj, err := a.db.GetStoriesByWriterID(a.ctx, id)
 	if err != nil {
 		a.s.ErrJSON(w, http.StatusBadRequest, "story issue")
 		return
 	}
-	user, err := a.db.GetStorytellerByID(a.ctx, id)
+	user, err := a.db.GetWriterByID(a.ctx, id)
 	if err != nil {
-		a.s.ErrJSON(w, http.StatusBadRequest, "Storyteller id not found")
+		a.s.ErrJSON(w, http.StatusBadRequest, "writer id not found")
 		return
 	}
 	if user.Username != headerUsername {
@@ -130,11 +138,11 @@ func (a MainApi) GetStoryByMasterId(w http.ResponseWriter, r *http.Request) {
 		announce, _ := utils.DecryptText(v.Announcement, user.EncodingKeys[v.ID])
 		note, _ := utils.DecryptText(v.Notes, user.EncodingKeys[v.ID])
 		stories = append(stories, types.Story{
-			ID:            v.ID,
-			Title:         v.Title,
-			Announcement:  announce,
-			Notes:         note,
-			StorytellerID: v.StorytellerID,
+			ID:           v.ID,
+			Title:        v.Title,
+			Announcement: announce,
+			Notes:        note,
+			WriterID:     v.WriterID,
 		})
 	}
 

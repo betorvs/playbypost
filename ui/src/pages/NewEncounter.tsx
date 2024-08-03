@@ -43,7 +43,7 @@ const NewEncounter = () => {
         announcement: announce,
         notes: note,
         story_id: Number(safeID),
-        storyteller_id: user_id,
+        writer_id: user_id,
       }),
     });
     if (response.ok) {

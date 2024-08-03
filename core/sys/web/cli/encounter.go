@@ -11,8 +11,8 @@ const (
 	encounter string = "encounter"
 )
 
-func (c *Cli) GetEncounters() ([]types.Encounters, error) {
-	var list []types.Encounters
+func (c *Cli) GetEncounters() ([]types.Encounter, error) {
+	var list []types.Encounter
 	body, err := c.getGeneric(encounter)
 	if err != nil {
 		return list, err
@@ -24,8 +24,8 @@ func (c *Cli) GetEncounters() ([]types.Encounters, error) {
 	return list, nil
 }
 
-func (c *Cli) GetEncounterByID(id int) (types.Encounters, error) {
-	var list types.Encounters
+func (c *Cli) GetEncounterByID(id int) (types.Encounter, error) {
+	var list types.Encounter
 	enc := fmt.Sprintf("%s/%d", encounter, id)
 	body, err := c.getGeneric(enc)
 	if err != nil {
@@ -38,14 +38,14 @@ func (c *Cli) GetEncounterByID(id int) (types.Encounters, error) {
 	return list, nil
 }
 
-func (c *Cli) CreateEncounter(title, displayText, announcement, notes string, storyID, storytellerID int) ([]byte, error) {
-	s := types.Encounters{
+func (c *Cli) CreateEncounter(title, displayText, announcement, notes string, storyID, writerID int) ([]byte, error) {
+	s := types.Encounter{
 		Title: title,
 		// DisplayText:  displayText,
-		Announcement:  announcement,
-		Notes:         notes,
-		StoryID:       storyID,
-		StorytellerID: storytellerID,
+		Announcement: announcement,
+		Notes:        notes,
+		StoryID:      storyID,
+		WriterID:     writerID,
 	}
 	body, err := json.Marshal(s)
 	if err != nil {
@@ -61,9 +61,9 @@ func (c *Cli) ChangeEncounterPhase(id, phase int) error {
 	return err
 }
 
-func (c *Cli) AddParticipants(encounterID int, npc bool, playersID []int) ([]byte, error) {
+func (c *Cli) AddParticipants(encounterID int, npc bool, IDs []int) ([]byte, error) {
 	s := types.Participants{
-		PlayersID:   playersID,
+		Identifies:  IDs,
 		EncounterID: encounterID,
 		NPC:         npc,
 	}

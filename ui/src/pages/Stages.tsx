@@ -1,7 +1,7 @@
 import { useContext } from "react";
 import { AuthContext } from "../context/AuthContext";
 import Layout from "../components/Layout";
-import StoryList from "../components/StoryList";
+import StageList from "../components/StageList";
 
 const StagesPage = () => {
   const { Logoff } = useContext(AuthContext);
@@ -13,7 +13,7 @@ const StagesPage = () => {
         <h2>Stages</h2>
         <hr />
       </div>
-      {<StoryList />}
+      {<StageList />}
     </>
   );
 };

@@ -7,10 +7,10 @@ import (
 )
 
 const (
-	command string = "commands"
+	command string = "command"
 )
 
-func (c *Cli) PostCommand(userid, story, text, storyChannel string, playerID int) ([]byte, error) {
+func (c *Cli) PostCommand(userid, text, channel string) ([]byte, error) {
 	cmd := types.Command{
 		Text: text,
 	}
@@ -18,7 +18,7 @@ func (c *Cli) PostCommand(userid, story, text, storyChannel string, playerID int
 	if err != nil {
 		return []byte{}, err
 	}
-	headers := makeHeaders("", "", userid, story, storyChannel, playerID)
+	headers := makeHeaders("", "", userid, "", channel)
 	res, err := c.postGenericWithHeaders(command, body, headers)
 	if err != nil {
 		return res, err

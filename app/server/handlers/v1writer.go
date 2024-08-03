@@ -9,12 +9,12 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-func (a MainApi) GetStorytellers(w http.ResponseWriter, r *http.Request) {
+func (a MainApi) GetWriters(w http.ResponseWriter, r *http.Request) {
 	if a.checkAuth(r) {
 		a.s.ErrJSON(w, http.StatusForbidden, "required authentication headers")
 		return
 	}
-	obj, err := a.db.GetStorytellers(a.ctx, false)
+	obj, err := a.db.GetWriters(a.ctx, false)
 	if err != nil {
 		a.s.ErrJSON(w, http.StatusBadRequest, "users database issue")
 		return
@@ -22,12 +22,12 @@ func (a MainApi) GetStorytellers(w http.ResponseWriter, r *http.Request) {
 	a.s.JSON(w, obj)
 }
 
-func (a MainApi) CreateStorytellers(w http.ResponseWriter, r *http.Request) {
+func (a MainApi) CreateWriters(w http.ResponseWriter, r *http.Request) {
 	if a.checkAuth(r) {
 		a.s.ErrJSON(w, http.StatusForbidden, "required authentication headers")
 		return
 	}
-	obj := types.Storyteller{}
+	obj := types.Writer{}
 	err := json.NewDecoder(r.Body).Decode(&obj)
 	if err != nil {
 		a.s.ErrJSON(w, http.StatusBadRequest, "json decode error")
@@ -43,7 +43,7 @@ func (a MainApi) CreateStorytellers(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	//utils.RandomString(16)
-	res, err := a.db.CreateStorytellers(a.ctx, obj.Username, string(hashedPassword))
+	res, err := a.db.CreateWriters(a.ctx, obj.Username, string(hashedPassword))
 	if err != nil {
 		a.s.ErrJSON(w, http.StatusBadRequest, "error creating user on database")
 		return

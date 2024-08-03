@@ -6,7 +6,6 @@ const (
 )
 
 type RolePlayingGame struct {
-	
 }
 
 type Check struct {
@@ -18,7 +17,8 @@ type Check struct {
 }
 
 type Result struct {
-	Success bool
-	Text    string
-	Result  int
+	Success     bool
+	Description string
+	Result      int
+	Rolled      string
 }

@@ -1,11 +1,11 @@
 package types
 
 /*
-Storyteller
+Writer
 
 EncodingKeys story_id -> Encoding key
 */
-type Storyteller struct {
+type Writer struct {
 	ID           int            `json:"id,omitempty"`
 	Username     string         `json:"username"`
 	Password     string         `json:"password,omitempty"`

@@ -11,7 +11,7 @@ const FetchUsers = async (
   requestHeaders.set("X-Username", GetUsername());
   requestHeaders.set("X-Access-Token", GetToken());
   const apiURL = UseLocation();
-  const urlAPI = new URL("api/v1/user/card", apiURL);
+  const urlAPI = new URL("api/v1/info/users", apiURL);
   const response = await fetch(urlAPI, {
     method: "GET",
     headers: requestHeaders,

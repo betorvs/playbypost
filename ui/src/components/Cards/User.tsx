@@ -18,10 +18,10 @@ const UserCards = ({ user }: props) => {
             <li className="list-group-item">Channel: {user.channel}</li>
           </ul>
           <div className="card-footer">
-          <NavigateButton link={``} variant="primary">
+          <NavigateButton link={`/users/${user.user_id}`} variant="primary">
             Add as Storyteller
           </NavigateButton>{" "}
-          <NavigateButton link={``} variant="primary">
+          <NavigateButton link={`/users/player/${user.user_id}`} variant="primary">
             Add as Player
           </NavigateButton>{" "}
           </div>

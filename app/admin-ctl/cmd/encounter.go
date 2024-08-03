@@ -88,7 +88,7 @@ var encounterCmd = &cobra.Command{
 				app.Logger.Error("story-id, title and announcement are mandatory")
 				os.Exit(2)
 			}
-			body, err := app.Web.CreateEncounter(title, displayText, announcement, notes, storyid, masterID)
+			body, err := app.Web.CreateEncounter(title, displayText, announcement, notes, storyid, writerID)
 			if err != nil {
 				app.Logger.Error("encounter error", "error", err.Error())
 				os.Exit(1)
@@ -142,14 +142,14 @@ func init() {
 	// is called directly, e.g.:
 	// encounterCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 	encounterCmd.Flags().StringVarP(&title, "title", "t", "", " title to be used")
-	encounterCmd.Flags().StringVarP(&displayText, "display-text", "d", "", "announcement when starting story")
+	encounterCmd.Flags().StringVarP(&displayText, "display-text", "d", "", "display text for this encounter")
 	encounterCmd.Flags().StringVarP(&announcement, "announcement", "a", "", "announcement when starting story")
 	encounterCmd.Flags().StringVarP(&notes, "notes", "n", "-", " notes are internal notes about what it means and how to use it")
 	encounterCmd.Flags().IntVar(&storyid, "story-id", 0, "story ID")
 	encounterCmd.Flags().IntVar(&encounterid, "encounter-id", 0, "encounter ID")
 	encounterCmd.Flags().IntSliceVar(&listPlayersID, "players-id", []int{}, "players by id, split by comma without space")
 	encounterCmd.Flags().BoolVar(&isNPC, "non-player", false, "--non-player to add non player character as encounter participats")
-	encounterCmd.Flags().IntVar(&masterID, "master-id", 0, "master id equal user ID")
+	encounterCmd.Flags().IntVar(&writerID, "writer-id", 0, "master id equal user ID")
 }
 
 func (app *application) ChangePhase(encounterid int, phase types.Phase) error {

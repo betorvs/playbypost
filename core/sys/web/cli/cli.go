@@ -29,7 +29,7 @@ func New(base string) *Cli {
 func NewHeaders(base, user, token string) *Cli {
 	return &Cli{
 		baseURL: base,
-		headers: makeHeaders(user, token, "", "", "", 0),
+		headers: makeHeaders(user, token, "", "", ""),
 		Client: &http.Client{
 			Timeout: time.Second * 10,
 		},
@@ -44,7 +44,7 @@ func (c *Cli) UpdateURL(s string) {
 
 // user, token : HeaderUsername, HeaderToken
 // id, story, playerID: HeaderUserID, HeaderStory, HeaderPlayerID
-func makeHeaders(user, token, id, story, storyChannel string, playerID int) map[string]string {
+func makeHeaders(user, token, id, story, channel string) map[string]string {
 	headers := make(map[string]string)
 	if id != "" {
 		headers[types.HeaderUserID] = id
@@ -52,12 +52,12 @@ func makeHeaders(user, token, id, story, storyChannel string, playerID int) map[
 	if story != "" {
 		headers[types.HeaderStory] = story
 	}
-	if storyChannel != "" {
-		headers[types.HeaderStoryChannel] = storyChannel
+	if channel != "" {
+		headers[types.HeaderStoryChannel] = channel
 	}
-	if playerID != 0 {
-		headers[types.HeaderPlayerID] = fmt.Sprintf("%d", playerID)
-	}
+	// if playerID != 0 {
+	// 	headers[types.HeaderPlayerID] = fmt.Sprintf("%d", playerID)
+	// }
 	if user != "" {
 		headers[types.HeaderUsername] = user
 	}
@@ -117,7 +117,7 @@ func (c *Cli) postGeneric(kind string, body []byte) ([]byte, error) {
 	if err != nil {
 		return []byte{}, err
 	}
-	if resp.StatusCode == http.StatusOK {
+	if resp.StatusCode == http.StatusOK || resp.StatusCode == http.StatusAccepted {
 		return respBody, nil
 	}
 	return respBody, fmt.Errorf("status code not expected %d", resp.StatusCode)

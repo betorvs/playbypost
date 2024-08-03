@@ -2,13 +2,12 @@ package cmd
 
 var (
 	username      string // cmd: users
-	userid        string // cmd: users
 	password      string // cmd: users
 	title         string // cmd: story, encounter
-	displayText   string // cmd: encounter
+	displayText   string // cmd: encounter, stage
 	announcement  string // cmd: story, encounter
 	notes         string // cmd: story, encounter
-	masterID      int    // cmd: story
+	writerID      int    // cmd: story
 	name          string // cmd: player, initiative
 	playerid      int    // cmd: player
 	storyid       int    // cmd: player, encounter
@@ -18,4 +17,11 @@ var (
 	adminToken    string //cmd: all
 	adminUser     string //cmd: all
 	server        string //cmd: all
+	description   string //cmd: tasks
+	ability       string //cmd: task
+	skill         string //cmd: task
+	kind          int    //cmd: task
+	target        int    //cmd: task
+	storyID       int    //cmd: stage
+	userID        string //cmd: stage
 )

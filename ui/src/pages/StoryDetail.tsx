@@ -27,10 +27,10 @@ const StoryDetail = () => {
         <div className="row mb-2" key="2">
           {encounters != null ? (
             encounters.map((encounter, index) => (
-              <EncounterCards encounter={encounter} key={index} />
+              <EncounterCards encounter={encounter} key={index} disable_footer={false} />
             ))
           ) : (
-            <p>no encounters for you</p>
+            <p>no story for you</p>
           )}
         </div>
       </div>

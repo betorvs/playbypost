@@ -23,9 +23,9 @@ var execCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		story := viper.GetString("story")
 		userid := viper.GetString("user-id")
-		player := viper.GetInt("player-id")
+		// player := viper.GetInt("player-id")
 		text := strings.Join(args, " ")
-		body, err := app.Web.PostCommand(userid, story, text, "", player)
+		body, err := app.Web.PostCommand(userid, story, text)
 		if err != nil {
 			app.Logger.Error("post command failed", "error", err.Error())
 			os.Exit(1)

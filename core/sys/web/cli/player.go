@@ -12,11 +12,11 @@ const (
 	player string = "player"
 )
 
-func (c *Cli) GeneratePlayer(name string, playerid, storyid int) ([]byte, error) {
+func (c *Cli) GeneratePlayer(name string, playerid, stageid int) ([]byte, error) {
 	u := types.GeneratePlayer{
 		Name:     name,
 		PlayerID: playerid,
-		StoryID:  storyid,
+		StageID:  stageid,
 	}
 	body, err := json.Marshal(u)
 	if err != nil {

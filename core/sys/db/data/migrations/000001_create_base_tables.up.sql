@@ -33,7 +33,7 @@ CREATE TABLE encounters (
   notes text,
   announcement text,
   story_id int NOT NULL REFERENCES story(id),
-  storyteller_id int NOT NULL REFERENCES writers(id),
+  writer_id int NOT NULL REFERENCES writers(id),
   UNIQUE(title, story_id)
 );
 
@@ -48,9 +48,9 @@ CREATE TABLE tasks (
 
 CREATE TABLE slack_information (
   id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-  userid VARCHAR(50) UNIQUE NOT NULL,
-  channel VARCHAR(50) UNIQUE NOT NULL,
-  username VARCHAR(50) UNIQUE NOT NULL
+  userid VARCHAR(50) NOT NULL,
+  channel VARCHAR(50) NOT NULL,
+  username VARCHAR(50) NOT NULL
 );
 
 CREATE TABLE users (
@@ -78,9 +78,11 @@ CREATE TABLE stage_channel (
 CREATE TABLE stage_encounters (
   id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   display_text VARCHAR(50) NOT NULL,
+  phase int NOT NULL DEFAULT 0,
   stage_id int NOT NULL REFERENCES stage(id),
   storyteller_id int NOT NULL REFERENCES users(id),
   encounters_id int NOT NULL REFERENCES encounters(id),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   UNIQUE(display_text, encounters_id)
 );
 
@@ -89,8 +91,8 @@ CREATE TABLE stage_running_tasks (
   display_text VARCHAR(50) NOT NULL,
   stage_id int NOT NULL REFERENCES stage(id),
   storyteller_id int NOT NULL REFERENCES users(id),
-  encounters_id int NOT NULL REFERENCES encounters(id),
-  tasks_id int NOT NULL REFERENCES tasks(id),
+  stage_encounters_id int NOT NULL REFERENCES stage_encounters(id),
+  task_id int NOT NULL REFERENCES tasks(id),
   UNIQUE(display_text, encounters_id, tasks_id)
 );
 
@@ -98,15 +100,17 @@ CREATE TABLE stage_next_encounter (
   id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   display_text VARCHAR(50) NOT NULL,
   stage_id int NOT NULL REFERENCES stage(id),
-  current_encounter_id int NOT NULL REFERENCES encounters(id),
-  next_encounter_id int NOT NULL REFERENCES encounters(id),
+  current_encounter_id int NOT NULL REFERENCES stage_encounters(id),
+  next_encounter_id int NOT NULL REFERENCES stage_encounters(id),
   UNIQUE(display_text, current_encounter_id, next_encounter_id)
 );
 
-CREATE TABLE stage_storyteller_notes (
+CREATE TABLE stage_encounter_activities (
   id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   stage_id int NOT NULL REFERENCES stage(id),
-  notes text
+  encounter_id int NOT NULL REFERENCES stage_encounters(id),
+  actions JSONB,
+  processed BOOLEAN NOT NULL DEFAULT FALSE
 );
 
 CREATE TABLE players (

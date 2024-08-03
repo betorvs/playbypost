@@ -26,9 +26,10 @@ var (
 )
 
 type app struct {
-	logger *slog.Logger
-	web    *cli.Cli
-	slack  *slack.Client
+	logger   *slog.Logger
+	web      *cli.Cli
+	slack    *slack.Client
+	admToken string
 }
 
 func main() {
@@ -64,6 +65,16 @@ func main() {
 		fmt.Fprint(w, "{\"status\":\"OK\"}")
 	})
 
+	// create internal app
+	a := app{
+		logger:   logger,
+		web:      play,
+		slack:    slack,
+		admToken: adminToken,
+	}
+
+	mux.HandleFunc("POST /api/v1/event", a.events)
+
 	go func() {
 		if err := server.ListenAndServe(); !errors.Is(err, http.ErrServerClosed) {
 			logger.Error("listen and serve error", "error", err)
@@ -72,11 +83,6 @@ func main() {
 		logger.Info("stopped serving new connections.")
 	}()
 
-	a := app{
-		logger: logger,
-		web:    play,
-		slack:  slack,
-	}
 	socketmodeHandler := socketmode.NewSocketmodeHandler(socket)
 	socketmodeHandler.Handle(socketmode.EventTypeEventsAPI, a.middlewareEventsAPI)
 	socketmodeHandler.Handle(socketmode.EventTypeConnecting, a.middlewareConnecting)
@@ -95,7 +101,7 @@ func main() {
 	go func() {
 		err := socketmodeHandler.RunEventLoopContext(ctx)
 		if err != nil {
-			logger.Error("socker run event loop message", "error", err.Error())
+			logger.Error("socket run event loop message", "error", err.Error())
 		}
 	}()
 
@@ -205,6 +211,20 @@ func (a *app) middlewareEventsAPI(evt *socketmode.Event, client *socketmode.Clie
 	a.logger.Info("end of function")
 }
 
+func (a *app) postCommand(userid, text, channel string) (types.Composed, error) {
+	var msg types.Composed
+	body, err := a.web.PostCommand(userid, text, channel)
+	if err != nil {
+		a.logger.Error("post command", "error", err.Error())
+		return msg, err
+	}
+	err = json.Unmarshal(body, &msg)
+	if err != nil {
+		a.logger.Error("error decoding message from backend", "error", err.Error())
+	}
+	return msg, nil
+}
+
 func (a *app) middlewareSlashCommand(evt *socketmode.Event, client *socketmode.Client) {
 	cmd, ok := evt.Data.(slack.SlashCommand)
 	if !ok {
@@ -212,8 +232,81 @@ func (a *app) middlewareSlashCommand(evt *socketmode.Event, client *socketmode.C
 		return
 	}
 
-	client.Debugf("Slash command received: %+v", cmd)
+	// client.Debugf("Slash command received: %+v", cmd)
 	a.logger.Info(fmt.Sprintf("slash command from %v by %s", cmd.ChannelID, cmd.UserID))
+	// opt := "options"
+	// switch {
+	// case strings.Contains(strings.ToLower(cmd.Text), "opt"):
+	//
+	// }
+	// switch: text startWith option* or more values allowed
+	// body, err := a.web.PostCommand(cmd.UserID, "opt", cmd.ChannelID)
+	// if err != nil {
+	// 	a.logger.Error("error posting to backend", "error", err.Error())
+	// }
+	// var msg types.Composed
+	// err = json.Unmarshal(body, &msg)
+	// if err != nil {
+	// 	a.logger.Error("error decoding message from backend", "error", err.Error())
+	// }
+	msg, err := a.postCommand(cmd.UserID, "opt", cmd.ChannelID)
+	if err != nil {
+		a.logger.Error("error posting to backend", "error", err.Error())
+	}
+	// options := []*slack.OptionBlockObject{}
+	// {
+	// 	Text: &slack.TextBlockObject{
+	// 		Type:  "plain_text",
+	// 		Text:  "*No options for you*",
+	// 		Emoji: true,
+	// 	},
+	// 	Value: "no-value-0",
+	// }}
+
+	textPickItem := "Pick an item "
+	if msg.Msg != "" {
+		textPickItem = fmt.Sprintf("%s Pick an item", msg.Msg)
+	}
+	if len(msg.Opt) > 0 {
+		a.logger.Info(fmt.Sprintf("options: %v", msg.Opt))
+		options := []*slack.OptionBlockObject{}
+		for _, v := range msg.Opt {
+			options = append(options, &slack.OptionBlockObject{
+				Text: &slack.TextBlockObject{
+					Type:  "plain_text",
+					Text:  v.Name,
+					Emoji: true,
+				},
+				Value: fmt.Sprintf(`cuni;%s;%s;%s;%d`, cmd.ChannelID, cmd.UserID, v.Name, v.ID),
+			})
+		}
+		payload2 := map[string]interface{}{
+			"blocks": []slack.Block{
+				slack.SectionBlock{
+					Type: "section",
+					Text: &slack.TextBlockObject{
+						Type: "mrkdwn",
+						Text: textPickItem,
+					},
+					Accessory: &slack.Accessory{
+						SelectElement: &slack.SelectBlockElement{
+							Type: "static_select",
+							Placeholder: &slack.TextBlockObject{
+								Type:  "plain_text",
+								Text:  "Select an item",
+								Emoji: true,
+							},
+							ActionID: "static_select-action",
+							Options:  options,
+						},
+					},
+				},
+			},
+		}
+
+		client.Ack(*evt.Request, payload2)
+		return
+	}
 
 	payload2 := map[string]interface{}{
 		"blocks": []slack.Block{
@@ -221,44 +314,7 @@ func (a *app) middlewareSlashCommand(evt *socketmode.Event, client *socketmode.C
 				Type: "section",
 				Text: &slack.TextBlockObject{
 					Type: "mrkdwn",
-					Text: "Pick an item ",
-				},
-				Accessory: &slack.Accessory{
-					SelectElement: &slack.SelectBlockElement{
-						Type: "static_select",
-						Placeholder: &slack.TextBlockObject{
-							Type:  "plain_text",
-							Text:  "Select an item",
-							Emoji: true,
-						},
-						ActionID: "static_select-action",
-						Options: []*slack.OptionBlockObject{
-							{
-								Text: &slack.TextBlockObject{
-									Type:  "plain_text",
-									Text:  "*plain_text option 0*",
-									Emoji: true,
-								},
-								Value: "value-0",
-							},
-							{
-								Text: &slack.TextBlockObject{
-									Type:  "plain_text",
-									Text:  "*plain_text option 1*",
-									Emoji: true,
-								},
-								Value: "value-1",
-							},
-							{
-								Text: &slack.TextBlockObject{
-									Type:  "plain_text",
-									Text:  "*plain_text option 2*",
-									Emoji: true,
-								},
-								Value: "value-2",
-							},
-						},
-					},
+					Text: "*No options for you*",
 				},
 			},
 		},
@@ -282,10 +338,28 @@ func (a *app) middlewareInteractive(evt *socketmode.Event, client *socketmode.Cl
 			break
 		}
 	}
-	attachment := slack.Attachment{
-		Text: fmt.Sprintf("Value received: %s", option),
+
+	a.logger.Info("value received", "option", option)
+	//
+	var userid, text, channel, display string
+	splitted := strings.Split(option, ";")
+	a.logger.Info("splitted", "values", splitted, "len", len(splitted))
+	if len(splitted) == 5 {
+		channel = splitted[1]
+		userid = splitted[2]
+		text = fmt.Sprintf("cmd;%s;%s", splitted[3], splitted[4])
+		display = splitted[3]
 	}
-	_, _, err := a.slack.PostMessage(
+	a.logger.Info("values", "userid", userid, "text", text, "channel", channel)
+	msg, err := a.postCommand(userid, text, channel)
+	if err != nil {
+		a.logger.Error("error posting to backend", "error", err.Error())
+	}
+	attachment := slack.Attachment{
+		Text: fmt.Sprintf("Selected: %s; and answer: %s", display, msg.Msg),
+	}
+
+	_, _, err = a.slack.PostMessage(
 		interactiveEvent.Container.ChannelID,
 		slack.MsgOptionAttachments(attachment),
 		slack.MsgOptionResponseURL(interactiveEvent.ResponseURL, slack.ResponseTypeInChannel),
@@ -296,6 +370,62 @@ func (a *app) middlewareInteractive(evt *socketmode.Event, client *socketmode.Cl
 	}
 
 	client.Ack(*evt.Request)
+}
+
+func (a *app) events(w http.ResponseWriter, r *http.Request) {
+	headerToken := r.Header.Get(types.HeaderToken)
+	if headerToken != a.admToken {
+		w.WriteHeader(http.StatusForbidden)
+		fmt.Fprint(w, "{\"msg\":\"unauthenticated\"}")
+		return
+	}
+
+	// handle event
+	obj := types.Event{}
+	err := json.NewDecoder(r.Body).Decode(&obj)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		fmt.Fprint(w, "{\"msg\":\"json decode error\"}")
+		return
+	}
+	attachment := slack.Attachment{}
+	attachment.Text = obj.Message
+	if obj.Kind != "" {
+		switch obj.Kind {
+		case types.EventAnnounce:
+			emoji := ":mega:"
+			attachment.Text = fmt.Sprintf("%s %s", emoji, obj.Message)
+
+		case types.EventSuccess:
+			emoji := ":white_check_mark:"
+			attachment.Text = fmt.Sprintf("%s %s", emoji, obj.Message)
+
+		case types.EventFailure:
+			emoji := ":x:"
+			attachment.Text = fmt.Sprintf("%s %s", emoji, obj.Message)
+		}
+	}
+	switch {
+	case strings.ToLower(obj.UserID) == "all":
+		// send message to all in channel
+		_, _, err := a.slack.PostMessage(obj.Channel, slack.MsgOptionAttachments(attachment))
+		if err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			fmt.Fprint(w, "{\"msg\":\"cannot send message to slack\"}")
+			return
+		}
+	default:
+		// send private message
+		_, err := a.slack.PostEphemeral(obj.Channel, obj.UserID, slack.MsgOptionAttachments(attachment))
+		if err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			fmt.Fprint(w, "{\"msg\":\"cannot send private message to slack\"}")
+			return
+		}
+	}
+
+	w.WriteHeader(http.StatusAccepted)
+	fmt.Fprint(w, "{\"msg\":\"Accepted\"}")
 }
 
 func read(file string) (string, error) {

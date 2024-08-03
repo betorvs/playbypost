@@ -81,11 +81,11 @@ func NewInitiative(d rpg.Roll, list map[string]int, name string, dice string) In
 	party := Participants{}
 	for k, v := range list {
 		if k != "" && v != 0 {
-			roll, _, _ := d.FreeRoll(k, dice)
+			roll, _ := d.FreeRoll(k, dice)
 			p := Participant{
 				Name:   k,
 				Bonus:  v,
-				Result: roll + v,
+				Result: roll.Result,
 			}
 			party = append(party, p)
 		}

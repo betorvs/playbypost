@@ -108,7 +108,7 @@ entity "stage_running_tasks" as e12 {
   *id : number <<generated>>
   --
   *stage_id : number <<FK>>
-  *encounters_id : number <<FK>>
+  *stage_encounters_id : number <<FK>>
   *storyteller_id : number <<FK>>
   *tasks_id : number <<FK>>
 }
@@ -121,10 +121,11 @@ entity "stage_next_encounter" as e13 {
   *next_encounter_id : number <<FK>>
 }
 
-entity "stage_storyteller_notes" as e14 {
+entity "stage_encounter_activities" as e14 {
   *id : number <<generated>>
   --
   *stage_id : number <<FK>>
+  *encounters_id : number <<FK>>
 }
 
 entity "non_players" as e15 {
@@ -160,6 +161,12 @@ entity "initiative_participants" as e19 {
   *initiative_id : number <<FK>>
 }
 
+entity "stage_channel" as e20 {
+  *id : number <<generated>>
+  --
+  *stage_id : number <<FK>>
+}
+
 e01 ||..|{ e02
 e01 ||..|{ e04
 e01 ||..|{ e05
@@ -179,14 +186,14 @@ e11 ||..|| e05
 e11 ||..|| e08
 
 e10 ||..|{ e12
-e12 ||..|| e05
+e12 ||..|| e11
 e12 ||..|| e08
 e12 ||..|| e07
 
-e13 }|..|{ e05
 e13 ||..|| e10
 
 e14 ||..|| e10
+e14 }|..|| e11
 
 e15 ||..|| e10
 e15 ||..|| e08
@@ -199,6 +206,8 @@ e17 }|..|| e11
 
 e18 ||..|| e11
 e18 ||..|{ e19
+
+e10 ||..|| e20
 
 @enduml
 ```

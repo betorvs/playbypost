@@ -1,13 +1,19 @@
+type Participant = {
+  id: number;
+  name: string;
+}
+
 type Encounter = {
   id: number;
   title: string;
   story_id: number;
   announcement: string;
   notes: string;
-  phase: string;
-  finished: boolean;
-  reward: string;
-  xp: number;
+  text: number;
+  storyteller_id: number;
+  writer_id: number;
+  pc: Participant[];
+  npc: Participant[]
 };
 
 export default Encounter;

@@ -2,36 +2,45 @@ package parser
 
 import (
 	"errors"
-	"fmt"
+	"strconv"
 	"strings"
-
-	"github.com/betorvs/playbypost/core/types"
 )
 
-type PlayerAction struct {
-	Act    types.Actions
-	Text   string
-	NotAct string
+type CommandAction struct {
+	ID   int
+	Act  string
+	Text string
 }
 
-func TextToCommand(s string) (PlayerAction, error) {
-	player := PlayerAction{
+func TextToCommand(s string) (CommandAction, error) {
+	player := CommandAction{
 		Text: s,
 	}
 	if s != "" {
-		p := strings.Split(s, " ")
+		p := strings.Split(s, ";")
 		length := len(p)
-		var command string
+		// var command string
 		if length > 0 {
-			for i := 0; i < length; i++ {
-				command = fmt.Sprintf("%s%s ", command, p[i])
-				opt, err := types.ActAtoi(strings.TrimSpace(command))
-				if err == nil {
-					player.Act = opt
-					player.NotAct = strings.Join(p[i+1:], " ")
-					break
+			player.Act = p[1]
+			if strings.Contains(p[1], ":") {
+				cmds := strings.Split(p[1], ":")
+				if len(cmds) > 1 {
+					id, err := strconv.Atoi(cmds[1])
+					if err == nil {
+						player.ID = id
+					}
+					player.Act = cmds[0]
 				}
 			}
+			// for i := 0; i < length; i++ {
+			// 	command = fmt.Sprintf("%s%s ", command, p[i])
+			// 	opt, err := types.ActAtoi(strings.TrimSpace(command))
+			// 	if err == nil {
+			// 		player.Act = opt
+			// 		player.NotAct = strings.Join(p[i+1:], " ")
+			// 		break
+			// 	}
+			// }
 		}
 		// var firstCommand, secondCommand, thirdCommand string
 		// switch {
@@ -55,12 +64,26 @@ func TextToCommand(s string) (PlayerAction, error) {
 		// 	}
 		// }
 		// // fmt.Println("command", firstCommand, secondCommand, thirdCommand)
-		if player.Act == types.NoAction {
-			return player, errors.New("invalid")
-		}
 		return player, nil
 	}
 	return player, errors.New("text cannot be empty")
+}
+
+func TextToTaskID(s string) (int, error) {
+	if s != "" {
+		p := strings.Split(s, ";")
+		length := len(p)
+		if length > 1 {
+			text := strings.Split(p[1], ":")
+			if len(text) > 1 {
+				id, err := strconv.Atoi(text[1])
+				if err == nil {
+					return id, nil
+				}
+			}
+		}
+	}
+	return 0, errors.New("text cannot be empty")
 }
 
 // func notAct(start int, words []string) string {

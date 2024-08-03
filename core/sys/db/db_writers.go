@@ -6,7 +6,7 @@ import (
 	"github.com/betorvs/playbypost/core/sys/web/types"
 )
 
-func (db *DBX) CreateStorytellers(ctx context.Context, username, password string) (int, error) {
+func (db *DBX) CreateWriters(ctx context.Context, username, password string) (int, error) {
 	query := "INSERT INTO writers(username, password) VALUES($1, $2) RETURNING id"
 	stmt, err := db.Conn.PrepareContext(ctx, query)
 	if err != nil {
@@ -23,12 +23,12 @@ func (db *DBX) CreateStorytellers(ctx context.Context, username, password string
 	return res, nil
 }
 
-func (db *DBX) GetStorytellers(ctx context.Context, active bool) ([]types.Storyteller, error) {
+func (db *DBX) GetWriters(ctx context.Context, active bool) ([]types.Writer, error) {
 	query := "SELECT id, username FROM writers"
 	if active {
 		query = "SELECT id, username FROM writers WHERE active = true"
 	}
-	users := []types.Storyteller{}
+	users := []types.Writer{}
 	rows, err := db.Conn.QueryContext(ctx, query)
 	if err != nil {
 		db.logger.Error("query on writers failed", "error", err.Error())
@@ -36,7 +36,7 @@ func (db *DBX) GetStorytellers(ctx context.Context, active bool) ([]types.Storyt
 	}
 	defer rows.Close()
 	for rows.Next() {
-		var user types.Storyteller
+		var user types.Writer
 		if err := rows.Scan(&user.ID, &user.Username); err != nil {
 			db.logger.Error("scan error on writers", "error", err.Error())
 		}
@@ -49,8 +49,8 @@ func (db *DBX) GetStorytellers(ctx context.Context, active bool) ([]types.Storyt
 	return users, nil
 }
 
-func (db *DBX) GetStorytellerByID(ctx context.Context, id int) (types.Storyteller, error) {
-	user := types.Storyteller{}
+func (db *DBX) GetWriterByID(ctx context.Context, id int) (types.Writer, error) {
+	user := types.Writer{}
 	keys := make(map[int]string)
 	rows, err := db.Conn.QueryContext(ctx, "SELECT w.id, w.username, k.story_id, k.encoding_key FROM writers AS w JOIN access_story_keys AS a ON w.id = a.writer_id JOIN story_keys AS k ON a.story_keys_id = k.id WHERE w.id = $1", id)
 	if err != nil {
@@ -59,7 +59,7 @@ func (db *DBX) GetStorytellerByID(ctx context.Context, id int) (types.Storytelle
 	}
 	defer rows.Close()
 	for rows.Next() {
-		// var user types.Storyteller
+		// var user types.Writer
 		var key string
 		var keyID int
 		if err := rows.Scan(&user.ID, &user.Username, &keyID, &key); err != nil {
@@ -79,8 +79,8 @@ func (db *DBX) GetStorytellerByID(ctx context.Context, id int) (types.Storytelle
 	return user, nil
 }
 
-func (db *DBX) GetStorytellerByUsername(ctx context.Context, username string) (types.Storyteller, error) {
-	user := types.Storyteller{}
+func (db *DBX) GetWriterByUsername(ctx context.Context, username string) (types.Writer, error) {
+	user := types.Writer{}
 	rows, err := db.Conn.QueryContext(ctx, "SELECT id, username, password FROM writers WHERE username = $1", username)
 	if err != nil {
 		db.logger.Error("query on writers by username failed", "error", err.Error())
@@ -88,7 +88,7 @@ func (db *DBX) GetStorytellerByUsername(ctx context.Context, username string) (t
 	}
 	defer rows.Close()
 	for rows.Next() {
-		// var user types.Storyteller
+		// var user types.Writer
 		if err := rows.Scan(&user.ID, &user.Username, &user.Password); err != nil {
 			db.logger.Error("scan error on writers by username", "error", err.Error())
 		}

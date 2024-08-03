@@ -1,18 +1,18 @@
 import { useEffect, useState } from "react";
-import UserCards from "./Cards/User";
-import UsersCard from "../types/UserCard";
 import FetchTasks from "../functions/Tasks";
+import Task from "../types/Task";
+import TaskCard from "./Cards/Task";
 
 const TasksList = () => {
-  const [users, setUser] = useState<UsersCard[]>([]);
+  const [tasks, setTask] = useState<Task[]>([]);
 
   useEffect(() => {
-    FetchTasks(setUser);
+    FetchTasks(setTask);
   }, []);
   return (
     <div className="row mb-2" key="1">
-      {users != null ? (
-        users.map((user, index) => <UserCards user={user} key={index} />)
+      {tasks != null ? (
+        tasks.map((task, index) => <TaskCard task={task} key={index} />)
       ) : (
         <p>no tasks found</p>
       )}

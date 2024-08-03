@@ -15,6 +15,19 @@ import StoryPlayers from "./pages/StoryPlayers";
 import StoryDetail from "./pages/StoryDetail";
 import NewStory from "./pages/NewStory";
 import NewEncounter from "./pages/NewEncounter";
+import TasksPage from "./pages/Tasks";
+import StagesPage from "./pages/Stages";
+import StageDetail from "./pages/StageDetail";
+import NewTask from "./pages/NewTask";
+import UserAsStoryteller from "./pages/UserAsStoryteller";
+import UserAsPlayer from "./pages/UserAsPlayer";
+import PlayersPage from "./pages/Players";
+import StageStart from "./pages/StageStart";
+import EncounterToStage from "./pages/EncounterToStage";
+import StageEncounterDetail from "./pages/StageEncounterDetail";
+import AddPlayerToStageEncounter from "./pages/AddPlayersToStageEncounter";
+import TaskToEncounter from "./pages/TaskToEncounter";
+import NextEncounter from "./pages/NextEncounter";
 
 const PrivateRoutes = () => {
   const { authenticated } = useContext(AuthContext);
@@ -58,8 +71,27 @@ const Routes = () => {
           <Route path="/stories/:id" element={<StoryDetail />} />
           <Route path="/stories/players/:id" element={<StoryPlayers />} />
           <Route path="/stories/encounter/new/:id" element={<NewEncounter />} />
+          <Route path="/stories/:story_id/encounter/:enc_id" element={<EncounterToStage />} />
         </Route>
-        <Route path="/users" element={<UsersPage />} />
+        <Route path="/tasks">
+          <Route path="/tasks" element={<TasksPage />} />
+          <Route path="/tasks/new" element={<NewTask />} />
+        </Route>
+        <Route path="/stages"  >
+          <Route path="/stages" element={<StagesPage />} />
+          <Route path="/stages/:id/story/:story" element={<StageDetail />} />
+          <Route path="/stages/:id/story/:story/players" element={<PlayersPage />} />
+          <Route path="/stages/:id/story/:story/encounter/:encounterid" element={<StageEncounterDetail />} />
+          <Route path="/stages/:id/story/:story/encounter/:encounterid/players" element={<AddPlayerToStageEncounter />} />
+          <Route path="/stages/:id/story/:story/encounter/:encounterid/task/:storyteller_id" element={<TaskToEncounter />} />
+          <Route path="/stages/:id/story/:story/encounter/:encounterid/encounter" element={<NextEncounter />} />
+          <Route path="/stages/start/:id" element={<StageStart />} />
+        </Route>
+        <Route path="/users"  >
+          <Route path="/users" element={<UsersPage />} />
+          <Route path="/users/:id" element={<UserAsStoryteller />} />
+          <Route path="/users/player/:id" element={<UserAsPlayer />} />
+        </Route>
         <Route path="*" element={<NoMatch />} />
       </Route>
     </Router>

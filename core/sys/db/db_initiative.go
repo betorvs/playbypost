@@ -31,7 +31,7 @@ func (db *DBX) SaveInitiativeTx(ctx context.Context, i initiative.Initiative, en
 	// Defer a rollback in case anything fails.
 	defer tx.Rollback()
 
-	query := "INSERT INTO initiative(title, encounters_id, next_player) VALUES($1, $2, $3) RETURNING id"
+	query := "INSERT INTO initiative(title, stage_encounters_id, next_player) VALUES($1, $2, $3) RETURNING id"
 	stmt, err := db.Conn.PrepareContext(ctx, query)
 	if err != nil {
 		db.logger.Error("tx prepare on initiative failed", "error", err.Error())
@@ -88,7 +88,7 @@ func (db *DBX) SaveInitiative(ctx context.Context, i initiative.Initiative, enco
 }
 
 func (db *DBX) publishInitiative(ctx context.Context, title string, next, encounterID int) (int, error) {
-	query := "INSERT INTO initiative(title, encounters_id, next_player) VALUES($1, $2, $3) RETURNING id"
+	query := "INSERT INTO initiative(title, stage_encounters_id, next_player) VALUES($1, $2, $3) RETURNING id"
 	stmt, err := db.Conn.PrepareContext(ctx, query)
 	if err != nil {
 		fmt.Println(err)
@@ -118,11 +118,11 @@ func (db *DBX) addParticipants(ctx context.Context, id int, name string, bonus, 
 	return res, nil
 }
 
-// get by story id
-func (db *DBX) GetRunningInitiativeByStoryID(ctx context.Context, storyID int) (initiative.Initiative, int, error) {
+// get by stage id
+func (db *DBX) GetRunningInitiativeByStageID(ctx context.Context, stageID int) (initiative.Initiative, int, error) {
 	initiativeID := -1
 	obj := initiative.Initiative{}
-	rows, err := db.Conn.QueryContext(ctx, "SELECT i.id, i.title, i.next_player, p.participant_name, p.participant_result FROM initiative AS i JOIN initiative_participants AS p ON i.id = p.initiative_id JOIN encounters AS e ON e.id = i.encounters_id WHERE p.active = TRUE AND e.phase = 2 AND e.story_id = $1", storyID)
+	rows, err := db.Conn.QueryContext(ctx, "SELECT i.id, i.title, i.next_player, p.participant_name, p.participant_result FROM initiative AS i JOIN initiative_participants AS p ON i.id = p.initiative_id JOIN stage_encounters AS se ON se.id = i.stage_encounters_id WHERE p.active = TRUE AND se.phase = 2 AND se.stage_id = $1", stageID)
 	if err != nil {
 		db.logger.Error("query on users failed", "error", err.Error())
 		return obj, initiativeID, err
@@ -154,7 +154,7 @@ func (db *DBX) GetRunningInitiativeByStoryID(ctx context.Context, storyID int) (
 func (db *DBX) GetRunningInitiativeByEncounterID(ctx context.Context, encounterID int) (initiative.Initiative, int, error) {
 	initiativeID := -1
 	obj := initiative.Initiative{}
-	rows, err := db.Conn.QueryContext(ctx, "SELECT i.id, i.title, i.next_player, p.participant_name, p.participant_result FROM initiative AS i JOIN initiative_participants AS p ON i.id = p.initiative_id JOIN encounters AS e ON e.id = i.encounters_id WHERE p.active = TRUE AND e.phase = 2 AND e.id = $1", encounterID)
+	rows, err := db.Conn.QueryContext(ctx, "SELECT i.id, i.title, i.next_player, p.participant_name, p.participant_result FROM initiative AS i JOIN initiative_participants AS p ON i.id = p.initiative_id JOIN stage_encounters AS se ON se.id = i.stage_encounters_id WHERE p.active = TRUE AND se.phase = 2 AND se.id = $1", encounterID)
 	if err != nil {
 		db.logger.Error("query on users failed", "error", err.Error())
 		return obj, initiativeID, err

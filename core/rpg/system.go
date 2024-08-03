@@ -255,28 +255,48 @@ type Roll struct {
 	RPGSystem *RPGSystem
 }
 
+type DiceRoll struct {
+	RequestedBy string
+	Description string
+	Result      int
+	Rolled      string
+}
+
 // FreeRoll func returns a int value, a string text and error
-func (r Roll) FreeRoll(name, text string) (int, string, error) {
+func (r Roll) FreeRoll(name, text string) (DiceRoll, error) {
+	res := DiceRoll{}
+	res.RequestedBy = name
 	diceRolled, _, err := dice.Roll(text)
 	if err != nil {
-		return 0, "No dices to roll", err
+		res.Result = 0
+		res.Description = "No dices to roll"
+		return res, err
 	} else {
-		message := fmt.Sprintf("%s rolled %s and result %v with rolls %s", name, diceRolled.Description(), diceRolled.Int(), diceRolled.String())
-		return diceRolled.Int(), message, nil
+		// message := fmt.Sprintf("%s rolled %s and result %v with rolls %s", name, diceRolled.Description(), diceRolled.Int(), diceRolled.String())
+		res.Result = diceRolled.Int()
+		res.Description = diceRolled.Description()
+		res.Rolled = diceRolled.String()
+		return res, nil
 	}
 }
 
-func (r Roll) Check(name string) (int, string, error) {
+func (r Roll) Check(name string) (DiceRoll, error) {
+	res := DiceRoll{}
 	diceRolled, _, err := dice.Roll(r.RPGSystem.BaseDice)
 	if err != nil {
-		return 0, "No dices to roll", err
+		res.Result = 0
+		res.Description = "No dices to roll"
+		return res, err
 	} else {
-		message := fmt.Sprintf("%s rolled %s and result %v with rolls %s", name, diceRolled.Description(), diceRolled.Int(), diceRolled.String())
-		return diceRolled.Int(), message, nil
+		// message := fmt.Sprintf("%s rolled %s and result %v with rolls %s", name, diceRolled.Description(), diceRolled.Int(), diceRolled.String())
+		res.Result = diceRolled.Int()
+		res.Description = diceRolled.Description()
+		res.Rolled = diceRolled.String()
+		return res, nil
 	}
 }
 
-func (r Roll) Dice(m, target int) string {
+func (r Roll) FormatDice(m, target int) string {
 	dices := 1
 	if m > 0 {
 		dices = m

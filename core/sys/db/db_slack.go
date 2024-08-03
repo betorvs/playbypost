@@ -2,6 +2,7 @@ package db
 
 import (
 	"context"
+	"slices"
 
 	"github.com/betorvs/playbypost/core/sys/web/types"
 )
@@ -25,6 +26,7 @@ func (db *DBX) AddSlackInformation(ctx context.Context, username, userid, channe
 
 func (db *DBX) GetSlackInformation(ctx context.Context) ([]types.SlackInfo, error) {
 	info := []types.SlackInfo{}
+	infoMap := make(map[string]types.SlackInfo)
 	query := "SELECT id, userid, username, channel FROM slack_information"
 	rows, err := db.Conn.QueryContext(ctx, query)
 	if err != nil {
@@ -37,11 +39,50 @@ func (db *DBX) GetSlackInformation(ctx context.Context) ([]types.SlackInfo, erro
 		if err := rows.Scan(&s.ID, &s.UserID, &s.Username, &s.Channel); err != nil {
 			db.logger.Error("scan error on slack_information", "error", err.Error())
 		}
-		info = append(info, s)
+		if v, ok := infoMap[s.UserID]; ok {
+			db.logger.Info("ok map", "values", v)
+			if infoMap[s.UserID].Channel != s.Channel {
+				// infoMap[s.UserID].Channel = infoMap[s.UserID].Channel + ", " + s.Channel
+				s.Channel += ", " + infoMap[s.UserID].Channel
+			}
+			if infoMap[s.UserID].Username != s.Username {
+				s.Username += ", " + infoMap[s.UserID].Username
+			}
+		}
+		infoMap[s.UserID] = s
+		// info = append(info, s)
 	}
 	// Check for errors from iterating over rows.
 	if err := rows.Err(); err != nil {
 		db.logger.Error("rows err on slack_information", "error", err.Error())
+	}
+	for _, v := range infoMap {
+		info = append(info, v)
+	}
+	return info, nil
+}
+
+func (db *DBX) GetSlackChannelInformation(ctx context.Context) ([]string, error) {
+	info := []string{}
+	query := "SELECT channel FROM slack_information"
+	rows, err := db.Conn.QueryContext(ctx, query)
+	if err != nil {
+		db.logger.Error("query on slack_information.channel failed", "error", err.Error())
+		return info, err
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var s string
+		if err := rows.Scan(&s); err != nil {
+			db.logger.Error("scan error on slack_information.channel", "error", err.Error())
+		}
+		if !slices.Contains(info, s) {
+			info = append(info, s)
+		}
+	}
+	// Check for errors from iterating over rows.
+	if err := rows.Err(); err != nil {
+		db.logger.Error("rows err on slack_information.channel", "error", err.Error())
 	}
 	return info, nil
 }

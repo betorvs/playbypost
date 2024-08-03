@@ -11,24 +11,24 @@ const (
 )
 
 func (c *Cli) GetStory() ([]types.Story, error) {
-	var users []types.Story
+	var s []types.Story
 	body, err := c.getGeneric(story)
 	if err != nil {
-		return users, err
+		return s, err
 	}
-	err = json.Unmarshal(body, &users)
+	err = json.Unmarshal(body, &s)
 	if err != nil {
-		return users, err
+		return s, err
 	}
-	return users, nil
+	return s, nil
 }
 
-func (c *Cli) CreateStory(title, announcement, notes string, storytellerID int) ([]byte, error) {
+func (c *Cli) CreateStory(title, announcement, notes string, writerID int) ([]byte, error) {
 	s := types.Story{
-		Title:         title,
-		Announcement:  announcement,
-		Notes:         notes,
-		StorytellerID: storytellerID,
+		Title:        title,
+		Announcement: announcement,
+		Notes:        notes,
+		WriterID:     writerID,
 	}
 	body, err := json.Marshal(s)
 	if err != nil {

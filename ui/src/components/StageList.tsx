@@ -1,24 +1,22 @@
 import { useState, useEffect } from "react";
-import StoryCards from "./Cards/Story";
-import Story from "../types/Story";
-import GetUserID from "../context/GetUserID";
-import { FetchStoriesByUserID } from "../functions/Stories";
+import StageCards from "./Cards/Stage";
+import FetchStages from "../functions/Stages";
+import Stage from "../types/Stage";
 
 const StageList = () => {
-  const [stories, setStory] = useState<Story[]>([]);
-  const userID = GetUserID();
+  const [stages, setStage] = useState<Stage[]>([]);
+
   useEffect(() => {
-    FetchStoriesByUserID(userID, setStory);
+    FetchStages(setStage);
   }, []);
   return (
     <div className="container mt-3" key="2">
-      {stories != null ? (
-        stories.map((story) => (
-          <StoryCards
-            key={story.id}
-            ID={story.id}
-            story={story}
-            LinkText="Details"
+      {stages != null ? (
+        stages.map((stage) => (
+          <StageCards
+            key={stage.id}
+            ID={stage.id}
+            stage={stage}
           />
         ))
       ) : (

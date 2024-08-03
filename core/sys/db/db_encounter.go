@@ -6,9 +6,9 @@ import (
 	"github.com/betorvs/playbypost/core/sys/web/types"
 )
 
-func (db *DBX) GetEncounters(ctx context.Context) ([]types.Encounters, error) {
-	list := []types.Encounters{}
-	query := "SELECT id, title, notes, announcement, story_id, storyteller_id FROM encounters"
+func (db *DBX) GetEncounters(ctx context.Context) ([]types.Encounter, error) {
+	list := []types.Encounter{}
+	query := "SELECT id, title, notes, announcement, story_id, writer_id FROM encounters"
 	rows, err := db.Conn.QueryContext(ctx, query)
 	if err != nil {
 		db.logger.Error("query on encounters failed", "error", err.Error())
@@ -16,10 +16,10 @@ func (db *DBX) GetEncounters(ctx context.Context) ([]types.Encounters, error) {
 	}
 	defer rows.Close()
 	for rows.Next() {
-		var s types.Encounters
+		var s types.Encounter
 		// var i int
 		// var reward sql.NullString
-		if err := rows.Scan(&s.ID, &s.Title, &s.Notes, &s.Announcement, &s.StoryID, &s.StorytellerID); err != nil {
+		if err := rows.Scan(&s.ID, &s.Title, &s.Notes, &s.Announcement, &s.StoryID, &s.WriterID); err != nil {
 			db.logger.Error("scan error on encounters", "error", err.Error())
 		}
 		// if reward.Valid {
@@ -35,9 +35,9 @@ func (db *DBX) GetEncounters(ctx context.Context) ([]types.Encounters, error) {
 	return list, nil
 }
 
-func (db *DBX) GetEncounterByStoryID(ctx context.Context, storyID int) ([]types.Encounters, error) {
-	var encounters []types.Encounters
-	rows, err := db.Conn.QueryContext(ctx, "SELECT id, title, notes, announcement, storyteller_id FROM encounters WHERE story_id = $1", storyID)
+func (db *DBX) GetEncounterByStoryID(ctx context.Context, storyID int) ([]types.Encounter, error) {
+	var encounters []types.Encounter
+	rows, err := db.Conn.QueryContext(ctx, "SELECT id, title, notes, announcement, story_id, writer_id FROM encounters WHERE story_id = $1", storyID)
 	if err != nil {
 		db.logger.Error("query on encounters by id failed", "error", err.Error())
 		return encounters, err
@@ -45,9 +45,9 @@ func (db *DBX) GetEncounterByStoryID(ctx context.Context, storyID int) ([]types.
 	defer rows.Close()
 	for rows.Next() {
 		// var i int
-		var enc types.Encounters
+		var enc types.Encounter
 		// var reward sql.NullString
-		if err := rows.Scan(&enc.ID, &enc.Title, &enc.Notes, &enc.Announcement, &enc.StorytellerID); err != nil {
+		if err := rows.Scan(&enc.ID, &enc.Title, &enc.Notes, &enc.Announcement, &enc.StoryID, &enc.WriterID); err != nil {
 			db.logger.Error("scan error on encounters by id", "error", err.Error())
 		}
 		// if reward.Valid {
@@ -63,9 +63,9 @@ func (db *DBX) GetEncounterByStoryID(ctx context.Context, storyID int) ([]types.
 	return encounters, nil
 }
 
-func (db *DBX) GetEncounterByID(ctx context.Context, id int) (types.Encounters, error) {
-	var enc types.Encounters
-	rows, err := db.Conn.QueryContext(ctx, "SELECT id, title, announcement, notes, storyteller_id FROM encounters WHERE id = $1", id)
+func (db *DBX) GetEncounterByID(ctx context.Context, id int) (types.Encounter, error) {
+	var enc types.Encounter
+	rows, err := db.Conn.QueryContext(ctx, "SELECT id, title, announcement, notes, writer_id FROM encounters WHERE id = $1", id)
 	if err != nil {
 		db.logger.Error("query on encounters by id failed", "error", err.Error())
 		return enc, err
@@ -74,7 +74,7 @@ func (db *DBX) GetEncounterByID(ctx context.Context, id int) (types.Encounters, 
 	for rows.Next() {
 		// var i int
 		// var reward sql.NullString
-		if err := rows.Scan(&enc.ID, &enc.Title, &enc.Announcement, &enc.Notes, &enc.StorytellerID); err != nil {
+		if err := rows.Scan(&enc.ID, &enc.Title, &enc.Announcement, &enc.Notes, &enc.WriterID); err != nil {
 			db.logger.Error("scan error on encounters by id", "error", err.Error())
 		}
 		// if reward.Valid {
@@ -90,7 +90,7 @@ func (db *DBX) GetEncounterByID(ctx context.Context, id int) (types.Encounters, 
 }
 
 func (db *DBX) CreateEncounter(ctx context.Context, title, announcement, notes string, storyID, storytellerID int) (int, error) {
-	query := "INSERT INTO encounters(title, announcement, notes, story_id, storyteller_id) VALUES($1, $2, $3, $4, $5) RETURNING id"
+	query := "INSERT INTO encounters(title, announcement, notes, story_id, writer_id) VALUES($1, $2, $3, $4, $5) RETURNING id"
 	stmt, err := db.Conn.PrepareContext(ctx, query)
 	if err != nil {
 		db.logger.Error("prepare insert into encounters failed", "error", err.Error())
@@ -104,58 +104,4 @@ func (db *DBX) CreateEncounter(ctx context.Context, title, announcement, notes s
 		return -1, err
 	}
 	return res, nil
-}
-
-// func (db *DBX) UpdatePhase(ctx context.Context, id, phase int) error {
-// 	finished := false
-// 	if phase == 3 {
-// 		finished = true
-// 	}
-// 	a, err := db.Conn.ExecContext(ctx, "UPDATE encounters SET phase = $1, finished = $2 WHERE id = $3", phase, finished, id)
-// 	if err != nil {
-// 		db.logger.Error("update encounters failed", "error", err.Error())
-// 		return err
-// 	}
-// 	r, err := a.RowsAffected()
-// 	db.logger.Info("sql Rows Affected", "result", r)
-// 	if r > 0 {
-// 		return nil
-// 	}
-// 	return err
-// }
-
-func (db *DBX) AddParticipants(ctx context.Context, encounterID int, npc bool, players []int) error {
-
-	query := "INSERT INTO encounters_participants_players (players_id, encounters_id) VALUES ($1, $2)"
-	if npc {
-		query = "INSERT INTO encounters_participants_non_players (non_players_id, encounters_id) VALUES ($1, $2)"
-	}
-	tx, err := db.Conn.BeginTx(ctx, nil)
-	if err != nil {
-		return err
-	}
-	// Defer a rollback in case anything fails.
-	defer tx.Rollback()
-
-	for _, id := range players {
-		_, err = tx.ExecContext(ctx, query, id, encounterID)
-		if err != nil {
-			return err
-		}
-	}
-	// Commit the transaction.
-	if err = tx.Commit(); err != nil {
-		return err
-	}
-	// a, err := db.Conn.ExecContext(ctx, query, id, encounterID)
-	// if err != nil {
-	// 	db.logger.Error("add participants to encounter failed", "error", err.Error())
-	// 	return err
-	// }
-	// r, err := a.RowsAffected()
-	// db.logger.Info("add participant sql rows affected", "result", r)
-	// if r > 0 {
-	// 	return nil
-	// }
-	return err
 }

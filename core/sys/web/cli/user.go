@@ -10,8 +10,8 @@ const (
 	storyteller string = "storyteller"
 )
 
-func (c *Cli) GetStoryteller() ([]types.Storyteller, error) {
-	var storytellers []types.Storyteller
+func (c *Cli) GetStoryteller() ([]types.Writer, error) {
+	var storytellers []types.Writer
 	body, err := c.getGeneric(storyteller)
 	if err != nil {
 		return storytellers, err
@@ -24,7 +24,7 @@ func (c *Cli) GetStoryteller() ([]types.Storyteller, error) {
 }
 
 func (c *Cli) CreateStoryteller(username, password string) ([]byte, error) {
-	u := types.Storyteller{
+	u := types.Writer{
 		Username: username,
 		Password: password,
 	}

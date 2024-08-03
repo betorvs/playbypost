@@ -1,10 +1,12 @@
 import Encounter from "../../types/Encounter";
+import NavigateButton from "../Button/NavigateButton";
 
 interface props {
   encounter: Encounter;
+  disable_footer: boolean;
 }
 
-const EncounterCards = ({ encounter }: props) => {
+const EncounterCards = ({ encounter, disable_footer }: props) => {
   return (
     <>
       <div className="col-md-6">
@@ -18,6 +20,11 @@ const EncounterCards = ({ encounter }: props) => {
             {/* <a href="#" className="btn btn-primary">
               Go somewhere
             </a> */}
+          </div>
+          <div className="card-footer text-body-secondary" hidden={disable_footer} >
+          <NavigateButton link={`/stories/${encounter.story_id}/encounter/${encounter.id}`} variant="primary">
+            Add to Stage
+          </NavigateButton>{" "}
           </div>
         </div>
       </div>

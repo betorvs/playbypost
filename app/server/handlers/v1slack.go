@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	"github.com/betorvs/playbypost/core/sys/web/types"
@@ -38,15 +39,41 @@ func (a MainApi) AddSlackInfo(w http.ResponseWriter, r *http.Request) {
 	a.s.JSON(w, types.Msg{Msg: "added"})
 }
 
-func (a MainApi) GetUsersCard(w http.ResponseWriter, r *http.Request) {
+func (a MainApi) GetUsersInformation(w http.ResponseWriter, r *http.Request) {
 	// if a.checkAuth(r) {
 	// 	a.s.ErrJSON(w, http.StatusForbidden, "required authentication headers")
 	// 	return
 	// }
 	obj, err := a.db.GetSlackInformation(a.ctx)
 	if err != nil {
-		a.s.ErrJSON(w, http.StatusBadRequest, "slack information database issue")
+		a.s.ErrJSON(w, http.StatusBadRequest, "slack information for users database issue")
 		return
 	}
+	a.s.JSON(w, obj)
+}
+
+func (a MainApi) GetChannelsInformation(w http.ResponseWriter, r *http.Request) {
+	// if a.checkAuth(r) {
+	// 	a.s.ErrJSON(w, http.StatusForbidden, "required authentication headers")
+	// 	return
+	// }
+	obj, err := a.db.GetSlackChannelInformation(a.ctx)
+	if err != nil {
+		a.s.ErrJSON(w, http.StatusBadRequest, "slack information for channel database issue")
+		return
+	}
+	a.s.JSON(w, obj)
+}
+
+func (a MainApi) GetEncountersPhase(w http.ResponseWriter, r *http.Request) {
+	// if a.checkAuth(r) {
+	// 	a.s.ErrJSON(w, http.StatusForbidden, "required authentication headers")
+	// 	return
+	// }
+	det := make(map[string]string)
+	for i := 0; i <= int(types.Finished); i++ {
+		det[fmt.Sprintf("%d", i)] = types.PhaseAtoi(i).String()
+	}
+	obj := types.Composed{Msg: "Encounter Phases", Details: det}
 	a.s.JSON(w, obj)
 }

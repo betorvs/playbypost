@@ -31,41 +31,41 @@ func (c *Creature) AbilityCheck(d *rpg.Roll, check Check) (Result, error) {
 	}
 	switch c.RPG.SuccessRule {
 	case rpg.GreaterThan:
-		result, res, err := d.Check("check abiliy")
+		result, err := d.Check("check abiliy")
 		if err != nil {
 			return response, err
 		}
 		bonus := c.calcAbilityModifier(check.Ability)
-		c.RPG.Logger.Info("dice result", "result", result+bonus, "rolled", res)
-		response.Success = result+bonus >= check.Target
-		if result == 20 {
+		c.RPG.Logger.Info("dice result", "result", result.Result+bonus, "rolled", result.Rolled)
+		response.Success = result.Result+bonus >= check.Target
+		if result.Result == 20 {
 			c.RPG.Logger.Info("20 natural roll")
 			response.Success = true
 		}
-		response.Text = res
-		response.Result = result + bonus
+		response.Description = result.Description
+		response.Result = result.Result + bonus
 
 	case rpg.CountResults:
-		calcDices := d.Dice(c.Abilities[check.Ability].Value, 0)
-		result, res, err := d.FreeRoll("check abiliy", calcDices)
+		calcDices := d.FormatDice(c.Abilities[check.Ability].Value, 0)
+		result, err := d.FreeRoll("check abiliy", calcDices)
 		if err != nil {
 			return response, err
 		}
-		c.RPG.Logger.Info("dice result", "result", result, "rolled", res)
-		response.Success = result >= check.Target
-		response.Text = res
-		response.Result = result
+		c.RPG.Logger.Info("dice result", "result", result, "rolled", result.Description)
+		response.Success = result.Result >= check.Target
+		response.Description = result.Description
+		response.Result = result.Result
 
 	case rpg.DifficultAndCount:
-		calcDices := d.Dice(c.Abilities[check.Ability].Value, check.Target)
-		result, res, err := d.FreeRoll("check abiliy", calcDices)
+		calcDices := d.FormatDice(c.Abilities[check.Ability].Value, check.Target)
+		result, err := d.FreeRoll("check abiliy", calcDices)
 		if err != nil {
 			return response, err
 		}
-		c.RPG.Logger.Info("dice result", "result", result, "rolled", res)
-		response.Success = result > check.Difficult
-		response.Text = res
-		response.Result = result
+		c.RPG.Logger.Info("dice result", "result", result.Result, "rolled", result.Description)
+		response.Success = result.Result > check.Difficult
+		response.Description = result.Description
+		response.Result = result.Result
 	}
 	return response, nil
 }

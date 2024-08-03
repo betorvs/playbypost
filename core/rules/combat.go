@@ -63,7 +63,7 @@ func (a *Attack) singleMeleeAttack() {
 		a.Logger.Info("d20 single melee attack call")
 		// level bonus + str against AC
 		// damage require rolls : dependency weapon dices + bonus
-		result, res, _ := a.Dice.Check("attack roll")
+		result, _ := a.Dice.Check("attack roll")
 		// if err != nil {
 		// 	return
 		// }
@@ -73,19 +73,19 @@ func (a *Attack) singleMeleeAttack() {
 		// }
 		abilityBonus := a.Attacker.calcAbilityModifier(strenght)
 		weaponBonus, diceDamage, _ := a.Attacker.Extension.WeaponBonus(a.Weapon)
-		a.Logger.Info("dice result", "result", result+bonus+weaponBonus, "rolled", res)
+		a.Logger.Info("dice result", "result", result.Result+bonus+weaponBonus, "rolled", result.Rolled)
 		defensor, _ := a.Defensor.Extension.DefenseBonus("")
-		a.Response.Success = result+bonus+abilityBonus+weaponBonus >= defensor
-		if result == 20 {
+		a.Response.Success = result.Result+bonus+abilityBonus+weaponBonus >= defensor
+		if result.Result == 20 {
 			a.Logger.Info("20 natural roll")
 			a.Response.Success = true
 		}
-		a.Response.Text = fmt.Sprint("result", result+bonus+abilityBonus+weaponBonus, "rolled", res)
+		a.Response.Text = fmt.Sprint("result", result.Result+bonus+abilityBonus+weaponBonus, "rolled", result.Rolled)
 		if a.Response.Success {
-			damage, res, _ := a.Dice.FreeRoll("damage", diceDamage)
-			a.Response.Damage = damage + abilityBonus
-			a.Response.Text += fmt.Sprint("damage roll ", res)
-			a.Defensor.Extension.Damage(damage + abilityBonus)
+			damage, _ := a.Dice.FreeRoll("damage", diceDamage)
+			a.Response.Damage = damage.Result + abilityBonus
+			a.Response.Text += fmt.Sprint("damage roll ", result.Rolled)
+			a.Defensor.Extension.Damage(damage.Result + abilityBonus)
 			if a.Defensor.Extension.HealthStatus() <= 0 {
 				_ = a.Defensor.Destroy()
 			}
@@ -100,13 +100,13 @@ func (a *Attack) singleMeleeAttack() {
 		bonus := a.Attacker.calcSkillModifier(weaponry)
 		weaponBonus, _, _ := a.Attacker.Extension.WeaponBonus(a.Weapon)
 		defense, _ := a.Defensor.Extension.DefenseBonus("melee")
-		calcDices := a.Dice.Dice(abilityBonus+bonus+weaponBonus-defense, 0)
-		result, res, _ := a.Dice.FreeRoll("attack roll", calcDices)
-		a.Logger.Info("dice result", "result", abilityBonus+bonus+weaponBonus-defense, "rolled", res)
-		if result > 0 {
+		calcDices := a.Dice.FormatDice(abilityBonus+bonus+weaponBonus-defense, 0)
+		result, _ := a.Dice.FreeRoll("attack roll", calcDices)
+		a.Logger.Info("dice result", "result", abilityBonus+bonus+weaponBonus-defense, "rolled", result.Rolled)
+		if result.Result > 0 {
 			a.Response.Success = true
-			a.Response.Text = res
-			a.Defensor.Extension.Damage(result)
+			a.Response.Text = result.Rolled
+			a.Defensor.Extension.Damage(result.Result)
 			if a.Defensor.Extension.HealthStatus() <= 0 {
 				_ = a.Defensor.Destroy()
 			}
@@ -123,26 +123,26 @@ func (a *Attack) singleMeleeAttack() {
 		dexterity := "dexterity"
 		abilityBonus := a.Attacker.calcAbilityModifier(dexterity)
 		bonus := a.Attacker.calcSkillModifier(melee)
-		calcDices := a.Dice.Dice(abilityBonus+bonus, 6)
-		result, res, _ := a.Dice.FreeRoll("attack roll", calcDices)
+		calcDices := a.Dice.FormatDice(abilityBonus+bonus, 6)
+		result, _ := a.Dice.FreeRoll("attack roll", calcDices)
 
 		defenseAbilityBonus := a.Attacker.calcAbilityModifier(dexterity)
 		defensebonus := a.Attacker.calcSkillModifier(melee)
-		defenseCalcDices := a.Dice.Dice(defenseAbilityBonus+defensebonus, 6)
-		defenseResult, defenseRes, _ := a.Dice.FreeRoll("defense roll", defenseCalcDices)
-		a.Logger.Info("results", "round", a.Round, "attack_details", res, "defense_details", defenseRes)
+		defenseCalcDices := a.Dice.FormatDice(defenseAbilityBonus+defensebonus, 6)
+		defenseResult, _ := a.Dice.FreeRoll("defense roll", defenseCalcDices)
+		a.Logger.Info("results", "round", a.Round, "attack_details", result.Rolled, "defense_details", defenseResult.Rolled)
 
-		if result >= defenseResult {
+		if result.Result >= defenseResult.Result {
 			a.Response.Success = true
 			damageAbility := a.Attacker.calcAbilityModifier(strenght)
 			weaponBonus, _, _ := a.Attacker.Extension.WeaponBonus(a.Weapon)
-			calcDices := a.Dice.Dice(damageAbility+weaponBonus, 6)
-			damageResult, damageRes, _ := a.Dice.FreeRoll("damage roll", calcDices)
-			a.Response.Damage = damageResult
+			calcDices := a.Dice.FormatDice(damageAbility+weaponBonus, 6)
+			damageResult, _ := a.Dice.FreeRoll("damage roll", calcDices)
+			a.Response.Damage = damageResult.Result
 			if a.Defensor.Extension.HealthStatus() <= 0 {
 				_ = a.Defensor.Destroy()
 			}
-			a.Logger.Info("results", "round", a.Round, "damage_details", damageRes)
+			a.Logger.Info("results", "round", a.Round, "damage_details", damageResult.Rolled)
 		}
 	}
 }

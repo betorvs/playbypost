@@ -29,11 +29,11 @@ var storyCmd = &cobra.Command{
 				os.Exit(1)
 			}
 			for _, v := range u {
-				fmt.Printf("Story Title: %s, ID: %d, Master ID: %d, Announcement: \"%s\" \n", v.Title, v.ID, v.StorytellerID, v.Announcement)
+				fmt.Printf("Story Title: %s, ID: %d, Master ID: %d, Announcement: \"%s\" \n", v.Title, v.ID, v.WriterID, v.Announcement)
 			}
 
 		case "create":
-			body, err := app.Web.CreateStory(title, announcement, notes, masterID)
+			body, err := app.Web.CreateStory(title, announcement, notes, writerID)
 			if err != nil {
 				app.Logger.Error("story error", "error", err.Error())
 				os.Exit(1)
@@ -44,7 +44,7 @@ var storyCmd = &cobra.Command{
 				app.Logger.Error("json unmarsharl error", "error", err.Error())
 				os.Exit(1)
 			}
-			app.Logger.Info(msg.Msg, "title", title, "master_id", masterID)
+			app.Logger.Info(msg.Msg, "title", title, "master_id", writerID)
 		default:
 			app.Logger.Info("story command called")
 		}
@@ -66,5 +66,5 @@ func init() {
 	storyCmd.Flags().StringVarP(&title, "title", "t", "", " title to be used")
 	storyCmd.Flags().StringVarP(&announcement, "announcement", "a", "", "announcement when starting story")
 	storyCmd.Flags().StringVarP(&notes, "notes", "n", "-", " notes are internal notes about what it means and how to use it")
-	storyCmd.Flags().IntVar(&masterID, "master-id", 0, "master id equal user ID")
+	storyCmd.Flags().IntVar(&writerID, "writer-id", 0, "writer id equal user ID")
 }
