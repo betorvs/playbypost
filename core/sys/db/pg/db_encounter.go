@@ -1,4 +1,4 @@
-package db
+package pg
 
 import (
 	"context"
@@ -11,7 +11,7 @@ func (db *DBX) GetEncounters(ctx context.Context) ([]types.Encounter, error) {
 	query := "SELECT id, title, notes, announcement, story_id, writer_id FROM encounters"
 	rows, err := db.Conn.QueryContext(ctx, query)
 	if err != nil {
-		db.logger.Error("query on encounters failed", "error", err.Error())
+		db.Logger.Error("query on encounters failed", "error", err.Error())
 		return list, err
 	}
 	defer rows.Close()
@@ -20,7 +20,7 @@ func (db *DBX) GetEncounters(ctx context.Context) ([]types.Encounter, error) {
 		// var i int
 		// var reward sql.NullString
 		if err := rows.Scan(&s.ID, &s.Title, &s.Notes, &s.Announcement, &s.StoryID, &s.WriterID); err != nil {
-			db.logger.Error("scan error on encounters", "error", err.Error())
+			db.Logger.Error("scan error on encounters", "error", err.Error())
 		}
 		// if reward.Valid {
 		// 	s.Reward = reward.String
@@ -30,7 +30,7 @@ func (db *DBX) GetEncounters(ctx context.Context) ([]types.Encounter, error) {
 	}
 	// Check for errors from iterating over rows.
 	if err := rows.Err(); err != nil {
-		db.logger.Error("rows err on encounters", "error", err.Error())
+		db.Logger.Error("rows err on encounters", "error", err.Error())
 	}
 	return list, nil
 }
@@ -39,7 +39,7 @@ func (db *DBX) GetEncounterByStoryID(ctx context.Context, storyID int) ([]types.
 	var encounters []types.Encounter
 	rows, err := db.Conn.QueryContext(ctx, "SELECT id, title, notes, announcement, story_id, writer_id FROM encounters WHERE story_id = $1", storyID)
 	if err != nil {
-		db.logger.Error("query on encounters by id failed", "error", err.Error())
+		db.Logger.Error("query on encounters by id failed", "error", err.Error())
 		return encounters, err
 	}
 	defer rows.Close()
@@ -48,7 +48,7 @@ func (db *DBX) GetEncounterByStoryID(ctx context.Context, storyID int) ([]types.
 		var enc types.Encounter
 		// var reward sql.NullString
 		if err := rows.Scan(&enc.ID, &enc.Title, &enc.Notes, &enc.Announcement, &enc.StoryID, &enc.WriterID); err != nil {
-			db.logger.Error("scan error on encounters by id", "error", err.Error())
+			db.Logger.Error("scan error on encounters by id", "error", err.Error())
 		}
 		// if reward.Valid {
 		// 	enc.Reward = reward.String
@@ -58,7 +58,7 @@ func (db *DBX) GetEncounterByStoryID(ctx context.Context, storyID int) ([]types.
 	}
 	// Check for errors from iterating over rows.
 	if err := rows.Err(); err != nil {
-		db.logger.Error("rows error on encounters by id", "error", err.Error())
+		db.Logger.Error("rows error on encounters by id", "error", err.Error())
 	}
 	return encounters, nil
 }
@@ -67,7 +67,7 @@ func (db *DBX) GetEncounterByID(ctx context.Context, id int) (types.Encounter, e
 	var enc types.Encounter
 	rows, err := db.Conn.QueryContext(ctx, "SELECT id, title, announcement, notes, writer_id FROM encounters WHERE id = $1", id)
 	if err != nil {
-		db.logger.Error("query on encounters by id failed", "error", err.Error())
+		db.Logger.Error("query on encounters by id failed", "error", err.Error())
 		return enc, err
 	}
 	defer rows.Close()
@@ -75,7 +75,7 @@ func (db *DBX) GetEncounterByID(ctx context.Context, id int) (types.Encounter, e
 		// var i int
 		// var reward sql.NullString
 		if err := rows.Scan(&enc.ID, &enc.Title, &enc.Announcement, &enc.Notes, &enc.WriterID); err != nil {
-			db.logger.Error("scan error on encounters by id", "error", err.Error())
+			db.Logger.Error("scan error on encounters by id", "error", err.Error())
 		}
 		// if reward.Valid {
 		// 	enc.Reward = reward.String
@@ -84,7 +84,7 @@ func (db *DBX) GetEncounterByID(ctx context.Context, id int) (types.Encounter, e
 	}
 	// Check for errors from iterating over rows.
 	if err := rows.Err(); err != nil {
-		db.logger.Error("rows error on encounters by id", "error", err.Error())
+		db.Logger.Error("rows error on encounters by id", "error", err.Error())
 	}
 	return enc, nil
 }
@@ -93,14 +93,14 @@ func (db *DBX) CreateEncounter(ctx context.Context, title, announcement, notes s
 	query := "INSERT INTO encounters(title, announcement, notes, story_id, writer_id) VALUES($1, $2, $3, $4, $5) RETURNING id"
 	stmt, err := db.Conn.PrepareContext(ctx, query)
 	if err != nil {
-		db.logger.Error("prepare insert into encounters failed", "error", err.Error())
+		db.Logger.Error("prepare insert into encounters failed", "error", err.Error())
 		return -1, err
 	}
 	defer stmt.Close()
 	var res int
 	err = stmt.QueryRow(title, announcement, notes, storyID, storytellerID).Scan(&res)
 	if err != nil {
-		db.logger.Error("query row insert into encounters failed", "error", err.Error())
+		db.Logger.Error("query row insert into encounters failed", "error", err.Error())
 		return -1, err
 	}
 	return res, nil

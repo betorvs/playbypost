@@ -1,4 +1,4 @@
-package handlers
+package v1
 
 import (
 	"encoding/json"
@@ -12,7 +12,7 @@ import (
 )
 
 func (a MainApi) GeneratePlayer(w http.ResponseWriter, r *http.Request) {
-	if a.checkAuth(r) {
+	if a.Session.CheckAuth(r) {
 		a.s.ErrJSON(w, http.StatusForbidden, "required authentication headers")
 		return
 	}
@@ -81,7 +81,7 @@ func (a MainApi) GeneratePlayer(w http.ResponseWriter, r *http.Request) {
 }
 
 func (a MainApi) GetPlayersByStageID(w http.ResponseWriter, r *http.Request) {
-	if a.checkAuth(r) {
+	if a.Session.CheckAuth(r) {
 		a.s.ErrJSON(w, http.StatusForbidden, "required authentication headers")
 		return
 	}
@@ -126,7 +126,7 @@ func (a MainApi) GetPlayersByID(w http.ResponseWriter, r *http.Request) {
 }
 
 func (a MainApi) GetPlayers(w http.ResponseWriter, r *http.Request) {
-	if a.checkAuth(r) {
+	if a.Session.CheckAuth(r) {
 		a.s.ErrJSON(w, http.StatusForbidden, "required authentication headers")
 		return
 	}

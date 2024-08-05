@@ -1,4 +1,4 @@
-package handlers
+package v1
 
 import (
 	"encoding/json"
@@ -10,7 +10,7 @@ import (
 )
 
 func (a MainApi) GetWriters(w http.ResponseWriter, r *http.Request) {
-	if a.checkAuth(r) {
+	if a.Session.CheckAuth(r) {
 		a.s.ErrJSON(w, http.StatusForbidden, "required authentication headers")
 		return
 	}
@@ -23,7 +23,7 @@ func (a MainApi) GetWriters(w http.ResponseWriter, r *http.Request) {
 }
 
 func (a MainApi) CreateWriters(w http.ResponseWriter, r *http.Request) {
-	if a.checkAuth(r) {
+	if a.Session.CheckAuth(r) {
 		a.s.ErrJSON(w, http.StatusForbidden, "required authentication headers")
 		return
 	}

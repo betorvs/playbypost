@@ -1,4 +1,4 @@
-package db
+package pg
 
 import (
 	"context"
@@ -12,20 +12,20 @@ func (db *DBX) GetUser(ctx context.Context) ([]types.User, error) {
 	query := "SELECT id, userid, active FROM users"
 	rows, err := db.Conn.QueryContext(ctx, query)
 	if err != nil {
-		db.logger.Error("query on users failed", "error", err.Error())
+		db.Logger.Error("query on users failed", "error", err.Error())
 		return users, err
 	}
 	defer rows.Close()
 	for rows.Next() {
 		var u types.User
 		if err := rows.Scan(&u.ID, &u.UserID, &u.Active); err != nil {
-			db.logger.Error("scan error on users", "error", err.Error())
+			db.Logger.Error("scan error on users", "error", err.Error())
 		}
 		users = append(users, u)
 	}
 	// Check for errors from iterating over rows.
 	if err := rows.Err(); err != nil {
-		db.logger.Error("rows err on users", "error", err.Error())
+		db.Logger.Error("rows err on users", "error", err.Error())
 	}
 	return users, nil
 }
@@ -35,14 +35,14 @@ func (db *DBX) GetUserByUserID(ctx context.Context, id string) (types.User, erro
 	query := "SELECT id, userid, active FROM users WHERE userid = $1"
 	rows, err := db.Conn.QueryContext(ctx, query, id)
 	if err != nil {
-		db.logger.Error("query on users by userid failed", "error", err.Error())
+		db.Logger.Error("query on users by userid failed", "error", err.Error())
 		return user, err
 	}
 	defer rows.Close()
 	for rows.Next() {
 		var u types.User
 		if err := rows.Scan(&u.ID, &u.UserID, &u.Active); err != nil {
-			db.logger.Error("scan error on users by userid", "error", err.Error())
+			db.Logger.Error("scan error on users by userid", "error", err.Error())
 		}
 		if u.ID > 0 {
 			user = u
@@ -50,7 +50,7 @@ func (db *DBX) GetUserByUserID(ctx context.Context, id string) (types.User, erro
 	}
 	// Check for errors from iterating over rows.
 	if err := rows.Err(); err != nil {
-		db.logger.Error("rows err on users by userid", "error", err.Error())
+		db.Logger.Error("rows err on users by userid", "error", err.Error())
 	}
 	return user, nil
 }
@@ -59,7 +59,7 @@ func (db *DBX) CreateUserTx(ctx context.Context, userid string) (int, error) {
 	// TX
 	tx, err := db.Conn.BeginTx(ctx, nil)
 	if err != nil {
-		db.logger.Error("tx begin on CreateUserTx failed", "error", err.Error())
+		db.Logger.Error("tx begin on CreateUserTx failed", "error", err.Error())
 		return -1, err
 	}
 	// Defer a rollback in case anything fails.
@@ -68,14 +68,14 @@ func (db *DBX) CreateUserTx(ctx context.Context, userid string) (int, error) {
 	queryUser := "SELECT id FROM users WHERE userid = $1"
 	stmtQueryUser, err := db.Conn.PrepareContext(ctx, queryUser)
 	if err != nil {
-		db.logger.Error("tx prepare on queryUser failed", "error", err.Error())
+		db.Logger.Error("tx prepare on queryUser failed", "error", err.Error())
 		return -1, err
 	}
 	defer stmtQueryUser.Close()
 	var userID int
 	err = tx.StmtContext(ctx, stmtQueryUser).QueryRow(userid).Scan(&userID)
 	if err != nil {
-		db.logger.Info("user not found", "return", err.Error())
+		db.Logger.Info("user not found", "return", err.Error())
 		// just log this error
 		// return -1, err
 
@@ -83,14 +83,14 @@ func (db *DBX) CreateUserTx(ctx context.Context, userid string) (int, error) {
 	if userID == 0 {
 		id, err := db.createUser(ctx, userid, tx)
 		if err != nil {
-			db.logger.Error("insert into users failed", "error", err.Error())
+			db.Logger.Error("insert into users failed", "error", err.Error())
 			return -1, err
 		}
 		userID = id
 	}
 	// commit if everything is okay
 	if err = tx.Commit(); err != nil {
-		db.logger.Error("tx commit on CreateUserTx failed", "error", err.Error())
+		db.Logger.Error("tx commit on CreateUserTx failed", "error", err.Error())
 		return -1, err
 	}
 	return userID, nil
@@ -102,13 +102,13 @@ func (db *DBX) createUser(ctx context.Context, userid string, tx *sql.Tx) (int, 
 	queryInsertUser := "INSERT INTO users(userid) VALUES($1) RETURNING id"
 	stmtInsertUser, err := db.Conn.PrepareContext(ctx, queryInsertUser)
 	if err != nil {
-		db.logger.Error("tx prepare on story_keys failed", "error", err.Error())
+		db.Logger.Error("tx prepare on story_keys failed", "error", err.Error())
 		return -1, err
 	}
 	defer stmtInsertUser.Close()
 	err = tx.StmtContext(ctx, stmtInsertUser).QueryRow(userid).Scan(&userID)
 	if err != nil {
-		db.logger.Error("query row insert into users failed", "error", err.Error())
+		db.Logger.Error("query row insert into users failed", "error", err.Error())
 		return -1, err
 	}
 	return userID, nil

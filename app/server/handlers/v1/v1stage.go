@@ -1,4 +1,4 @@
-package handlers
+package v1
 
 import (
 	"encoding/json"
@@ -12,7 +12,7 @@ import (
 )
 
 func (a MainApi) GetStage(w http.ResponseWriter, r *http.Request) {
-	if a.checkAuth(r) {
+	if a.Session.CheckAuth(r) {
 		a.s.ErrJSON(w, http.StatusForbidden, "required authentication headers")
 		return
 	}
@@ -25,7 +25,7 @@ func (a MainApi) GetStage(w http.ResponseWriter, r *http.Request) {
 }
 
 func (a MainApi) CreateStage(w http.ResponseWriter, r *http.Request) {
-	if a.checkAuth(r) {
+	if a.Session.CheckAuth(r) {
 		a.s.ErrJSON(w, http.StatusForbidden, "required authentication headers")
 		return
 	}
@@ -51,7 +51,7 @@ func (a MainApi) CreateStage(w http.ResponseWriter, r *http.Request) {
 }
 
 func (a MainApi) GetStageById(w http.ResponseWriter, r *http.Request) {
-	if a.checkAuth(r) {
+	if a.Session.CheckAuth(r) {
 		a.s.ErrJSON(w, http.StatusForbidden, "required authentication headers")
 		return
 	}
@@ -75,7 +75,7 @@ func (a MainApi) GetStageById(w http.ResponseWriter, r *http.Request) {
 }
 
 func (a MainApi) GetStageByStoryId(w http.ResponseWriter, r *http.Request) {
-	if a.checkAuth(r) {
+	if a.Session.CheckAuth(r) {
 		a.s.ErrJSON(w, http.StatusForbidden, "required authentication headers")
 		return
 	}
@@ -99,7 +99,7 @@ func (a MainApi) GetStageByStoryId(w http.ResponseWriter, r *http.Request) {
 }
 
 func (a MainApi) AddEncounterToStage(w http.ResponseWriter, r *http.Request) {
-	if a.checkAuth(r) {
+	if a.Session.CheckAuth(r) {
 		a.s.ErrJSON(w, http.StatusForbidden, "required authentication headers")
 		return
 	}
@@ -135,7 +135,7 @@ func (a MainApi) AddEncounterToStage(w http.ResponseWriter, r *http.Request) {
 }
 
 func (a MainApi) AddChannelToStage(w http.ResponseWriter, r *http.Request) {
-	if a.checkAuth(r) {
+	if a.Session.CheckAuth(r) {
 		a.s.ErrJSON(w, http.StatusForbidden, "required authentication headers")
 		return
 	}
@@ -177,7 +177,7 @@ func (a MainApi) AddChannelToStage(w http.ResponseWriter, r *http.Request) {
 }
 
 func (a MainApi) GetStageEncounterByStageID(w http.ResponseWriter, r *http.Request) {
-	if a.checkAuth(r) {
+	if a.Session.CheckAuth(r) {
 		a.s.ErrJSON(w, http.StatusForbidden, "required authentication headers")
 		return
 	}
@@ -197,7 +197,7 @@ func (a MainApi) GetStageEncounterByStageID(w http.ResponseWriter, r *http.Reque
 }
 
 func (a MainApi) UpdateEncounterPhaseById(w http.ResponseWriter, r *http.Request) {
-	if a.checkAuth(r) {
+	if a.Session.CheckAuth(r) {
 		a.s.ErrJSON(w, http.StatusForbidden, "required authentication headers")
 		return
 	}
@@ -229,7 +229,7 @@ func (a MainApi) UpdateEncounterPhaseById(w http.ResponseWriter, r *http.Request
 }
 
 func (a MainApi) GetStageEncounterByEncounterID(w http.ResponseWriter, r *http.Request) {
-	if a.checkAuth(r) {
+	if a.Session.CheckAuth(r) {
 		a.s.ErrJSON(w, http.StatusForbidden, "required authentication headers")
 		return
 	}
@@ -312,7 +312,7 @@ func (a MainApi) AddRunningTask(w http.ResponseWriter, r *http.Request) {
 }
 
 func (a MainApi) GetStageEncounterActivitiesByEncounterID(w http.ResponseWriter, r *http.Request) {
-	if a.checkAuth(r) {
+	if a.Session.CheckAuth(r) {
 		a.s.ErrJSON(w, http.StatusForbidden, "required authentication headers")
 		return
 	}
@@ -332,7 +332,7 @@ func (a MainApi) GetStageEncounterActivitiesByEncounterID(w http.ResponseWriter,
 }
 
 func (a MainApi) GetStageEncounterActivities(w http.ResponseWriter, r *http.Request) {
-	if a.checkAuth(r) {
+	if a.Session.CheckAuth(r) {
 		a.s.ErrJSON(w, http.StatusForbidden, "required authentication headers")
 		return
 	}

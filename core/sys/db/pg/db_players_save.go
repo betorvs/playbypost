@@ -1,4 +1,4 @@
-package db
+package pg
 
 import (
 	"context"
@@ -39,14 +39,14 @@ func (db *DBX) savePlayer(ctx context.Context, id, storyID int, npc bool, creatu
 	}
 	stmt, err := db.Conn.PrepareContext(ctx, query)
 	if err != nil {
-		db.logger.Error("save players prepare failed", "error", err.Error())
+		db.Logger.Error("save players prepare failed", "error", err.Error())
 		return -1, err
 	}
 	defer stmt.Close()
 	var res int
 	err = stmt.QueryRow(creature.Name, id, storyID, false, creature.Abilities, creature.Skills, creature.RPG.Name).Scan(&res)
 	if err != nil {
-		db.logger.Error("save players queryRow failed", "error", err.Error())
+		db.Logger.Error("save players queryRow failed", "error", err.Error())
 		return -1, err
 	}
 
@@ -57,7 +57,7 @@ func (db *DBX) SavePlayerTx(ctx context.Context, id, storyID int, npc bool, crea
 	var playerID int
 	tx, err := db.Conn.BeginTx(ctx, nil)
 	if err != nil {
-		db.logger.Error("tx begin on players failed", "error", err.Error())
+		db.Logger.Error("tx begin on players failed", "error", err.Error())
 		return -1, err
 	}
 	// Defer a rollback in case anything fails.
@@ -69,13 +69,13 @@ func (db *DBX) SavePlayerTx(ctx context.Context, id, storyID int, npc bool, crea
 	}
 	stmt, err := db.Conn.PrepareContext(ctx, query)
 	if err != nil {
-		db.logger.Error("tx prepare on players failed", "error", err.Error())
+		db.Logger.Error("tx prepare on players failed", "error", err.Error())
 		return -1, err
 	}
 	defer stmt.Close()
 	err = tx.StmtContext(ctx, stmt).QueryRow(creature.Name, id, storyID, false, creature.Abilities, creature.Skills, creature.RPG.Name).Scan(&playerID)
 	if err != nil {
-		db.logger.Error("tx statement on players failed", "error", err.Error())
+		db.Logger.Error("tx statement on players failed", "error", err.Error())
 		return -1, err
 	}
 
@@ -89,7 +89,7 @@ func (db *DBX) SavePlayerTx(ctx context.Context, id, storyID int, npc bool, crea
 	// 	extension := creature.Extension.(*d10hm.D10Extented)
 	// 	_, err = tx.ExecContext(ctx, query, playerID, extension.Health, extension.Defense, extension.WillPower, extension.Initiative, extension.Size, extension.Armor, extension.Weapon)
 	// 	if err != nil {
-	// 		db.logger.Error("tx extension on players failed", "error", err.Error())
+	// 		db.Logger.Error("tx extension on players failed", "error", err.Error())
 	// 		return -1, err
 	// 	}
 
@@ -98,7 +98,7 @@ func (db *DBX) SavePlayerTx(ctx context.Context, id, storyID int, npc bool, crea
 	// }
 
 	if err = tx.Commit(); err != nil {
-		db.logger.Error("tx commit on initiative failed", "error", err.Error())
+		db.Logger.Error("tx commit on initiative failed", "error", err.Error())
 		return -1, err
 	}
 	return playerID, nil

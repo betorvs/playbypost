@@ -15,7 +15,7 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/betorvs/playbypost/app/server/handlers"
+	v1 "github.com/betorvs/playbypost/app/server/handlers/v1"
 	"github.com/betorvs/playbypost/core/rpg"
 	"github.com/betorvs/playbypost/core/sys/db"
 	"github.com/betorvs/playbypost/core/sys/scheduler"
@@ -60,14 +60,14 @@ func main() {
 	srv.Register("GET /health", srv.GetHealth)
 
 	client := cli.NewHeaders("http://localhost:8091", adminUser, adminToken)
-	app := handlers.NewMainApi(ctx, d, db, logger, srv, client, rpgSystem)
+	app := v1.NewMainApi(ctx, d, db, logger, srv, client, rpgSystem)
 
 	srv.RegisterStatic()
 
-	srv.Register("POST /login", app.Signin)
+	srv.Register("POST /login", app.Session.Signin)
 	// srv.Register("OPTIONS /login", srv.Options)
-	srv.Register("POST /logoff", app.Logout)
-	srv.Register("POST /refresh", app.Refresh)
+	srv.Register("POST /logoff", app.Session.Logout)
+	srv.Register("POST /refresh", app.Session.Refresh)
 
 	srv.Register("GET /api/v1/writer", app.GetWriters)
 	// srv.Register("OPTIONS /api/v1/writer", srv.Options)
@@ -130,7 +130,7 @@ func main() {
 
 	srv.Register("OPTIONS /*", srv.Options)
 
-	app.AddAdminSession(adminUser, adminToken)
+	app.Session.AddAdminSession(adminUser, adminToken)
 	logger.Info("adding admin user one year token", "admin", adminUser, "token", adminToken)
 	adminFile := utils.GetEnv("CREDS_FILE", "./creds")
 	err := save(adminToken, adminFile)
@@ -141,7 +141,7 @@ func main() {
 
 	jobScheduler := scheduler.NewJobScheduler(10 * time.Second)
 	logger.Info("starting job scheduler")
-	jobScheduler.JobQueue = app
+	jobScheduler.JobQueue = app.Worker
 	ctxJob, jobCancel := context.WithCancel(ctx)
 	defer jobCancel()
 

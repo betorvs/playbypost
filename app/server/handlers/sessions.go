@@ -1,16 +1,84 @@
 package handlers
 
 import (
+	"context"
 	"encoding/json"
+	"log/slog"
 	"net/http"
+	"sync"
 	"time"
 
+	"github.com/betorvs/playbypost/core/sys/db"
+	"github.com/betorvs/playbypost/core/sys/web/server"
 	"github.com/betorvs/playbypost/core/sys/web/types"
 	"github.com/betorvs/playbypost/core/utils"
 	"golang.org/x/crypto/bcrypt"
 )
 
-func (a MainApi) Signin(w http.ResponseWriter, r *http.Request) {
+type Session struct {
+	logger   *slog.Logger
+	db       db.DBClient
+	s        *server.SvrWeb
+	ctx      context.Context
+	Sessions Sessions
+}
+
+type Sessions struct {
+	Current map[string]types.Session
+	mu      *sync.Mutex
+}
+
+func NewSession(logger *slog.Logger, db db.DBClient, s *server.SvrWeb, ctx context.Context) *Session {
+	return &Session{
+		logger: logger,
+		db:     db,
+		s:      s,
+		ctx:    ctx,
+		Sessions: Sessions{
+			Current: make(map[string]types.Session),
+			mu:      &sync.Mutex{},
+		},
+	}
+}
+
+func (m *Sessions) Add(index string, value types.Session) {
+	m.mu.Lock()
+	m.Current[index] = value
+	m.mu.Unlock()
+}
+
+func (m *Sessions) Remove(index string) {
+	m.mu.Lock()
+	delete(m.Current, index)
+	m.mu.Unlock()
+}
+
+func (a *Session) AddAdminSession(admin, token string) {
+	expiresAt := time.Now().Add(8760 * time.Hour)
+	session := types.Session{
+		Username: admin,
+		Token:    token,
+		Expiry:   expiresAt,
+	}
+	a.Sessions.Add(admin, session)
+}
+
+func (a *Session) CheckAuth(r *http.Request) bool {
+
+	headerToken := r.Header.Get(types.HeaderToken)
+	headerUsername := r.Header.Get(types.HeaderUsername)
+	if headerToken != "" && headerUsername != "" {
+		v, ok := a.Sessions.Current[headerUsername]
+		if !ok || v.IsExpired() || headerToken != v.Token {
+			return true
+		}
+		return false
+	}
+
+	return true
+}
+
+func (a Session) Signin(w http.ResponseWriter, r *http.Request) {
 	var creds types.Credentials
 	err := json.NewDecoder(r.Body).Decode(&creds)
 	if err != nil {
@@ -60,8 +128,8 @@ func (a MainApi) Signin(w http.ResponseWriter, r *http.Request) {
 	a.s.JSON(w, login)
 }
 
-func (a MainApi) Logout(w http.ResponseWriter, r *http.Request) {
-	if a.checkAuth(r) {
+func (a Session) Logout(w http.ResponseWriter, r *http.Request) {
+	if a.CheckAuth(r) {
 		a.s.ErrJSON(w, http.StatusForbidden, "required authentication headers")
 		return
 	}
@@ -81,8 +149,8 @@ func (a MainApi) Logout(w http.ResponseWriter, r *http.Request) {
 	a.s.JSON(w, login)
 }
 
-func (a MainApi) Refresh(w http.ResponseWriter, r *http.Request) {
-	if a.checkAuth(r) {
+func (a Session) Refresh(w http.ResponseWriter, r *http.Request) {
+	if a.CheckAuth(r) {
 		a.s.ErrJSON(w, http.StatusForbidden, "required authentication headers")
 		return
 	}

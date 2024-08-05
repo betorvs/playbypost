@@ -1,4 +1,4 @@
-package db
+package pg
 
 import (
 	"context"
@@ -25,7 +25,7 @@ func (db *DBX) UpdateNextPlayer(ctx context.Context, id, nextPlayer int) error {
 func (db *DBX) SaveInitiativeTx(ctx context.Context, i initiative.Initiative, encounterID int) (int, error) {
 	tx, err := db.Conn.BeginTx(ctx, nil)
 	if err != nil {
-		db.logger.Error("tx begin on initiative failed", "error", err.Error())
+		db.Logger.Error("tx begin on initiative failed", "error", err.Error())
 		return -1, err
 	}
 	// Defer a rollback in case anything fails.
@@ -34,7 +34,7 @@ func (db *DBX) SaveInitiativeTx(ctx context.Context, i initiative.Initiative, en
 	query := "INSERT INTO initiative(title, stage_encounters_id, next_player) VALUES($1, $2, $3) RETURNING id"
 	stmt, err := db.Conn.PrepareContext(ctx, query)
 	if err != nil {
-		db.logger.Error("tx prepare on initiative failed", "error", err.Error())
+		db.Logger.Error("tx prepare on initiative failed", "error", err.Error())
 		return -1, err
 	}
 	defer stmt.Close()
@@ -42,7 +42,7 @@ func (db *DBX) SaveInitiativeTx(ctx context.Context, i initiative.Initiative, en
 	var id int
 	err = tx.StmtContext(ctx, stmt).QueryRow(i.Name, encounterID, i.Position).Scan(&id)
 	if err != nil {
-		db.logger.Error("tx statement on initiative failed", "error", err.Error())
+		db.Logger.Error("tx statement on initiative failed", "error", err.Error())
 		return -1, err
 	}
 
@@ -51,7 +51,7 @@ func (db *DBX) SaveInitiativeTx(ctx context.Context, i initiative.Initiative, en
 	for _, p := range i.Participants {
 		_, err = tx.ExecContext(ctx, queryParticipants, id, p.Name, p.Bonus, p.Result, true)
 		if err != nil {
-			db.logger.Error("tx participants on initiative failed", "error", err.Error())
+			db.Logger.Error("tx participants on initiative failed", "error", err.Error())
 			return -1, err
 		}
 	}
@@ -60,13 +60,13 @@ func (db *DBX) SaveInitiativeTx(ctx context.Context, i initiative.Initiative, en
 	phaseRunning := 2
 	_, err = tx.ExecContext(ctx, queryEncounter, phaseRunning, encounterID)
 	if err != nil {
-		db.logger.Error("tx participants on initiative failed", "error", err.Error())
+		db.Logger.Error("tx participants on initiative failed", "error", err.Error())
 		return -1, err
 	}
 
 	// Commit the transaction.
 	if err = tx.Commit(); err != nil {
-		db.logger.Error("tx commit on initiative failed", "error", err.Error())
+		db.Logger.Error("tx commit on initiative failed", "error", err.Error())
 		return -1, err
 	}
 	return id, nil
@@ -124,7 +124,7 @@ func (db *DBX) GetRunningInitiativeByStageID(ctx context.Context, stageID int) (
 	obj := initiative.Initiative{}
 	rows, err := db.Conn.QueryContext(ctx, "SELECT i.id, i.title, i.next_player, p.participant_name, p.participant_result FROM initiative AS i JOIN initiative_participants AS p ON i.id = p.initiative_id JOIN stage_encounters AS se ON se.id = i.stage_encounters_id WHERE p.active = TRUE AND se.phase = 2 AND se.stage_id = $1", stageID)
 	if err != nil {
-		db.logger.Error("query on users failed", "error", err.Error())
+		db.Logger.Error("query on users failed", "error", err.Error())
 		return obj, initiativeID, err
 	}
 	defer rows.Close()
@@ -133,7 +133,7 @@ func (db *DBX) GetRunningInitiativeByStageID(ctx context.Context, stageID int) (
 	party := initiative.Participants{}
 	for rows.Next() {
 		if err := rows.Scan(&initiativeID, &title, &nextPlayer, &name, &result); err != nil {
-			db.logger.Error("scan on users error", "error", err.Error())
+			db.Logger.Error("scan on users error", "error", err.Error())
 		}
 		p := initiative.Participant{}
 		p.Name = name
@@ -145,7 +145,7 @@ func (db *DBX) GetRunningInitiativeByStageID(ctx context.Context, stageID int) (
 	obj.Participants = party
 	// Check for errors from iterating over rows.
 	if err := rows.Err(); err != nil {
-		db.logger.Error("rows on users error", "error", err.Error())
+		db.Logger.Error("rows on users error", "error", err.Error())
 	}
 
 	return obj, initiativeID, nil
@@ -156,7 +156,7 @@ func (db *DBX) GetRunningInitiativeByEncounterID(ctx context.Context, encounterI
 	obj := initiative.Initiative{}
 	rows, err := db.Conn.QueryContext(ctx, "SELECT i.id, i.title, i.next_player, p.participant_name, p.participant_result FROM initiative AS i JOIN initiative_participants AS p ON i.id = p.initiative_id JOIN stage_encounters AS se ON se.id = i.stage_encounters_id WHERE p.active = TRUE AND se.phase = 2 AND se.id = $1", encounterID)
 	if err != nil {
-		db.logger.Error("query on users failed", "error", err.Error())
+		db.Logger.Error("query on users failed", "error", err.Error())
 		return obj, initiativeID, err
 	}
 	defer rows.Close()
@@ -165,7 +165,7 @@ func (db *DBX) GetRunningInitiativeByEncounterID(ctx context.Context, encounterI
 	party := initiative.Participants{}
 	for rows.Next() {
 		if err := rows.Scan(&initiativeID, &title, &nextPlayer, &name, &result); err != nil {
-			db.logger.Error("scan on users error", "error", err.Error())
+			db.Logger.Error("scan on users error", "error", err.Error())
 		}
 		p := initiative.Participant{}
 		p.Name = name
@@ -177,7 +177,7 @@ func (db *DBX) GetRunningInitiativeByEncounterID(ctx context.Context, encounterI
 	obj.Participants = party
 	// Check for errors from iterating over rows.
 	if err := rows.Err(); err != nil {
-		db.logger.Error("rows on users error", "error", err.Error())
+		db.Logger.Error("rows on users error", "error", err.Error())
 	}
 
 	return obj, initiativeID, nil

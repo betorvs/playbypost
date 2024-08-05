@@ -1,4 +1,4 @@
-package db
+package pg
 
 import (
 	"context"
@@ -12,7 +12,7 @@ func (db *DBX) CreateStageTx(ctx context.Context, text, userid string, storyID i
 	// TX
 	tx, err := db.Conn.BeginTx(ctx, nil)
 	if err != nil {
-		db.logger.Error("tx begin on CreateStageTx failed", "error", err.Error())
+		db.Logger.Error("tx begin on CreateStageTx failed", "error", err.Error())
 		return -1, err
 	}
 	// Defer a rollback in case anything fails.
@@ -21,14 +21,14 @@ func (db *DBX) CreateStageTx(ctx context.Context, text, userid string, storyID i
 	queryUser := "SELECT id FROM users WHERE userid = $1"
 	stmtQueryUser, err := db.Conn.PrepareContext(ctx, queryUser)
 	if err != nil {
-		db.logger.Error("tx prepare on queryUser failed", "error", err.Error())
+		db.Logger.Error("tx prepare on queryUser failed", "error", err.Error())
 		return -1, err
 	}
 	defer stmtQueryUser.Close()
 	var userID int
 	err = tx.StmtContext(ctx, stmtQueryUser).QueryRow(userid).Scan(&userID)
 	if err != nil {
-		db.logger.Info("user not found", "return", err.Error())
+		db.Logger.Info("user not found", "return", err.Error())
 		// just log this error
 		// return -1, err
 
@@ -38,18 +38,18 @@ func (db *DBX) CreateStageTx(ctx context.Context, text, userid string, storyID i
 		// queryInsertUser := "INSERT INTO users(userid) VALUES($1) RETURNING id"
 		// stmtInsertUser, err := db.Conn.PrepareContext(ctx, queryInsertUser)
 		// if err != nil {
-		// 	db.logger.Error("tx prepare on story_keys failed", "error", err.Error())
+		// 	db.Logger.Error("tx prepare on story_keys failed", "error", err.Error())
 		// 	return -1, err
 		// }
 		// defer stmtInsertUser.Close()
 		// err = tx.StmtContext(ctx, stmtInsertUser).QueryRow(userid).Scan(&userID)
 		// if err != nil {
-		// 	db.logger.Error("query row insert into users failed", "error", err.Error())
+		// 	db.Logger.Error("query row insert into users failed", "error", err.Error())
 		// 	return -1, err
 		// }
 		id, err := db.createUser(ctx, userid, tx)
 		if err != nil {
-			db.logger.Error("insert into users failed", "error", err.Error())
+			db.Logger.Error("insert into users failed", "error", err.Error())
 			return -1, err
 		}
 		userID = id
@@ -58,14 +58,14 @@ func (db *DBX) CreateStageTx(ctx context.Context, text, userid string, storyID i
 	queryStoryKeys := "select k.encoding_key from story AS s JOIN story_keys AS k ON s.id = k.story_id WHERE s.id = $1"
 	stmtStoryKeys, err := db.Conn.PrepareContext(ctx, queryStoryKeys)
 	if err != nil {
-		db.logger.Error("tx prepare on story_keys failed", "error", err.Error())
+		db.Logger.Error("tx prepare on story_keys failed", "error", err.Error())
 		return -1, err
 	}
 	defer stmtStoryKeys.Close()
 	var encodingKey string
 	err = tx.StmtContext(ctx, stmtStoryKeys).QueryRow(storyID).Scan(&encodingKey)
 	if err != nil {
-		db.logger.Error("query row select story_keys and story failed", "error", err.Error())
+		db.Logger.Error("query row select story_keys and story failed", "error", err.Error())
 		return -1, err
 	}
 
@@ -73,19 +73,19 @@ func (db *DBX) CreateStageTx(ctx context.Context, text, userid string, storyID i
 	queryInsertStage := "INSERT INTO stage(display_text, encoding_key, finished, storyteller_id, story_id) VALUES($1, $2, $3, $4, $5) RETURNING id"
 	stmtInsertStage, err := db.Conn.PrepareContext(ctx, queryInsertStage)
 	if err != nil {
-		db.logger.Error("tx prepare on stmtInsertStage failed", "error", err.Error())
+		db.Logger.Error("tx prepare on stmtInsertStage failed", "error", err.Error())
 		return -1, err
 	}
 	defer stmtInsertStage.Close()
 	var stageID int
 	err = tx.StmtContext(ctx, stmtInsertStage).QueryRow(text, encodingKey, false, userID, storyID).Scan(&stageID)
 	if err != nil {
-		db.logger.Error("query row insert into stage failed", "error", err.Error())
+		db.Logger.Error("query row insert into stage failed", "error", err.Error())
 		return -1, err
 	}
 	// commit if everything is okay
 	if err = tx.Commit(); err != nil {
-		db.logger.Error("tx commit on CreateStageTx failed", "error", err.Error())
+		db.Logger.Error("tx commit on CreateStageTx failed", "error", err.Error())
 		return -1, err
 	}
 
@@ -96,14 +96,14 @@ func (db *DBX) AddChannelToStage(ctx context.Context, channel string, id int) (i
 	query := "INSERT INTO stage_channel(channel, stage_id, active) VALUES($1, $2, $3) RETURNING id"
 	stmt, err := db.Conn.PrepareContext(ctx, query)
 	if err != nil {
-		db.logger.Error("prepare insert into stage_channel failed", "error", err.Error())
+		db.Logger.Error("prepare insert into stage_channel failed", "error", err.Error())
 		return -1, err
 	}
 	defer stmt.Close()
 	var res int
 	err = stmt.QueryRow(channel, id, true).Scan(&res)
 	if err != nil {
-		db.logger.Error("query row insert into stage_channel failed", "error", err.Error())
+		db.Logger.Error("query row insert into stage_channel failed", "error", err.Error())
 		return -1, err
 	}
 	return res, nil
@@ -113,14 +113,14 @@ func (db *DBX) AddEncounterToStage(ctx context.Context, text string, stage_id, s
 	query := "INSERT INTO stage_encounters(display_text, stage_id, storyteller_id, encounters_id) VALUES($1, $2, $3, $4) RETURNING id"
 	stmt, err := db.Conn.PrepareContext(ctx, query)
 	if err != nil {
-		db.logger.Error("prepare insert into stage_channel failed", "error", err.Error())
+		db.Logger.Error("prepare insert into stage_channel failed", "error", err.Error())
 		return -1, err
 	}
 	defer stmt.Close()
 	var res int
 	err = stmt.QueryRow(text, stage_id, storyteller_id, encounter_id).Scan(&res)
 	if err != nil {
-		db.logger.Error("query row insert into stage_channel failed", "error", err.Error())
+		db.Logger.Error("query row insert into stage_channel failed", "error", err.Error())
 		return -1, err
 	}
 	return res, nil
@@ -130,7 +130,7 @@ func (db *DBX) UpdatePhase(ctx context.Context, id, phase int) error {
 	// TX
 	tx, err := db.Conn.BeginTx(ctx, nil)
 	if err != nil {
-		db.logger.Error("tx begin on UpdatePhase failed", "error", err.Error())
+		db.Logger.Error("tx begin on UpdatePhase failed", "error", err.Error())
 		return err
 	}
 	// Defer a rollback in case anything fails.
@@ -142,7 +142,7 @@ func (db *DBX) UpdatePhase(ctx context.Context, id, phase int) error {
 		p := int(types.Running)
 		if err = tx.QueryRowContext(ctx, query, id, p).Scan(&running); err != nil {
 			if err != sql.ErrNoRows {
-				db.logger.Error("no rows passed", "err", err.Error())
+				db.Logger.Error("no rows passed", "err", err.Error())
 				return err
 			}
 		}
@@ -155,22 +155,22 @@ func (db *DBX) UpdatePhase(ctx context.Context, id, phase int) error {
 	queryUpdateStageEncounter := "UPDATE stage_encounters SET phase = $1, updated_at = NOW() WHERE id = $2 RETURNING id"
 	stmtUpdateStageEncounter, err := db.Conn.PrepareContext(ctx, queryUpdateStageEncounter)
 	if err != nil {
-		db.logger.Error("tx prepare on stmtUpdateStageEncounter failed", "error", err.Error())
+		db.Logger.Error("tx prepare on stmtUpdateStageEncounter failed", "error", err.Error())
 		return err
 	}
 	defer stmtUpdateStageEncounter.Close()
 	var ID int
 	err = tx.StmtContext(ctx, stmtUpdateStageEncounter).QueryRow(phase, id).Scan(&ID)
 	if err != nil {
-		db.logger.Error("query row insert into StageEncounter failed", "error", err.Error())
+		db.Logger.Error("query row insert into StageEncounter failed", "error", err.Error())
 		return err
 	}
 	// commit if everything is okay
 	if err = tx.Commit(); err != nil {
-		db.logger.Error("tx commit on UpdatePhase failed", "error", err.Error())
+		db.Logger.Error("tx commit on UpdatePhase failed", "error", err.Error())
 		return err
 	}
-	db.logger.Info("stage_encounter changed", "id", id)
+	db.Logger.Info("stage_encounter changed", "id", id)
 	return nil
 }
 
@@ -212,13 +212,13 @@ func (db *DBX) AddNextEncounter(ctx context.Context, text string, stageID, encou
 
 	_, err = tx.ExecContext(ctx, query, text, stageID, encounterID, nextEncounterID)
 	if err != nil {
-		db.logger.Error("error on insert into stage_next_encounter", "error", err.Error())
+		db.Logger.Error("error on insert into stage_next_encounter", "error", err.Error())
 		return err
 	}
 
 	// Commit the transaction.
 	if err = tx.Commit(); err != nil {
-		db.logger.Error("error on commit stage_next_encounter", "error", err.Error())
+		db.Logger.Error("error on commit stage_next_encounter", "error", err.Error())
 		return err
 	}
 	return nil
@@ -274,7 +274,7 @@ func (db *DBX) AddEncounterActivities(ctx context.Context, text string, stageID,
 // 	query := "select se.ID, se.display_text, e.title, se.storyteller_id, e.notes, e.announcement, s.encoding_key from stage_encounters AS se JOIN encounters AS e ON se.encounters_id = e.id JOIN stage AS s ON se.stage_id = s.id WHERE se.ID = $1"
 // 	rows, err := db.Conn.QueryContext(ctx, query, id)
 // 	if err != nil {
-// 		db.logger.Error("query on stage_encounters by stage_encounters.ID failed", "error", err.Error())
+// 		db.Logger.Error("query on stage_encounters by stage_encounters.ID failed", "error", err.Error())
 // 		return enc, err
 // 	}
 // 	defer rows.Close()
@@ -282,7 +282,7 @@ func (db *DBX) AddEncounterActivities(ctx context.Context, text string, stageID,
 // 		var s types.StageEncounter
 // 		var notes, announce, encodingKey string
 // 		if err := rows.Scan(&s.ID, &s.Text, &s.Title, &s.StorytellerID, &notes, &announce, &encodingKey); err != nil {
-// 			db.logger.Error("scan error on stage_encounters by stage_encounters.ID ", "error", err.Error())
+// 			db.Logger.Error("scan error on stage_encounters by stage_encounters.ID ", "error", err.Error())
 // 		}
 // 		s.Notes, _ = utils.DecryptText(notes, encodingKey)
 // 		s.Announcement, _ = utils.DecryptText(announce, encodingKey)
@@ -290,14 +290,14 @@ func (db *DBX) AddEncounterActivities(ctx context.Context, text string, stageID,
 // 	}
 // 	// Check for errors from iterating over rows.
 // 	if err := rows.Err(); err != nil {
-// 		db.logger.Error("rows err on stage_encounters by stage_encounters.ID", "error", err.Error())
+// 		db.Logger.Error("rows err on stage_encounters by stage_encounters.ID", "error", err.Error())
 // 	}
 // 	return enc, nil
 // }
 
 // stage_encounter_activities
 func (db *DBX) RegisterActivities(ctx context.Context, stageID, encounterID int, actions types.Actions) error {
-	db.logger.Info("RegisterActivities", "stageID", stageID, "encounterID", encounterID, "actions", actions)
+	db.Logger.Info("RegisterActivities", "stageID", stageID, "encounterID", encounterID, "actions", actions)
 	query := "INSERT INTO stage_encounter_activities (actions, stage_id, encounter_id) VALUES ($1, $2, $3)"
 	tx, err := db.Conn.BeginTx(ctx, nil)
 	if err != nil {

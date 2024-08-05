@@ -1,13 +1,11 @@
-package handlers
+package worker
 
 import (
 	"context"
 	"fmt"
 	"log/slog"
-	"net/http"
 	"strconv"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/betorvs/playbypost/core/parser"
@@ -15,86 +13,35 @@ import (
 	"github.com/betorvs/playbypost/core/rules"
 	"github.com/betorvs/playbypost/core/sys/db"
 	"github.com/betorvs/playbypost/core/sys/web/cli"
-	"github.com/betorvs/playbypost/core/sys/web/server"
 	"github.com/betorvs/playbypost/core/sys/web/types"
 )
 
-type MainApi struct {
-	Sessions Sessions
-	logger   *slog.Logger
-	s        *server.SvrWeb
-	db       db.DBClient
-	ctx      context.Context
-	dice     rpg.Roll
-	client   *cli.Cli
-	rpg      *rpg.RPGSystem
-	soloRPG  *rpg.RPGSystem
-	didactic *rpg.RPGSystem
+type Worker interface {
+	Execute()
 }
 
-func NewMainApi(ctx context.Context, dice rpg.Roll, db db.DBClient, l *slog.Logger, s *server.SvrWeb, client *cli.Cli, rpgSystem *rpg.RPGSystem) *MainApi {
-	session := Sessions{
-		Current: map[string]types.Session{},
-		mu:      &sync.Mutex{},
-	}
-	return &MainApi{
-		Sessions: session,
-		ctx:      ctx,
-		dice:     dice,
-		db:       db,
-		logger:   l,
-		s:        s,
-		client:   client,
-		rpg:      rpgSystem,
-		soloRPG:  rpg.LoadRPGSystemsDefault(rpg.Solo, l),
-		didactic: rpg.LoadRPGSystemsDefault(rpg.Didactic, l),
+type WorkerAPI struct {
+	logger *slog.Logger
+	db     db.DBClient
+	ctx    context.Context
+	dice   rpg.Roll
+	client *cli.Cli
+	rpg    *rpg.RPGSystem
+}
+
+func NewWorkerAPI(ctx context.Context, dice rpg.Roll, db db.DBClient, l *slog.Logger, client *cli.Cli, rpgSystem *rpg.RPGSystem) *WorkerAPI {
+	return &WorkerAPI{
+		ctx:    ctx,
+		dice:   dice,
+		db:     db,
+		logger: l,
+		client: client,
+		rpg:    rpgSystem,
 	}
 }
 
-type Sessions struct {
-	Current map[string]types.Session
-	mu      *sync.Mutex
-}
-
-func (m *Sessions) Add(index string, value types.Session) {
-	m.mu.Lock()
-	m.Current[index] = value
-	m.mu.Unlock()
-}
-
-func (m *Sessions) Remove(index string) {
-	m.mu.Lock()
-	delete(m.Current, index)
-	m.mu.Unlock()
-}
-
-func (a *MainApi) AddAdminSession(admin, token string) {
-	expiresAt := time.Now().Add(8760 * time.Hour)
-	session := types.Session{
-		Username: admin,
-		Token:    token,
-		Expiry:   expiresAt,
-	}
-	a.Sessions.Add(admin, session)
-}
-
-func (a *MainApi) checkAuth(r *http.Request) bool {
-
-	headerToken := r.Header.Get(types.HeaderToken)
-	headerUsername := r.Header.Get(types.HeaderUsername)
-	if headerToken != "" && headerUsername != "" {
-		v, ok := a.Sessions.Current[headerUsername]
-		if !ok || v.IsExpired() || headerToken != v.Token {
-			return true
-		}
-		return false
-	}
-
-	return true
-}
-
-func (a *MainApi) Execute() {
-	a.logger.Info("starting scheduler main api execution", "time", time.Now())
+func (a *WorkerAPI) Execute() {
+	a.logger.Info("starting scheduler worker api execution", "time", time.Now())
 	activities, err := a.db.GetStageEncounterActivities(a.ctx)
 	if err != nil {
 		a.logger.Error("error getting stage encounter activities", "error", err.Error())
@@ -114,7 +61,7 @@ func (a *MainApi) Execute() {
 	}
 }
 
-func (a *MainApi) parseCommand(cmd types.StageEncounterActivities) error {
+func (a *WorkerAPI) parseCommand(cmd types.StageEncounterActivities) error {
 	// call back to slack
 	enc, err := a.db.GetStageEncounterByEncounterID(a.ctx, cmd.EncounterID)
 	if err != nil {
@@ -246,7 +193,7 @@ func (a *MainApi) parseCommand(cmd types.StageEncounterActivities) error {
 	return nil
 }
 
-func (a *MainApi) executeTask(task types.Task, creature *rules.Creature) (rules.Result, error) {
+func (a *WorkerAPI) executeTask(task types.Task, creature *rules.Creature) (rules.Result, error) {
 	result := rules.Result{}
 	switch task.Kind {
 	case types.SkillCheck:

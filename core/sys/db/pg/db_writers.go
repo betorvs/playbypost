@@ -1,4 +1,4 @@
-package db
+package pg
 
 import (
 	"context"
@@ -10,14 +10,14 @@ func (db *DBX) CreateWriters(ctx context.Context, username, password string) (in
 	query := "INSERT INTO writers(username, password) VALUES($1, $2) RETURNING id"
 	stmt, err := db.Conn.PrepareContext(ctx, query)
 	if err != nil {
-		db.logger.Error("prepare insert into writers failed", "error", err.Error())
+		db.Logger.Error("prepare insert into writers failed", "error", err.Error())
 		return -1, err
 	}
 	defer stmt.Close()
 	var res int
 	err = stmt.QueryRow(username, password).Scan(&res)
 	if err != nil {
-		db.logger.Error("query row insert into writers failed", "error", err.Error())
+		db.Logger.Error("query row insert into writers failed", "error", err.Error())
 		return -1, err
 	}
 	return res, nil
@@ -31,20 +31,20 @@ func (db *DBX) GetWriters(ctx context.Context, active bool) ([]types.Writer, err
 	users := []types.Writer{}
 	rows, err := db.Conn.QueryContext(ctx, query)
 	if err != nil {
-		db.logger.Error("query on writers failed", "error", err.Error())
+		db.Logger.Error("query on writers failed", "error", err.Error())
 		return users, err
 	}
 	defer rows.Close()
 	for rows.Next() {
 		var user types.Writer
 		if err := rows.Scan(&user.ID, &user.Username); err != nil {
-			db.logger.Error("scan error on writers", "error", err.Error())
+			db.Logger.Error("scan error on writers", "error", err.Error())
 		}
 		users = append(users, user)
 	}
 	// Check for errors from iterating over rows.
 	if err := rows.Err(); err != nil {
-		db.logger.Error("rows error on writers", "error", err.Error())
+		db.Logger.Error("rows error on writers", "error", err.Error())
 	}
 	return users, nil
 }
@@ -54,7 +54,7 @@ func (db *DBX) GetWriterByID(ctx context.Context, id int) (types.Writer, error) 
 	keys := make(map[int]string)
 	rows, err := db.Conn.QueryContext(ctx, "SELECT w.id, w.username, k.story_id, k.encoding_key FROM writers AS w JOIN access_story_keys AS a ON w.id = a.writer_id JOIN story_keys AS k ON a.story_keys_id = k.id WHERE w.id = $1", id)
 	if err != nil {
-		db.logger.Error("query on writers by id failed", "error", err.Error())
+		db.Logger.Error("query on writers by id failed", "error", err.Error())
 		return user, err
 	}
 	defer rows.Close()
@@ -63,7 +63,7 @@ func (db *DBX) GetWriterByID(ctx context.Context, id int) (types.Writer, error) 
 		var key string
 		var keyID int
 		if err := rows.Scan(&user.ID, &user.Username, &keyID, &key); err != nil {
-			db.logger.Error("scan error on writers by id", "error", err.Error())
+			db.Logger.Error("scan error on writers by id", "error", err.Error())
 		}
 		_, ok := keys[keyID]
 		if !ok {
@@ -73,7 +73,7 @@ func (db *DBX) GetWriterByID(ctx context.Context, id int) (types.Writer, error) 
 	}
 	// Check for errors from iterating over rows.
 	if err := rows.Err(); err != nil {
-		db.logger.Error("rows error on writers by id", "error", err.Error())
+		db.Logger.Error("rows error on writers by id", "error", err.Error())
 	}
 	user.EncodingKeys = keys
 	return user, nil
@@ -83,20 +83,20 @@ func (db *DBX) GetWriterByUsername(ctx context.Context, username string) (types.
 	user := types.Writer{}
 	rows, err := db.Conn.QueryContext(ctx, "SELECT id, username, password FROM writers WHERE username = $1", username)
 	if err != nil {
-		db.logger.Error("query on writers by username failed", "error", err.Error())
+		db.Logger.Error("query on writers by username failed", "error", err.Error())
 		return user, err
 	}
 	defer rows.Close()
 	for rows.Next() {
 		// var user types.Writer
 		if err := rows.Scan(&user.ID, &user.Username, &user.Password); err != nil {
-			db.logger.Error("scan error on writers by username", "error", err.Error())
+			db.Logger.Error("scan error on writers by username", "error", err.Error())
 		}
 		// users = append(users, user)
 	}
 	// Check for errors from iterating over rows.
 	if err := rows.Err(); err != nil {
-		db.logger.Error("rows error on writers by username", "error", err.Error())
+		db.Logger.Error("rows error on writers by username", "error", err.Error())
 	}
 	return user, nil
 }
@@ -106,7 +106,7 @@ func (db *DBX) GetWriterByUsername(ctx context.Context, username string) (types.
 // 	users := []types.Card{}
 // 	rows, err := db.Conn.QueryContext(ctx, query)
 // 	if err != nil {
-// 		db.logger.Error("query with joins on writers failed", "error", err.Error())
+// 		db.Logger.Error("query with joins on writers failed", "error", err.Error())
 // 		return users, err
 // 	}
 // 	defer rows.Close()
@@ -116,7 +116,7 @@ func (db *DBX) GetWriterByUsername(ctx context.Context, username string) (types.
 // 		// var user types.Card
 // 		var user, userID, title, player sql.NullString
 // 		if err := rows.Scan(&id, &user, &userID, &title, &player); err != nil {
-// 			db.logger.Error("scan error on writers with joins", "error", err.Error())
+// 			db.Logger.Error("scan error on writers with joins", "error", err.Error())
 // 		}
 // 		if v, ok := userCard[id]; ok {
 // 			if title.Valid {
@@ -143,7 +143,7 @@ func (db *DBX) GetWriterByUsername(ctx context.Context, username string) (types.
 // 	}
 // 	// Check for errors from iterating over rows.
 // 	if err := rows.Err(); err != nil {
-// 		db.logger.Error("rows error on writers with joins", "error", err.Error())
+// 		db.Logger.Error("rows error on writers with joins", "error", err.Error())
 // 	}
 // 	for _, v := range userCard {
 // 		users = append(users, v)

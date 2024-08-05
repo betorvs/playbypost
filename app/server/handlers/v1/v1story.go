@@ -1,4 +1,4 @@
-package handlers
+package v1
 
 import (
 	"encoding/json"
@@ -11,7 +11,7 @@ import (
 )
 
 func (a MainApi) GetStory(w http.ResponseWriter, r *http.Request) {
-	if a.checkAuth(r) {
+	if a.Session.CheckAuth(r) {
 		a.s.ErrJSON(w, http.StatusForbidden, "required authentication headers")
 		return
 	}
@@ -24,7 +24,7 @@ func (a MainApi) GetStory(w http.ResponseWriter, r *http.Request) {
 }
 
 func (a MainApi) CreateStory(w http.ResponseWriter, r *http.Request) {
-	if a.checkAuth(r) {
+	if a.Session.CheckAuth(r) {
 		a.s.ErrJSON(w, http.StatusForbidden, "required authentication headers")
 		return
 	}
@@ -66,7 +66,7 @@ func (a MainApi) CreateStory(w http.ResponseWriter, r *http.Request) {
 }
 
 func (a MainApi) GetStoryById(w http.ResponseWriter, r *http.Request) {
-	if a.checkAuth(r) {
+	if a.Session.CheckAuth(r) {
 		a.s.ErrJSON(w, http.StatusForbidden, "required authentication headers")
 		return
 	}
@@ -107,7 +107,7 @@ func (a MainApi) GetStoryById(w http.ResponseWriter, r *http.Request) {
 }
 
 func (a MainApi) GetStoryByWriterId(w http.ResponseWriter, r *http.Request) {
-	if a.checkAuth(r) {
+	if a.Session.CheckAuth(r) {
 		a.s.ErrJSON(w, http.StatusForbidden, "required authentication headers")
 		return
 	}

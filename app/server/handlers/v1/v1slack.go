@@ -1,4 +1,4 @@
-package handlers
+package v1
 
 import (
 	"encoding/json"
@@ -10,7 +10,7 @@ import (
 )
 
 func (a MainApi) AddSlackInfo(w http.ResponseWriter, r *http.Request) {
-	if a.checkAuth(r) {
+	if a.Session.CheckAuth(r) {
 		a.s.ErrJSON(w, http.StatusForbidden, "required authentication headers")
 		return
 	}
@@ -40,7 +40,7 @@ func (a MainApi) AddSlackInfo(w http.ResponseWriter, r *http.Request) {
 }
 
 func (a MainApi) GetUsersInformation(w http.ResponseWriter, r *http.Request) {
-	// if a.checkAuth(r) {
+	// if a.Session.CheckAuth(r) {
 	// 	a.s.ErrJSON(w, http.StatusForbidden, "required authentication headers")
 	// 	return
 	// }
@@ -53,7 +53,7 @@ func (a MainApi) GetUsersInformation(w http.ResponseWriter, r *http.Request) {
 }
 
 func (a MainApi) GetChannelsInformation(w http.ResponseWriter, r *http.Request) {
-	// if a.checkAuth(r) {
+	// if a.Session.CheckAuth(r) {
 	// 	a.s.ErrJSON(w, http.StatusForbidden, "required authentication headers")
 	// 	return
 	// }
@@ -66,7 +66,7 @@ func (a MainApi) GetChannelsInformation(w http.ResponseWriter, r *http.Request) 
 }
 
 func (a MainApi) GetEncountersPhase(w http.ResponseWriter, r *http.Request) {
-	// if a.checkAuth(r) {
+	// if a.Session.CheckAuth(r) {
 	// 	a.s.ErrJSON(w, http.StatusForbidden, "required authentication headers")
 	// 	return
 	// }

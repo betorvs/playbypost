@@ -1,4 +1,4 @@
-package db
+package pg
 
 import (
 	"context"
@@ -13,14 +13,14 @@ func (db *DBX) saveExtensionD20(ctx context.Context, playerId int, npc bool, ext
 	}
 	stmt, err := db.Conn.PrepareContext(ctx, query)
 	if err != nil {
-		db.logger.Error("save extenstion d20 prepare failed", "error", err.Error())
+		db.Logger.Error("save extenstion d20 prepare failed", "error", err.Error())
 		return -1, err
 	}
 	defer stmt.Close()
 	var res int
 	err = stmt.QueryRow(playerId, extension.Level, extension.HitPoints, extension.ArmorClass, extension.Class, extension.Multiclass, extension.Race, extension.Size, extension.Weapon).Scan(&res)
 	if err != nil {
-		db.logger.Error("save extenstion d20 queryRow failed", "error", err.Error())
+		db.Logger.Error("save extenstion d20 queryRow failed", "error", err.Error())
 		return -1, err
 	}
 	return res, nil

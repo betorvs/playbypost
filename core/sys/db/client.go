@@ -1,7 +1,6 @@
 package db
 
 import (
-	"database/sql"
 	"log/slog"
 	"os"
 
@@ -12,11 +11,6 @@ const (
 	postgreSQL = "postgres"
 	SQLite     = "sqlite"
 )
-
-type DBX struct {
-	Conn   *sql.DB
-	logger *slog.Logger
-}
 
 func NewDB(conn string, logger *slog.Logger) DBClient {
 	db, err := pg.New(conn)
@@ -37,12 +31,8 @@ func NewDB(conn string, logger *slog.Logger) DBClient {
 	}
 	logger.Info("connection to database okay")
 
-	return &DBX{
+	return &pg.DBX{
 		Conn:   db,
-		logger: logger,
+		Logger: logger,
 	}
-}
-
-func (db *DBX) Close() error {
-	return db.Conn.Close()
 }
