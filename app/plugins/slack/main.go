@@ -351,12 +351,18 @@ func (a *app) middlewareInteractive(evt *socketmode.Event, client *socketmode.Cl
 		display = splitted[3]
 	}
 	a.logger.Info("values", "userid", userid, "text", text, "channel", channel)
+	errorMessage := ""
 	msg, err := a.postCommand(userid, text, channel)
 	if err != nil {
 		a.logger.Error("error posting to backend", "error", err.Error())
+		errorMessage = "error posting to backend, try again in a few minutes"
+	}
+	returnMessage := msg.Msg
+	if errorMessage != "" {
+		returnMessage = errorMessage
 	}
 	attachment := slack.Attachment{
-		Text: fmt.Sprintf("Selected: %s; and answer: %s", display, msg.Msg),
+		Text: fmt.Sprintf("Selected: %s; and answer: %s", display, returnMessage),
 	}
 
 	_, _, err = a.slack.PostMessage(
@@ -402,6 +408,10 @@ func (a *app) events(w http.ResponseWriter, r *http.Request) {
 
 		case types.EventFailure:
 			emoji := ":x:"
+			attachment.Text = fmt.Sprintf("%s %s", emoji, obj.Message)
+
+		case types.EventDead:
+			emoji := ":skull:"
 			attachment.Text = fmt.Sprintf("%s %s", emoji, obj.Message)
 		}
 	}

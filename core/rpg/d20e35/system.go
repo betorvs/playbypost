@@ -147,21 +147,24 @@ func (d *D20Extended) calcHitPoints(level, bonus int, method HitPointsMethod) in
 	return value
 }
 
-func NewExtended(bonus, level int, hitDices HitDices, hitDicesMethod HitPointsMethod, class string) *D20Extended {
-	weapon := make(map[string]Weapon)
-	classes := make(map[string]int)
-	classes[class] = level
+func AddValuesExtended(bonus, level int, hitDices HitDices, hitDicesMethod HitPointsMethod, class string) *D20Extended {
+	// weapon := make(map[string]Weapon)
+	// classes := make(map[string]int)
+	// classes[class] = level
 	d := D20Extended{
-		Level:   level,
-		Class:   classes,
+		Level: level,
+		// Class:   classes,
 		HitDice: hitDices,
-		Weapon:  weapon,
+		// Weapon:  weapon,
 	}
 	d.calcHitPoints(level, bonus, hitDicesMethod)
 
 	return &d
 }
 
-func RestoreExtended() *D20Extended {
-	return &D20Extended{}
+func NewExtended() *D20Extended {
+	return &D20Extended{
+		Weapon: make(map[string]Weapon),
+		Class:  make(map[string]int),
+	}
 }

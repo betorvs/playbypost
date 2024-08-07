@@ -6,10 +6,12 @@ import (
 	"strings"
 )
 
+// NF is reference to awk NF to get last field
 type CommandAction struct {
 	ID   int
 	Act  string
 	Text string
+	NF   int
 }
 
 func TextToCommand(s string) (CommandAction, error) {
@@ -31,6 +33,9 @@ func TextToCommand(s string) (CommandAction, error) {
 					}
 					player.Act = cmds[0]
 				}
+			}
+			if length == 3 {
+				player.NF, _ = strconv.Atoi(p[2])
 			}
 			// for i := 0; i < length; i++ {
 			// 	command = fmt.Sprintf("%s%s ", command, p[i])

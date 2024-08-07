@@ -52,7 +52,7 @@ type Virtues struct {
 	Courage              int
 }
 
-func NewExtended(conscience, selfControl, courage, dexterity, wits int) *D10Extented {
+func NewWithValuesExtended(conscience, selfControl, courage, dexterity, wits int) *D10Extented {
 	size := 5
 	weapon := make(map[string]Weapon)
 	return &D10Extented{
@@ -69,8 +69,10 @@ func NewExtended(conscience, selfControl, courage, dexterity, wits int) *D10Exte
 	}
 }
 
-func RestoreExtended() *D10Extented {
-	return &D10Extented{}
+func NewExtended() *D10Extented {
+	return &D10Extented{
+		Weapon: make(map[string]Weapon),
+	}
 }
 
 func (d *D10Extented) SkillBonus(s string) (int, error) {

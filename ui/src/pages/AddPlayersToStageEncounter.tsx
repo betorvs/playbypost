@@ -71,7 +71,7 @@ const AddPlayerToStageEncounter = () => {
                                 onChange={e => {
                                     console.log("set e.target.value", e.target.value);
                                     const numValue = Number(e.target.value);
-                                    setIDs([numValue]);
+                                    setIDs([...ids, numValue]);
                                 }
 
                                 } />

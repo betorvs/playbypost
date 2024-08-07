@@ -10,11 +10,11 @@ const (
 	initiative string = "initiative"
 )
 
-func (c *Cli) CreateInitiative(name string, encounterID int, npc bool) ([]byte, error) {
+func (c *Cli) CreateInitiative(userID, channel string, encounterID int) ([]byte, error) {
 	s := types.Initiative{
-		Name:        name,
+		Channel:     channel,
 		EncounterID: encounterID,
-		NPC:         npc,
+		UserID:      userID,
 	}
 	body, err := json.Marshal(s)
 	if err != nil {

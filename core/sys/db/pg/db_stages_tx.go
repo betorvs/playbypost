@@ -174,6 +174,7 @@ func (db *DBX) UpdatePhase(ctx context.Context, id, phase int) error {
 	return nil
 }
 
+// AddParticipants func stage_encounters_participants_players
 func (db *DBX) AddParticipants(ctx context.Context, encounterID int, npc bool, players []int) error {
 
 	query := "INSERT INTO stage_encounters_participants_players (players_id, stage_encounters_id) VALUES ($1, $2)"

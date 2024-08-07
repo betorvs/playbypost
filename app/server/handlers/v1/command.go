@@ -60,22 +60,48 @@ func (a MainApi) ExecuteCommand(w http.ResponseWriter, r *http.Request) {
 		actions["text"] = cmd.Text
 		actions["channel"] = headerStoryChannel
 		actions["userid"] = headerUserID
-		taskID, err := parser.TextToTaskID(obj.Text)
-		if err == nil {
-			actions["task_id"] = strconv.Itoa(taskID)
+		foundID, err := parser.TextToTaskID(obj.Text)
+		if err != nil {
+			a.s.ErrJSON(w, http.StatusBadRequest, "cannot find id in command text")
+			return
 		}
+		if strings.HasPrefix(cmd.Act, parser.Task) {
+			actions["task_id"] = strconv.Itoa(foundID)
+		}
+		if strings.HasPrefix(cmd.Act, parser.AttackPlayer) && cmd.NF != 0 {
+			actions["npc_id"] = strconv.Itoa(cmd.NF)
+			actions["player_id"] = strconv.Itoa(foundID)
+		}
+		if strings.Contains(cmd.Act, fmt.Sprintf("%s-npc", parser.HealthStatus)) {
+			actions["npc_id"] = strconv.Itoa(foundID)
+		}
+		if strings.HasPrefix(cmd.Act, parser.AttackNPC) {
+			actions["npc_id"] = strconv.Itoa(foundID)
+		}
+		if runningStage.Encounter.InitiativeID != 0 {
+			actions["initiative_id"] = strconv.Itoa(runningStage.Encounter.InitiativeID)
+		}
+
 		encounterID := runningStage.Encounter.ID
-		if cmd.ID > 0 {
+		// it should recover encounter id from command in case of change encounter phase
+		if strings.HasPrefix(cmd.Act, parser.ChangeEncounter) && cmd.ID > 0 {
 			encounterID = cmd.ID
+		}
+		actions["encounter_id"] = strconv.Itoa(encounterID)
+		if !storyteller {
+			actions["player_id"] = strconv.Itoa(runningStage.Players.ID)
 		}
 
 		err = a.db.RegisterActivities(a.ctx, runningStage.Stage.ID, encounterID, actions)
 		if err != nil {
-			a.logger.Error("register activities error", "error", err.Error())
+			a.logger.Error("register activities error", "error", err.Error(), "encounterID", encounterID, "actions", actions)
 			a.s.ErrJSON(w, http.StatusBadRequest, "register activities")
 			return
 		}
 		msg := "command accepted"
+		if runningStage.Encounter.InitiativeID != 0 {
+			msg = fmt.Sprintf("command accepted, initiative id %d found. It will check initiative order before rolling your action.", runningStage.Encounter.InitiativeID)
+		}
 		a.s.JSON(w, types.Msg{Msg: msg})
 		return
 	}

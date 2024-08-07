@@ -64,7 +64,7 @@ func (a MainApi) GeneratePlayer(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		// creature.
-		res, err := a.db.SavePlayerTx(a.ctx, userID, obj.StageID, false, creature, a.rpg)
+		res, err := a.db.SavePlayerTx(a.ctx, userID, obj.StageID, creature, a.rpg)
 		if err != nil {
 			a.logger.Error("generate creature", "userid", userID, "error", err.Error())
 			a.s.ErrJSON(w, http.StatusBadGateway, "error saving new player")
@@ -91,11 +91,7 @@ func (a MainApi) GetPlayersByStageID(w http.ResponseWriter, r *http.Request) {
 		a.s.ErrJSON(w, http.StatusBadRequest, "id should be a integer")
 		return
 	}
-	npc := false
-	if r.URL.Query().Get("npc") == "true" {
-		npc = true
-	}
-	a.logger.Info("get players by story id", "story-id", id, "query_npc", npc)
+	a.logger.Info("get players by story id", "story-id", id)
 	obj, err := a.db.GetPlayerByStageID(a.ctx, id)
 	if err != nil {
 		a.s.ErrJSON(w, http.StatusBadRequest, "players database issue")

@@ -38,6 +38,7 @@ type StageEncounter struct {
 	Phase         int
 	Text          string          `json:"text"`
 	StorytellerID int             `json:"storyteller_id,omitempty"`
+	InitiativeID  int             `json:"initiative_id"`
 	PC            []GenericIDName `json:"pc"`
 	NPC           []GenericIDName `json:"npc"`
 	Options       []GenericIDName `json:"options"`

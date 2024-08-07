@@ -1,12 +1,13 @@
 package types
 
 type Initiative struct {
-	Name        string   `json:"name"`
-	StoryID     int      `json:"story_id"`
-	EncounterID int      `json:"encounter_id"`
-	PlayersID   []int    `json:"players_id"`
-	NPC         bool     `json:"is_npc"`
-	NonPlayerID []string `json:"npcs"`
+	Channel     string `json:"channel"`
+	EncounterID int    `json:"encounter_id"`
+	UserID      string `json:"user_id,omitempty"`
+	// StoryID     int      `json:"story_id"`
+	// PlayersID   []int `json:"players_id"`
+	// NPC         bool     `json:"is_npc"`
+	// NonPlayerID []int `json:"npcs"`
 }
 
 type InitiativeShort struct {

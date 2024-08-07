@@ -3,7 +3,10 @@ package pg
 import (
 	"context"
 	"database/sql"
+	"slices"
 
+	"github.com/betorvs/playbypost/core/rpg"
+	"github.com/betorvs/playbypost/core/rules"
 	"github.com/betorvs/playbypost/core/sys/web/types"
 	"github.com/betorvs/playbypost/core/utils"
 )
@@ -125,7 +128,7 @@ func (db *DBX) GetStageEncounterByEncounterID(ctx context.Context, id int) (type
 
 func (db *DBX) GetStageEncountersByStageID(ctx context.Context, id int) ([]types.StageEncounter, error) {
 	list := []types.StageEncounter{}
-	query := "select se.ID, se.display_text, e.title, se.storyteller_id, e.notes, e.announcement, s.encoding_key, se.updated_at, se.phase from stage_encounters AS se JOIN encounters AS e ON se.encounters_id = e.id JOIN stage AS s ON se.stage_id = s.id WHERE s.id = $1"
+	query := "select se.ID, se.display_text, e.title, se.storyteller_id, e.notes, e.announcement, e.writer_id, e.story_id, s.encoding_key, se.updated_at, se.phase from stage_encounters AS se JOIN encounters AS e ON se.encounters_id = e.id JOIN stage AS s ON se.stage_id = s.id WHERE s.id = $1"
 	rows, err := db.Conn.QueryContext(ctx, query, id)
 	if err != nil {
 		db.Logger.Error("query on stage_encounters by stage_id failed", "error", err.Error())
@@ -136,7 +139,7 @@ func (db *DBX) GetStageEncountersByStageID(ctx context.Context, id int) ([]types
 		var s types.StageEncounter
 		var notes, announce, encodingKey string
 		var updatedAt sql.NullTime
-		if err := rows.Scan(&s.ID, &s.Text, &s.Title, &s.StorytellerID, &notes, &announce, &encodingKey, &updatedAt, &s.Phase); err != nil {
+		if err := rows.Scan(&s.ID, &s.Text, &s.Title, &s.StorytellerID, &notes, &announce, &s.WriterID, &s.StoryID, &encodingKey, &updatedAt, &s.Phase); err != nil {
 			db.Logger.Error("scan error on encounstage_encounters by stage_id ", "error", err.Error(), "updated_at", updatedAt)
 		}
 		s.Notes, _ = utils.DecryptText(notes, encodingKey)
@@ -190,7 +193,7 @@ func (db *DBX) GetRunningStageByChannelID(ctx context.Context, channelID, userID
 		db.Logger.Error("rows err on stage", "error", err.Error())
 	}
 	storyteller := false
-	// encounters
+	// get running encounter
 	enc, err := db.getStageEncounterByEncounterID(ctx, -1, int(types.Running))
 	if err != nil {
 		db.Logger.Error("rows err on getStageEncounterByEncounterID", "error", err.Error())
@@ -282,7 +285,8 @@ func (db *DBX) getStageEncounterByEncounterID(ctx context.Context, id int, phase
 	var r *sql.Rows
 	switch {
 	case phase == -1 && id != 0:
-		query := "select se.ID, se.display_text, e.title, se.storyteller_id, se.phase, e.notes, e.announcement, s.encoding_key, se.phase from stage_encounters AS se JOIN encounters AS e ON se.encounters_id = e.id JOIN stage AS s ON se.stage_id = s.id WHERE se.ID = $1"
+		//
+		query := "select se.ID, se.display_text, e.title, se.storyteller_id, se.phase, e.notes, e.announcement, e.writer_id, e.story_id, s.encoding_key, i.id from stage_encounters AS se JOIN encounters AS e ON se.encounters_id = e.id JOIN stage AS s ON se.stage_id = s.id LEFT JOIN initiative AS i ON i.stage_encounters_id = se.id WHERE se.ID = $1"
 		rows, err := db.Conn.QueryContext(ctx, query, id)
 		if err != nil {
 			db.Logger.Error("query on stage_encounters by stage_encounters.ID failed", "error", err.Error())
@@ -291,7 +295,8 @@ func (db *DBX) getStageEncounterByEncounterID(ctx context.Context, id int, phase
 		defer rows.Close()
 		r = rows
 	case phase > 0 && id == -1:
-		query := "select se.ID, se.display_text, e.title, se.storyteller_id, se.phase, e.notes, e.announcement, s.encoding_key, se.phase from stage_encounters AS se JOIN encounters AS e ON se.encounters_id = e.id JOIN stage AS s ON se.stage_id = s.id WHERE se.phase = $1"
+		// can return a initiative id
+		query := "select se.ID, se.display_text, e.title, se.storyteller_id, se.phase, e.notes, e.announcement, e.writer_id, e.story_id, s.encoding_key, i.id from stage_encounters AS se JOIN encounters AS e ON se.encounters_id = e.id JOIN stage AS s ON se.stage_id = s.id LEFT JOIN initiative AS i ON i.stage_encounters_id = se.id WHERE se.phase = $1"
 		rows, err := db.Conn.QueryContext(ctx, query, phase)
 		if err != nil {
 			db.Logger.Error("query on stage_encounters by phase equal 3 (running) failed", "error", err.Error())
@@ -305,11 +310,15 @@ func (db *DBX) getStageEncounterByEncounterID(ctx context.Context, id int, phase
 	for r.Next() {
 		var s types.StageEncounter
 		var notes, announce, encodingKey string
-		if err := r.Scan(&s.ID, &s.Text, &s.Title, &s.StorytellerID, &s.Phase, &notes, &announce, &encodingKey, &s.Phase); err != nil {
+		var initiativeID sql.NullInt64
+		if err := r.Scan(&s.ID, &s.Text, &s.Title, &s.StorytellerID, &s.Phase, &notes, &announce, &s.WriterID, &s.StoryID, &encodingKey, &initiativeID); err != nil {
 			db.Logger.Error("scan error on stage_encounters by stage_encounters.ID ", "error", err.Error())
 		}
 		s.Notes, _ = utils.DecryptText(notes, encodingKey)
 		s.Announcement, _ = utils.DecryptText(announce, encodingKey)
+		if initiativeID.Valid {
+			s.InitiativeID = int(initiativeID.Int64)
+		}
 		enc = s
 	}
 	// Check for errors from iterating over rows.
@@ -319,7 +328,7 @@ func (db *DBX) getStageEncounterByEncounterID(ctx context.Context, id int, phase
 	// participants
 	p, n, err := db.getParticipantsByStageEncounterID(ctx, enc.ID)
 	if err != nil {
-		db.Logger.Error("error on GetStageEncounterByEncounterID when calling getParticipantsByStageEncounterID", "error", err.Error())
+		db.Logger.Error("error on db.getStageEncounterByEncounterID when calling getParticipantsByStageEncounterID", "error", err.Error())
 	}
 	db.Logger.Info("players and npcs", "encounter_id", enc.ID, "player", p, "npc", n)
 	enc.PC = p
@@ -330,7 +339,7 @@ func (db *DBX) getStageEncounterByEncounterID(ctx context.Context, id int, phase
 func (db *DBX) getParticipantsByStageEncounterID(ctx context.Context, id int) ([]types.GenericIDName, []types.GenericIDName, error) {
 	players := []types.GenericIDName{}
 	npcs := []types.GenericIDName{}
-	query := "select sp.players_id, pl.character_name, snp.non_players_id, npc.npc_name from stage_encounters AS se LEFT JOIN stage_encounters_participants_players AS sp ON sp.stage_encounters_id = se.id LEFT JOIN players AS pl ON pl.id = sp.players_id LEFT JOIN stage_encounters_participants_non_players AS snp ON snp.stage_encounters_id = se.id LEFT JOIN non_players AS npc ON npc.id = snp.non_players_id WHERE se.ID = $1"
+	query := "select sp.players_id, pl.character_name, pl.destroyed, snp.non_players_id, npc.npc_name, npc.destroyed from stage_encounters AS se LEFT JOIN stage_encounters_participants_players AS sp ON sp.stage_encounters_id = se.id LEFT JOIN players AS pl ON pl.id = sp.players_id LEFT JOIN stage_encounters_participants_non_players AS snp ON snp.stage_encounters_id = se.id LEFT JOIN non_players AS npc ON npc.id = snp.non_players_id WHERE se.ID = $1"
 	rows, err := db.Conn.QueryContext(ctx, query, id)
 	if err != nil {
 		db.Logger.Error("query on stage_encounters_participants_players and stage_encounters_participants_non_players failed", "error", err.Error())
@@ -342,18 +351,23 @@ func (db *DBX) getParticipantsByStageEncounterID(ctx context.Context, id int) ([
 	for rows.Next() {
 		var pcID, npcID sql.NullInt64
 		var pcName, npcName sql.NullString
-		if err := rows.Scan(&pcID, &pcName, &npcID, &npcName); err != nil {
+		var pcDestroyed, npcDestroyed sql.NullBool
+		if err := rows.Scan(&pcID, &pcName, &pcDestroyed, &npcID, &npcName, &npcDestroyed); err != nil {
 			db.Logger.Error("scan error on stage_encounters_participants_players and stage_encounters_participants_non_players", "error", err.Error())
 		}
-		if pcID.Valid && pcName.Valid {
+		if pcID.Valid && pcName.Valid && pcDestroyed.Valid && !pcDestroyed.Bool {
 			p.ID = int(pcID.Int64)
 			p.Name = pcName.String
-			players = append(players, p)
+			if !slices.Contains(players, p) {
+				players = append(players, p)
+			}
 		}
-		if npcID.Valid && npcName.Valid {
+		if npcID.Valid && npcName.Valid && npcDestroyed.Valid && !npcDestroyed.Bool {
 			n.ID = int(npcID.Int64)
 			n.Name = npcName.String
-			npcs = append(npcs, n)
+			if !slices.Contains(npcs, n) {
+				npcs = append(npcs, n)
+			}
 		}
 	}
 	// Check for errors from iterating over rows.
@@ -412,7 +426,7 @@ func (db *DBX) GetStageEncounterActivities(ctx context.Context) ([]types.StageEn
 }
 
 // select t.description, t.kind, t.ability, t.skill FROM tasks AS t JOIN stage_running_tasks AS s ON s.task_id = t.id WHERE s.task_id = 1
-func (db *DBX) GetSTaskFromRunningTaskID(ctx context.Context, taskID int) (types.Task, error) {
+func (db *DBX) GetStageTaskFromRunningTaskID(ctx context.Context, taskID int) (types.Task, error) {
 	t := types.Task{}
 	query := "select t.description, t.kind, t.ability, t.skill, t.target FROM tasks AS t JOIN stage_running_tasks AS s ON s.task_id = t.id WHERE s.task_id = $1"
 	rows, err := db.Conn.QueryContext(ctx, query, taskID)
@@ -431,4 +445,66 @@ func (db *DBX) GetSTaskFromRunningTaskID(ctx context.Context, taskID int) (types
 		db.Logger.Error("rows err on tasks by task_id", "error", err.Error())
 	}
 	return t, nil
+}
+
+func (db *DBX) GetCreatureFromParticipantsList(ctx context.Context, players []types.GenericIDName, npcs []types.GenericIDName, rpgSystem *rpg.RPGSystem) (map[int]*rules.Creature, map[int]*rules.Creature, error) {
+	db.Logger.Info("GetCreatureFromParticipantsList", "players", players, "npcs", npcs)
+	// players
+	playersMap := map[int]*rules.Creature{}
+	creatureMap := map[int]*rules.Creature{}
+	{
+		query := "SELECT id, character_name, abilities, skills, extensions FROM players"
+		rows, err := db.Conn.QueryContext(ctx, query)
+		if err != nil {
+			db.Logger.Error("query on players failed", "error", err.Error())
+			return map[int]*rules.Creature{}, map[int]*rules.Creature{}, err
+		}
+		defer rows.Close()
+		for rows.Next() {
+			c := rules.RestoreCreature()
+			c.RPG = rpgSystem
+			var id int
+			extended := rpg.NewExtended()
+			if err := rows.Scan(&id, &c.Name, &c.Abilities, &c.Skills, &extended); err != nil {
+				db.Logger.Error("scan error on players by id ", "error", err.Error())
+			}
+			c.Extension = rpg.NewExtendedSystem(rpgSystem, extended)
+			creatureMap[id] = c
+		}
+	}
+	for _, v := range players {
+		if c, ok := creatureMap[v.ID]; ok {
+			playersMap[v.ID] = c
+		}
+	}
+	// npcs
+	npcsMap := map[int]*rules.Creature{}
+	creatureMap2 := map[int]*rules.Creature{}
+	{
+		query := "SELECT id, npc_name, abilities, skills, extensions FROM non_players"
+		rows, err := db.Conn.QueryContext(ctx, query)
+		if err != nil {
+			db.Logger.Error("query on non_players by id failed", "error", err.Error())
+			return map[int]*rules.Creature{}, map[int]*rules.Creature{}, err
+		}
+		defer rows.Close()
+		for rows.Next() {
+			c := rules.RestoreCreature()
+			c.RPG = rpgSystem
+			var id int
+			extended := rpg.NewExtended()
+			if err := rows.Scan(&id, &c.Name, &c.Abilities, &c.Skills, &extended); err != nil {
+				db.Logger.Error("scan error on non_players by id ", "error", err.Error())
+			}
+			c.Extension = rpg.NewExtendedSystem(rpgSystem, extended)
+			creatureMap2[id] = c
+		}
+	}
+	for _, v := range npcs {
+		if c, ok := creatureMap2[v.ID]; ok {
+			npcsMap[v.ID] = c
+		}
+	}
+
+	return playersMap, npcsMap, nil
 }

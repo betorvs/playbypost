@@ -27,7 +27,7 @@ var initiativeCmd = &cobra.Command{
 			app.Logger.Error("--name is mandatory")
 			os.Exit(2)
 		}
-		body, err := app.Web.CreateInitiative(name, encounterid, isNPC)
+		body, err := app.Web.CreateInitiative(userID, channel, encounterid)
 		if err != nil {
 			app.Logger.Error("initiative error", "error", err.Error())
 			os.Exit(1)
@@ -54,7 +54,9 @@ func init() {
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
 	// initiativeCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
-	initiativeCmd.Flags().StringVar(&name, "name", "", "initiative name")
+	// initiativeCmd.Flags().StringVar(&name, "name", "", "initiative name")
+	initiativeCmd.Flags().StringVarP(&userID, "user-id", "u", "", "userid from chat integration")
+	initiativeCmd.Flags().StringVarP(&channel, "channel", "c", "", "channel from chat integration")
 	initiativeCmd.Flags().IntVar(&encounterid, "encounter-id", 0, "encounter ID")
 	initiativeCmd.Flags().BoolVar(&isNPC, "non-player", false, "--non-player to add non player character as encounter participats")
 }

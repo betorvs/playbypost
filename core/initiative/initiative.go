@@ -30,6 +30,10 @@ func (i *Initiative) Next() int {
 	return i.Position
 }
 
+func (i *Initiative) Current() string {
+	return i.Participants[i.Position].Name
+}
+
 func (i Initiative) NextInfo() int {
 	// fmt.Println("executing next ", i.Position, "len", i.Participants.Len())
 	if i.Position >= i.Participants.Len()-1 || i.Position == -1 {
@@ -42,6 +46,15 @@ func (i Initiative) NextInfo() int {
 
 func (i *Initiative) Remove(index int) {
 	i.Participants = append(i.Participants[:index], i.Participants[index+1:]...)
+}
+
+func (i *Initiative) RemoveByName(name string) {
+	for index, p := range i.Participants {
+		if p.Name == name {
+			i.Remove(index)
+			break
+		}
+	}
 }
 
 type Participant struct {

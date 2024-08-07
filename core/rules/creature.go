@@ -6,9 +6,6 @@ import (
 	"errors"
 
 	"github.com/betorvs/playbypost/core/rpg"
-	"github.com/betorvs/playbypost/core/rpg/d10hm"
-	"github.com/betorvs/playbypost/core/rpg/d10os"
-	"github.com/betorvs/playbypost/core/rpg/d20e35"
 )
 
 const (
@@ -85,6 +82,10 @@ func (c *Creature) Destroy() error {
 	return errors.New(DestroyedError)
 }
 
+func (c *Creature) IsDead() bool {
+	return c.destroyed
+}
+
 func RestoreCreature() *Creature {
 	return &Creature{
 		Abilities: make(map[string]Ability),
@@ -93,51 +94,52 @@ func RestoreCreature() *Creature {
 	}
 }
 
-func (c *Creature) UnmarshalJSON(b []byte) error {
-	var v struct {
-		Name      string          `json:"name"`
-		Abilities Abilities       `json:"abilities"`
-		Skills    Skills          `json:"skills"`
-		RPG       *rpg.RPGSystem  `json:"rpg"`
-		Extension json.RawMessage `json:"extension"`
-		destroyed bool
-	}
-	err := json.Unmarshal(b, &v)
-	if err != nil {
-		return err
-	}
-	c.Name = v.Name
-	c.Abilities = v.Abilities
-	c.Skills = v.Skills
-	c.RPG = v.RPG
-	c.destroyed = v.destroyed
-	switch v.RPG.Name {
-	case rpg.D2035:
-		var f d20e35.D20Extended
+// func (c *Creature) UnmarshalJSON(b []byte) error {
+// 	fmt.Printf("Creature UnmarshalJSON: %s\n", b)
+// 	var v struct {
+// 		Name      string          `json:"name"`
+// 		Abilities Abilities       `json:"abilities"`
+// 		Skills    Skills          `json:"skills"`
+// 		RPG       *rpg.RPGSystem  `json:"rpg"`
+// 		Extension json.RawMessage `json:"extension"`
+// 		destroyed bool
+// 	}
+// 	err := json.Unmarshal(b, &v)
+// 	if err != nil {
+// 		return err
+// 	}
+// 	c.Name = v.Name
+// 	c.Abilities = v.Abilities
+// 	c.Skills = v.Skills
+// 	c.RPG = v.RPG
+// 	c.destroyed = v.destroyed
+// 	switch v.RPG.Name {
+// 	case rpg.D2035:
+// 		var f d20e35.D20Extended
 
-		if err := json.Unmarshal(v.Extension, &f); err != nil {
-			return err
-		}
+// 		if err := json.Unmarshal(v.Extension, &f); err != nil {
+// 			return err
+// 		}
 
-		c.Extension = &f
-	case rpg.D10HM:
-		var f d10hm.D10Extented
+// 		c.Extension = &f
+// 	case rpg.D10HM:
+// 		var f d10hm.D10Extented
 
-		if err := json.Unmarshal(v.Extension, &f); err != nil {
-			return err
-		}
+// 		if err := json.Unmarshal(v.Extension, &f); err != nil {
+// 			return err
+// 		}
 
-		c.Extension = &f
+// 		c.Extension = &f
 
-	case rpg.D10OS:
-		var f d10os.D10Extented
+// 	case rpg.D10OS:
+// 		var f d10os.D10Extented
 
-		if err := json.Unmarshal(v.Extension, &f); err != nil {
-			return err
-		}
+// 		if err := json.Unmarshal(v.Extension, &f); err != nil {
+// 			return err
+// 		}
 
-		c.Extension = &f
-	}
+// 		c.Extension = &f
+// 	}
 
-	return nil
-}
+// 	return nil
+// }

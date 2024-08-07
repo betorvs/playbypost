@@ -56,13 +56,13 @@ func (db *DBX) SaveInitiativeTx(ctx context.Context, i initiative.Initiative, en
 		}
 	}
 	// update encounter phase: 2 [core/sys/web/types.Phase.Running]
-	queryEncounter := "UPDATE encounters SET phase = $1 WHERE id = $2"
-	phaseRunning := 2
-	_, err = tx.ExecContext(ctx, queryEncounter, phaseRunning, encounterID)
-	if err != nil {
-		db.Logger.Error("tx participants on initiative failed", "error", err.Error())
-		return -1, err
-	}
+	// queryEncounter := "UPDATE encounters SET phase = $1 WHERE id = $2"
+	// phaseRunning := 2
+	// _, err = tx.ExecContext(ctx, queryEncounter, phaseRunning, encounterID)
+	// if err != nil {
+	// 	db.Logger.Error("tx participants on initiative failed", "error", err.Error())
+	// 	return -1, err
+	// }
 
 	// Commit the transaction.
 	if err = tx.Commit(); err != nil {
@@ -118,21 +118,19 @@ func (db *DBX) addParticipants(ctx context.Context, id int, name string, bonus, 
 	return res, nil
 }
 
-// get by stage id
-func (db *DBX) GetRunningInitiativeByStageID(ctx context.Context, stageID int) (initiative.Initiative, int, error) {
-	initiativeID := -1
+func (db *DBX) GetInitiativeByID(ctx context.Context, id int) (initiative.Initiative, error) {
 	obj := initiative.Initiative{}
-	rows, err := db.Conn.QueryContext(ctx, "SELECT i.id, i.title, i.next_player, p.participant_name, p.participant_result FROM initiative AS i JOIN initiative_participants AS p ON i.id = p.initiative_id JOIN stage_encounters AS se ON se.id = i.stage_encounters_id WHERE p.active = TRUE AND se.phase = 2 AND se.stage_id = $1", stageID)
+	rows, err := db.Conn.QueryContext(ctx, "SELECT i.id, i.title, i.next_player, p.participant_name, p.participant_result FROM initiative AS i JOIN initiative_participants AS p ON i.id = p.initiative_id WHERE p.active = true AND i.id = $1", id)
 	if err != nil {
 		db.Logger.Error("query on users failed", "error", err.Error())
-		return obj, initiativeID, err
+		return obj, err
 	}
 	defer rows.Close()
 	var nextPlayer, result int
 	var title, name string
 	party := initiative.Participants{}
 	for rows.Next() {
-		if err := rows.Scan(&initiativeID, &title, &nextPlayer, &name, &result); err != nil {
+		if err := rows.Scan(&id, &title, &nextPlayer, &name, &result); err != nil {
 			db.Logger.Error("scan on users error", "error", err.Error())
 		}
 		p := initiative.Participant{}
@@ -148,7 +146,7 @@ func (db *DBX) GetRunningInitiativeByStageID(ctx context.Context, stageID int) (
 		db.Logger.Error("rows on users error", "error", err.Error())
 	}
 
-	return obj, initiativeID, nil
+	return obj, nil
 }
 
 func (db *DBX) GetRunningInitiativeByEncounterID(ctx context.Context, encounterID int) (initiative.Initiative, int, error) {
@@ -198,3 +196,36 @@ func (db *DBX) DeactivateParticipant(ctx context.Context, id int, name string) (
 	}
 	return res, nil
 }
+
+// get by stage id
+// func (db *DBX) GetRunningInitiativeByStageID(ctx context.Context, stageID int) (initiative.Initiative, int, error) {
+// 	initiativeID := -1
+// 	obj := initiative.Initiative{}
+// 	rows, err := db.Conn.QueryContext(ctx, "SELECT i.id, i.title, i.next_player, p.participant_name, p.participant_result FROM initiative AS i JOIN initiative_participants AS p ON i.id = p.initiative_id JOIN stage_encounters AS se ON se.id = i.stage_encounters_id WHERE p.active = TRUE AND se.phase = 2 AND se.stage_id = $1", stageID)
+// 	if err != nil {
+// 		db.Logger.Error("query on users failed", "error", err.Error())
+// 		return obj, initiativeID, err
+// 	}
+// 	defer rows.Close()
+// 	var nextPlayer, result int
+// 	var title, name string
+// 	party := initiative.Participants{}
+// 	for rows.Next() {
+// 		if err := rows.Scan(&initiativeID, &title, &nextPlayer, &name, &result); err != nil {
+// 			db.Logger.Error("scan on users error", "error", err.Error())
+// 		}
+// 		p := initiative.Participant{}
+// 		p.Name = name
+// 		p.Result = result
+// 		party = append(party, p)
+// 	}
+// 	obj.Name = title
+// 	obj.Position = nextPlayer
+// 	obj.Participants = party
+// 	// Check for errors from iterating over rows.
+// 	if err := rows.Err(); err != nil {
+// 		db.Logger.Error("rows on users error", "error", err.Error())
+// 	}
+
+// 	return obj, initiativeID, nil
+// }

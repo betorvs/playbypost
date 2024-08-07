@@ -4,6 +4,7 @@ const (
 	EventAnnounce = "announce"
 	EventSuccess  = "success"
 	EventFailure  = "failure"
+	EventDead     = "dead"
 )
 
 type Event struct {

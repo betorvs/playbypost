@@ -8,12 +8,12 @@ var (
 	announcement  string // cmd: story, encounter
 	notes         string // cmd: story, encounter
 	writerID      int    // cmd: story
-	name          string // cmd: player, initiative
+	name          string // cmd: player
 	playerid      int    // cmd: player
 	storyid       int    // cmd: player, encounter
 	encounterid   int    // cmd: encounter, initiative
 	listPlayersID []int  // cmd: encounter
-	isNPC         bool   //cmd: encounter, initiative
+	isNPC         bool   //cmd: encounter
 	adminToken    string //cmd: all
 	adminUser     string //cmd: all
 	server        string //cmd: all
@@ -24,4 +24,5 @@ var (
 	target        int    //cmd: task
 	storyID       int    //cmd: stage
 	userID        string //cmd: stage
+	channel       string // cmd: initiative
 )

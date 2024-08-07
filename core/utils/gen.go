@@ -133,7 +133,7 @@ func GenD10Random(n string, rpgSystem *rpg.RPGSystem) (*rules.Creature, error) {
 		composture := person1.Abilities["composture"].Value
 		dexterity := person1.Abilities["dexterity"].Value
 		wits := person1.Abilities["wits"].Value
-		d10hmExtended := d10hm.NewExtended(resolve, composture, dexterity, wits)
+		d10hmExtended := d10hm.NewWithValuesExtended(resolve, composture, dexterity, wits)
 		// longsword := weapons[0]
 		d10hmExtended.Weapon["longsword"] = d10hm.Weapon{
 			Name:        "longsword",

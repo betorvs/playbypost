@@ -58,7 +58,12 @@ type DBClient interface {
 	UpdatePhase(ctx context.Context, id, phase int) error
 	RegisterActivities(ctx context.Context, stageID, encounterID int, actions types.Actions) error
 	UpdateProcessedActivities(ctx context.Context, id int, processed bool, actions types.Actions) error
-	GetSTaskFromRunningTaskID(ctx context.Context, taskID int) (types.Task, error)
+	GetStageTaskFromRunningTaskID(ctx context.Context, taskID int) (types.Task, error)
+	GetCreatureFromParticipantsList(ctx context.Context, players []types.GenericIDName, npcs []types.GenericIDName, rpgSystem *rpg.RPGSystem) (map[int]*rules.Creature, map[int]*rules.Creature, error)
+	// NPC
+	GetNPCByStageID(ctx context.Context, id int) ([]types.Players, error)
+	GenerateNPC(ctx context.Context, name string, stageID, storytellerID int, creature *rules.Creature) (int, error)
+	UpdateNPC(ctx context.Context, id int, creature *rules.Creature, destroyed bool) error
 	// users
 	GetUser(ctx context.Context) ([]types.User, error)
 	GetUserByUserID(ctx context.Context, id string) (types.User, error)
@@ -67,18 +72,20 @@ type DBClient interface {
 	UpdateNextPlayer(ctx context.Context, id, nextPlayer int) error
 	SaveInitiativeTx(ctx context.Context, i initiative.Initiative, encounterID int) (int, error)
 	SaveInitiative(ctx context.Context, i initiative.Initiative, encounterID int) (int, error)
-	GetRunningInitiativeByStageID(ctx context.Context, stageID int) (initiative.Initiative, int, error)
+	GetInitiativeByID(ctx context.Context, id int) (initiative.Initiative, error)
+	// GetRunningInitiativeByStageID(ctx context.Context, stageID int) (initiative.Initiative, int, error)
 	GetRunningInitiativeByEncounterID(ctx context.Context, encounterID int) (initiative.Initiative, int, error)
 	DeactivateParticipant(ctx context.Context, id int, name string) (int, error)
 	// Players
-	SavePlayer(ctx context.Context, id, storyID int, npc bool, creature *rules.Creature, rpg *rpg.RPGSystem) (int, error)
-	SavePlayerTx(ctx context.Context, id, storyID int, npc bool, creature *rules.Creature, rpgSystem *rpg.RPGSystem) (int, error)
+	// SavePlayer(ctx context.Context, id, storyID int, npc bool, creature *rules.Creature, rpg *rpg.RPGSystem) (int, error)
+	SavePlayerTx(ctx context.Context, id, storyID int, creature *rules.Creature, rpg *rpg.RPGSystem) (int, error)
+	UpdatePlayer(ctx context.Context, id int, creature *rules.Creature, destroyed bool) error
 	GetPlayers(ctx context.Context) ([]types.Players, error)
 	GetPlayerByID(ctx context.Context, id int) (types.Players, error)
 	GetPlayerByPlayerID(ctx context.Context, id int) (types.Players, error)
 	GetPlayerByStageID(ctx context.Context, id int) ([]types.Players, error)
 	GetPlayerByUserID(ctx context.Context, id, channel string) (types.Players, error)
-	GetPlayersByEncounterID(ctx context.Context, encounterID int, npc bool, rpg *rpg.RPGSystem) (map[int]*rules.Creature, error)
+	// GetPlayersByEncounterID(ctx context.Context, encounterID int, npc bool, rpg *rpg.RPGSystem) (map[int]*rules.Creature, error)
 	// GetPlayersByStoryID(ctx context.Context, storyID int, npc bool, rpg *rpg.RPGSystem) (map[int]*rules.Creature, error)
 	// GetSliceOfPlayersByStageID(ctx context.Context, stageID int, npc bool, rpgSystem *rpg.RPGSystem) ([]types.Players, error)
 	// GetPlayersByEncounterID(ctx context.Context, encounterID int, npc bool, rpg *rpg.RPGSystem) (map[int]*rules.Creature, error)

@@ -51,6 +51,9 @@ const StageEncounterDetailHeader = ({ stageID, storyID, encounter, detail }: pro
             <NavigateButton link={`/stages/${stageID}/story/${storyID}/encounter/${encounter?.id}/encounter`} variant="primary">
               Next Encounter
             </NavigateButton>{" "}
+            <NavigateButton link={`/stages/${stageID}/story/${storyID}/encounter/${encounter?.id}/npc/${encounter?.storyteller_id}`} variant="primary">
+              Add NPC
+            </NavigateButton>{" "}
           </>
         ) : (
           <>

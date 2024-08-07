@@ -28,6 +28,7 @@ import StageEncounterDetail from "./pages/StageEncounterDetail";
 import AddPlayerToStageEncounter from "./pages/AddPlayersToStageEncounter";
 import TaskToEncounter from "./pages/TaskToEncounter";
 import NextEncounter from "./pages/NextEncounter";
+import AddNPCToStageEncounter from "./pages/AddNPCToStageEncounter";
 
 const PrivateRoutes = () => {
   const { authenticated } = useContext(AuthContext);
@@ -83,6 +84,7 @@ const Routes = () => {
           <Route path="/stages/:id/story/:story/players" element={<PlayersPage />} />
           <Route path="/stages/:id/story/:story/encounter/:encounterid" element={<StageEncounterDetail />} />
           <Route path="/stages/:id/story/:story/encounter/:encounterid/players" element={<AddPlayerToStageEncounter />} />
+          <Route path="/stages/:id/story/:story/encounter/:encounterid/npc/:storyteller_id" element={<AddNPCToStageEncounter />} />
           <Route path="/stages/:id/story/:story/encounter/:encounterid/task/:storyteller_id" element={<TaskToEncounter />} />
           <Route path="/stages/:id/story/:story/encounter/:encounterid/encounter" element={<NextEncounter />} />
           <Route path="/stages/start/:id" element={<StageStart />} />

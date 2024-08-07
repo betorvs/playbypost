@@ -3,7 +3,6 @@ package pg
 import (
 	"context"
 
-	"github.com/betorvs/playbypost/core/rpg"
 	"github.com/betorvs/playbypost/core/rules"
 	"github.com/betorvs/playbypost/core/sys/web/types"
 )
@@ -157,10 +156,6 @@ func (db *DBX) GetPlayerByUserID(ctx context.Context, id, channel string) (types
 		db.Logger.Error("rows err on players by userid ", "error", err.Error())
 	}
 	return players, nil
-}
-
-func (db *DBX) GetPlayersByEncounterID(ctx context.Context, encounterID int, npc bool, rpg *rpg.RPGSystem) (map[int]*rules.Creature, error) {
-	return map[int]*rules.Creature{}, nil
 }
 
 // func (db *DBX) creatureToPlayer(p *types.Players, c *rules.Creature) {

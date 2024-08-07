@@ -101,11 +101,13 @@ func (a *Attack) singleMeleeAttack() {
 		weaponBonus, _, _ := a.Attacker.Extension.WeaponBonus(a.Weapon)
 		defense, _ := a.Defensor.Extension.DefenseBonus("melee")
 		calcDices := a.Dice.FormatDice(abilityBonus+bonus+weaponBonus-defense, 0)
+		a.Logger.Info("calcDices", "dices", calcDices)
 		result, _ := a.Dice.FreeRoll("attack roll", calcDices)
 		a.Logger.Info("dice result", "result", abilityBonus+bonus+weaponBonus-defense, "rolled", result.Rolled)
+		a.Response.Text = result.Rolled
 		if result.Result > 0 {
 			a.Response.Success = true
-			a.Response.Text = result.Rolled
+			a.Response.Damage = result.Result
 			a.Defensor.Extension.Damage(result.Result)
 			if a.Defensor.Extension.HealthStatus() <= 0 {
 				_ = a.Defensor.Destroy()
