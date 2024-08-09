@@ -100,9 +100,9 @@ tasks:
       TOKEN:
         sh: cat creds
 
-  load_storytellers:
+  load_writer:
     cmds:
-      - for i in $(seq 1 5); do ./admin-ctl storyteller create -u roberto${i} --password r123qwe --token {{.TOKEN}}; done
+      - for i in $(seq 1 5); do ./admin-ctl writer create -u roberto${i} --password r123qwe --token {{.TOKEN}}; done
     vars:
       TOKEN:
         sh: cat creds

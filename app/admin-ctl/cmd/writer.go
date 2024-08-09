@@ -12,20 +12,20 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// storytellersCmd represents the storyteller command
-var storytellersCmd = &cobra.Command{
-	Use:     "storyteller [list|create]",
+// writersCmd represents the writer command
+var writersCmd = &cobra.Command{
+	Use:     "writer [list|create]",
 	Aliases: []string{"st", "writer"},
-	Short:   "manipulate storytellers",
+	Short:   "manipulate writers",
 	Long:    `No long description yet`,
 	Args:    cobra.ExactArgs(1),
 	PreRun:  loadApp,
 	Run: func(cmd *cobra.Command, args []string) {
 		switch args[0] {
 		case "list":
-			u, err := app.Web.GetStoryteller()
+			u, err := app.Web.GetWriter()
 			if err != nil {
-				app.Logger.Error("get storyteller", "error", err.Error())
+				app.Logger.Error("get writer", "error", err.Error())
 				os.Exit(1)
 			}
 			for _, v := range u {
@@ -33,9 +33,9 @@ var storytellersCmd = &cobra.Command{
 			}
 
 		case "create":
-			body, err := app.Web.CreateStoryteller(username, password)
+			body, err := app.Web.CreateWriter(username, password)
 			if err != nil {
-				app.Logger.Error("create storytellersCmd", "error", err.Error())
+				app.Logger.Error("create writersCmd", "error", err.Error())
 				os.Exit(1)
 			}
 			var msg types.Msg
@@ -46,13 +46,13 @@ var storytellersCmd = &cobra.Command{
 			}
 			app.Logger.Info(msg.Msg, "username", username)
 		default:
-			app.Logger.Info("storytellers command called")
+			app.Logger.Info("writers command called")
 		}
 	},
 }
 
 func init() {
-	rootCmd.AddCommand(storytellersCmd)
+	rootCmd.AddCommand(writersCmd)
 
 	// Here you will define your flags and configuration settings.
 
@@ -63,6 +63,6 @@ func init() {
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
 	// usersCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
-	storytellersCmd.Flags().StringVarP(&username, "username", "u", "", " username to be used")
-	storytellersCmd.Flags().StringVar(&password, "password", "", "password should be unique")
+	writersCmd.Flags().StringVarP(&username, "username", "u", "", " username to be used")
+	writersCmd.Flags().StringVar(&password, "password", "", "password should be unique")
 }
