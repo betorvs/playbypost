@@ -29,7 +29,12 @@ func (db *DBX) SaveInitiativeTx(ctx context.Context, i initiative.Initiative, en
 		return -1, err
 	}
 	// Defer a rollback in case anything fails.
-	defer tx.Rollback()
+	defer func() {
+		rollback := tx.Rollback()
+		if err != nil && rollback != nil {
+			err = fmt.Errorf("rolling back transaction: %w", err)
+		}
+	}()
 
 	query := "INSERT INTO initiative(title, stage_encounters_id, next_player) VALUES($1, $2, $3) RETURNING id"
 	stmt, err := db.Conn.PrepareContext(ctx, query)

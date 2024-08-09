@@ -31,7 +31,12 @@ func (i *Initiative) Next() int {
 }
 
 func (i *Initiative) Current() string {
-	return i.Participants[i.Position].Name
+	position := i.Position
+	// does not need to check if it is greated than len because it is already checked in Next()
+	if i.Position == -1 {
+		position = 0
+	}
+	return i.Participants[position].Name
 }
 
 func (i Initiative) NextInfo() int {

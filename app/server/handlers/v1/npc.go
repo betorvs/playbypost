@@ -7,8 +7,8 @@ import (
 	"strconv"
 
 	"github.com/betorvs/playbypost/core/rpg"
+	"github.com/betorvs/playbypost/core/rules"
 	"github.com/betorvs/playbypost/core/sys/web/types"
-	"github.com/betorvs/playbypost/core/utils"
 )
 
 func (a MainApi) GetNPCByStageID(w http.ResponseWriter, r *http.Request) {
@@ -56,7 +56,7 @@ func (a MainApi) GenerateNPC(w http.ResponseWriter, r *http.Request) {
 
 	switch a.rpg.Name {
 	case rpg.D10HM:
-		creature, err := utils.GenD10Random(obj.Name, a.rpg)
+		creature, err := rules.GenD10Random(obj.Name, a.rpg)
 		if err != nil {
 			a.logger.Error("generate createure", "error", err.Error())
 			a.s.ErrJSON(w, http.StatusBadRequest, "cannot generate a random player")

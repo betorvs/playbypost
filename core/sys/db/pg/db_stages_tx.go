@@ -16,7 +16,12 @@ func (db *DBX) CreateStageTx(ctx context.Context, text, userid string, storyID i
 		return -1, err
 	}
 	// Defer a rollback in case anything fails.
-	defer tx.Rollback()
+	defer func() {
+		rollback := tx.Rollback()
+		if err != nil && rollback != nil {
+			err = fmt.Errorf("rolling back transaction: %w", err)
+		}
+	}()
 	// check user exist
 	queryUser := "SELECT id FROM users WHERE userid = $1"
 	stmtQueryUser, err := db.Conn.PrepareContext(ctx, queryUser)
@@ -134,7 +139,13 @@ func (db *DBX) UpdatePhase(ctx context.Context, id, phase int) error {
 		return err
 	}
 	// Defer a rollback in case anything fails.
-	defer tx.Rollback()
+	defer func() {
+		rollback := tx.Rollback()
+		if err != nil && rollback != nil {
+			err = fmt.Errorf("rolling back transaction: %w", err)
+		}
+	}()
+	// check if phase is valid
 	if phase == int(types.Running) {
 		// check if on this stage we have any stage_encounter already in running stage
 		query := "SELECT (s.phase >= 0) from stage_encounters AS s JOIN stage_encounters AS se ON se.stage_id = s.stage_id WHERE se.id = $1 AND s.phase = $2"
@@ -186,7 +197,12 @@ func (db *DBX) AddParticipants(ctx context.Context, encounterID int, npc bool, p
 		return err
 	}
 	// Defer a rollback in case anything fails.
-	defer tx.Rollback()
+	defer func() {
+		rollback := tx.Rollback()
+		if err != nil && rollback != nil {
+			err = fmt.Errorf("rolling back transaction: %w", err)
+		}
+	}()
 
 	for _, id := range players {
 		_, err = tx.ExecContext(ctx, query, id, encounterID)
@@ -209,7 +225,12 @@ func (db *DBX) AddNextEncounter(ctx context.Context, text string, stageID, encou
 		return err
 	}
 	// Defer a rollback in case anything fails.
-	defer tx.Rollback()
+	defer func() {
+		rollback := tx.Rollback()
+		if err != nil && rollback != nil {
+			err = fmt.Errorf("rolling back transaction: %w", err)
+		}
+	}()
 
 	_, err = tx.ExecContext(ctx, query, text, stageID, encounterID, nextEncounterID)
 	if err != nil {
@@ -233,7 +254,12 @@ func (db *DBX) AddRunningTask(ctx context.Context, text string, stageID, taskID,
 		return err
 	}
 	// Defer a rollback in case anything fails.
-	defer tx.Rollback()
+	defer func() {
+		rollback := tx.Rollback()
+		if err != nil && rollback != nil {
+			err = fmt.Errorf("rolling back transaction: %w", err)
+		}
+	}()
 
 	_, err = tx.ExecContext(ctx, query, text, stageID, taskID, StorytellerID, encounterID)
 	if err != nil {
@@ -255,7 +281,12 @@ func (db *DBX) AddEncounterActivities(ctx context.Context, text string, stageID,
 		return err
 	}
 	// Defer a rollback in case anything fails.
-	defer tx.Rollback()
+	defer func() {
+		rollback := tx.Rollback()
+		if err != nil && rollback != nil {
+			err = fmt.Errorf("rolling back transaction: %w", err)
+		}
+	}()
 
 	_, err = tx.ExecContext(ctx, query, text, stageID, encounterID)
 	if err != nil {
@@ -305,7 +336,12 @@ func (db *DBX) RegisterActivities(ctx context.Context, stageID, encounterID int,
 		return err
 	}
 	// Defer a rollback in case anything fails.
-	defer tx.Rollback()
+	defer func() {
+		rollback := tx.Rollback()
+		if err != nil && rollback != nil {
+			err = fmt.Errorf("rolling back transaction: %w", err)
+		}
+	}()
 
 	_, err = tx.ExecContext(ctx, query, actions, stageID, encounterID)
 	if err != nil {
@@ -326,7 +362,12 @@ func (db *DBX) UpdateProcessedActivities(ctx context.Context, id int, processed 
 		return err
 	}
 	// Defer a rollback in case anything fails.
-	defer tx.Rollback()
+	defer func() {
+		rollback := tx.Rollback()
+		if err != nil && rollback != nil {
+			err = fmt.Errorf("rolling back transaction: %w", err)
+		}
+	}()
 
 	_, err = tx.ExecContext(ctx, query, processed, actions, id)
 	if err != nil {

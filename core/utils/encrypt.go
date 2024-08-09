@@ -3,8 +3,8 @@ package utils
 import (
 	"crypto/aes"
 	"crypto/cipher"
+	"crypto/rand"
 	"encoding/base64"
-	"math/rand"
 )
 
 func EncryptText(text, key string) (string, error) {

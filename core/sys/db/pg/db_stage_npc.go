@@ -36,8 +36,8 @@ func (db *DBX) GetNPCByStageID(ctx context.Context, id int) ([]types.Players, er
 
 func (db *DBX) GenerateNPC(ctx context.Context, name string, stageID, storytellerID int, creature *rules.Creature) (int, error) {
 	npcID := 0
-	query := "INSERT INTO non_players (npc_name, stage_id, storyteller_id, abilities, skills, rpg) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id"
-	err := db.Conn.QueryRowContext(ctx, query, name, stageID, storytellerID, creature.Abilities, creature.Skills, creature.RPG.Name).Scan(&npcID)
+	query := "INSERT INTO non_players (npc_name, stage_id, storyteller_id, abilities, skills, extensions, rpg) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id"
+	err := db.Conn.QueryRowContext(ctx, query, name, stageID, storytellerID, creature.Abilities, creature.Skills, creature.Extension, creature.RPG.Name).Scan(&npcID)
 	if err != nil {
 		db.Logger.Error("insert on non_players failed", "error", err.Error())
 		return npcID, err

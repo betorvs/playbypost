@@ -475,7 +475,7 @@ func (a *WorkerAPI) executeTask(task types.Task, creature *rules.Creature) (rule
 		if task.Ability != "" {
 			check.Override = task.Ability
 		}
-		res, err := creature.SkillCheck(&a.dice, check)
+		res, err := creature.SkillCheck(&a.dice, check, a.logger)
 		if err != nil {
 			a.logger.Error("creature error skill check", "error", err.Error())
 			return result, err

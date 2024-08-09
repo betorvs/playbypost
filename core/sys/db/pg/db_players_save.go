@@ -2,6 +2,7 @@ package pg
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/betorvs/playbypost/core/rpg"
 	"github.com/betorvs/playbypost/core/rules"
@@ -60,7 +61,12 @@ func (db *DBX) SavePlayerTx(ctx context.Context, id, storyID int, creature *rule
 		return -1, err
 	}
 	// Defer a rollback in case anything fails.
-	defer tx.Rollback()
+	defer func() {
+		rollback := tx.Rollback()
+		if err != nil && rollback != nil {
+			err = fmt.Errorf("rolling back transaction: %w", err)
+		}
+	}()
 
 	query := "INSERT INTO players(character_name, player_id, stage_id, destroyed, abilities, skills, extensions, rpg) VALUES($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id"
 	stmt, err := db.Conn.PrepareContext(ctx, query)

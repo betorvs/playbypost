@@ -3,6 +3,7 @@ package pg
 import (
 	"context"
 	"database/sql"
+	"fmt"
 
 	"github.com/betorvs/playbypost/core/sys/web/types"
 )
@@ -63,7 +64,12 @@ func (db *DBX) CreateUserTx(ctx context.Context, userid string) (int, error) {
 		return -1, err
 	}
 	// Defer a rollback in case anything fails.
-	defer tx.Rollback()
+	defer func() {
+		rollback := tx.Rollback()
+		if err != nil && rollback != nil {
+			err = fmt.Errorf("rolling back transaction: %w", err)
+		}
+	}()
 	// check user exist
 	queryUser := "SELECT id FROM users WHERE userid = $1"
 	stmtQueryUser, err := db.Conn.PrepareContext(ctx, queryUser)

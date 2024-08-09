@@ -71,7 +71,6 @@ type RPGSystem struct {
 	Ability           Ability
 	Skill             Skill
 	RestrictiveTasks  bool
-	Logger            *slog.Logger
 }
 
 type Ability struct {
@@ -94,7 +93,7 @@ func (r *RPGSystem) String() string {
 	return fmt.Sprintf("Name %s, BaseSystem %s, Base Dice %s", r.Name, r.BaseSystem, r.BaseDice)
 }
 
-func LoadRPGSystemsDefault(k string, l *slog.Logger) *RPGSystem {
+func LoadRPGSystemsDefault(k string) *RPGSystem {
 	a := Ability{
 		Grouped: make(map[string][]string),
 		List:    []string{},
@@ -115,7 +114,6 @@ func LoadRPGSystemsDefault(k string, l *slog.Logger) *RPGSystem {
 		DamageCalculation: Sum,
 		Ability:           a,
 		Skill:             s,
-		Logger:            l,
 	}
 	switch k {
 	case Solo:
@@ -123,14 +121,12 @@ func LoadRPGSystemsDefault(k string, l *slog.Logger) *RPGSystem {
 			Name:             Solo,
 			BaseDice:         "1d6",
 			RestrictiveTasks: true,
-			Logger:           l,
 		}
 	case Didactic:
 		return &RPGSystem{
 			Name:             Didactic,
 			BaseDice:         "1d6",
 			RestrictiveTasks: true,
-			Logger:           l,
 		}
 	case D10HM:
 		return &RPGSystem{
@@ -143,7 +139,6 @@ func LoadRPGSystemsDefault(k string, l *slog.Logger) *RPGSystem {
 			DamageCalculation: FromResult,
 			Ability:           a,
 			Skill:             s,
-			Logger:            l,
 		}
 	case D10OS:
 		return &RPGSystem{
@@ -156,7 +151,6 @@ func LoadRPGSystemsDefault(k string, l *slog.Logger) *RPGSystem {
 			DamageCalculation: DifficultAndCount,
 			Ability:           a,
 			Skill:             s,
-			Logger:            l,
 		}
 	case D2035:
 		return d20
@@ -250,6 +244,12 @@ func (r *RPGSystem) InitDefinitions(f string, logger *slog.Logger) {
 	}
 }
 
+type RollInterface interface {
+	FreeRoll(name, text string) (DiceRoll, error)
+	Check(name string) (DiceRoll, error)
+	FormatDice(m, target int) string
+}
+
 // Roll struct
 type Roll struct {
 	RPGSystem *RPGSystem
@@ -260,6 +260,10 @@ type DiceRoll struct {
 	Description string
 	Result      int
 	Rolled      string
+}
+
+func NewRollMock(rpgSystem *RPGSystem) RollInterface {
+	return &Roll{RPGSystem: rpgSystem}
 }
 
 // FreeRoll func returns a int value, a string text and error

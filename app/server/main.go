@@ -179,22 +179,22 @@ func loadRPG(k string, logger *slog.Logger) *rpg.RPGSystem {
 	var rpgSystem rpg.RPGSystem
 	switch k {
 	case rpg.D10HM:
-		rpgSystem = *rpg.LoadRPGSystemsDefault(rpg.D10HM, logger)
+		rpgSystem = *rpg.LoadRPGSystemsDefault(rpg.D10HM)
 		rpgSystem.InitDefinitions("./library/definitions-d10HM.json", logger)
 
 	case rpg.D2035:
-		rpgSystem = *rpg.LoadRPGSystemsDefault(rpg.D2035, logger)
+		rpgSystem = *rpg.LoadRPGSystemsDefault(rpg.D2035)
 		rpgSystem.InitDefinitions("./library/definitions-d20.json", logger)
 
 	case rpg.D10OS:
-		rpgSystem = *rpg.LoadRPGSystemsDefault(rpg.D10OS, logger)
+		rpgSystem = *rpg.LoadRPGSystemsDefault(rpg.D10OS)
 		rpgSystem.InitDefinitions("./library/definitions-d10OS.json", logger)
 
 	case rpg.Solo:
-		rpgSystem = *rpg.LoadRPGSystemsDefault(rpg.Solo, logger)
+		rpgSystem = *rpg.LoadRPGSystemsDefault(rpg.Solo)
 
 	case rpg.Didactic:
-		rpgSystem = *rpg.LoadRPGSystemsDefault(rpg.Didactic, logger)
+		rpgSystem = *rpg.LoadRPGSystemsDefault(rpg.Didactic)
 	}
 	return &rpgSystem
 }

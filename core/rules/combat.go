@@ -28,7 +28,7 @@ type Attack struct {
 	Kind     AttackTypes
 	Attacker *Creature
 	Defensor *Creature
-	Dice     *rpg.Roll
+	Dice     rpg.RollInterface
 	Response Response
 	Logger   *slog.Logger
 }
@@ -58,12 +58,13 @@ func (a *Attack) Call() {
 func (a *Attack) singleMeleeAttack() {
 	a.Logger.Info("single melee attack call", "system_name", a.Attacker.RPG.Name)
 	strenght := "strenght"
+	diceName := fmt.Sprintf("attack-roll-%s-%s", a.Attacker.Name, strenght)
 	switch a.Attacker.RPG.Name {
 	case rpg.D2035:
 		a.Logger.Info("d20 single melee attack call")
 		// level bonus + str against AC
 		// damage require rolls : dependency weapon dices + bonus
-		result, _ := a.Dice.Check("attack roll")
+		result, _ := a.Dice.Check(diceName)
 		// if err != nil {
 		// 	return
 		// }
@@ -85,7 +86,10 @@ func (a *Attack) singleMeleeAttack() {
 			damage, _ := a.Dice.FreeRoll("damage", diceDamage)
 			a.Response.Damage = damage.Result + abilityBonus
 			a.Response.Text += fmt.Sprint("damage roll ", result.Rolled)
-			a.Defensor.Extension.Damage(damage.Result + abilityBonus)
+			err := a.Defensor.Extension.Damage(damage.Result + abilityBonus)
+			if err != nil {
+				a.Logger.Error("error on damage calc", "error", err)
+			}
 			if a.Defensor.Extension.HealthStatus() <= 0 {
 				_ = a.Defensor.Destroy()
 			}
@@ -102,13 +106,16 @@ func (a *Attack) singleMeleeAttack() {
 		defense, _ := a.Defensor.Extension.DefenseBonus("melee")
 		calcDices := a.Dice.FormatDice(abilityBonus+bonus+weaponBonus-defense, 0)
 		a.Logger.Info("calcDices", "dices", calcDices)
-		result, _ := a.Dice.FreeRoll("attack roll", calcDices)
+		result, _ := a.Dice.FreeRoll(diceName, calcDices)
 		a.Logger.Info("dice result", "result", abilityBonus+bonus+weaponBonus-defense, "rolled", result.Rolled)
 		a.Response.Text = result.Rolled
 		if result.Result > 0 {
 			a.Response.Success = true
 			a.Response.Damage = result.Result
-			a.Defensor.Extension.Damage(result.Result)
+			err := a.Defensor.Extension.Damage(result.Result)
+			if err != nil {
+				a.Logger.Error("error on damage calc", "error", err)
+			}
 			if a.Defensor.Extension.HealthStatus() <= 0 {
 				_ = a.Defensor.Destroy()
 			}
@@ -126,12 +133,13 @@ func (a *Attack) singleMeleeAttack() {
 		abilityBonus := a.Attacker.calcAbilityModifier(dexterity)
 		bonus := a.Attacker.calcSkillModifier(melee)
 		calcDices := a.Dice.FormatDice(abilityBonus+bonus, 6)
-		result, _ := a.Dice.FreeRoll("attack roll", calcDices)
+		result, _ := a.Dice.FreeRoll(diceName, calcDices)
 
 		defenseAbilityBonus := a.Attacker.calcAbilityModifier(dexterity)
 		defensebonus := a.Attacker.calcSkillModifier(melee)
 		defenseCalcDices := a.Dice.FormatDice(defenseAbilityBonus+defensebonus, 6)
-		defenseResult, _ := a.Dice.FreeRoll("defense roll", defenseCalcDices)
+		defenseDiceName := fmt.Sprintf("defense-roll-%s-%s", a.Defensor.Name, dexterity)
+		defenseResult, _ := a.Dice.FreeRoll(defenseDiceName, defenseCalcDices)
 		a.Logger.Info("results", "round", a.Round, "attack_details", result.Rolled, "defense_details", defenseResult.Rolled)
 
 		if result.Result >= defenseResult.Result {
@@ -139,7 +147,8 @@ func (a *Attack) singleMeleeAttack() {
 			damageAbility := a.Attacker.calcAbilityModifier(strenght)
 			weaponBonus, _, _ := a.Attacker.Extension.WeaponBonus(a.Weapon)
 			calcDices := a.Dice.FormatDice(damageAbility+weaponBonus, 6)
-			damageResult, _ := a.Dice.FreeRoll("damage roll", calcDices)
+			damageDiceName := fmt.Sprintf("damage-roll-%s-%s", a.Attacker.Name, strenght)
+			damageResult, _ := a.Dice.FreeRoll(damageDiceName, calcDices)
 			a.Response.Damage = damageResult.Result
 			if a.Defensor.Extension.HealthStatus() <= 0 {
 				_ = a.Defensor.Destroy()
@@ -184,7 +193,7 @@ func (a *Attack) singleUnarmedAttack() {
 
 // func (a *Attack) totalAttack() {}
 
-func NewAttack(round, weapon string, kind AttackTypes, attacker *Creature, defensor *Creature, dice *rpg.Roll, logger *slog.Logger) *Attack {
+func NewAttack(round, weapon string, kind AttackTypes, attacker *Creature, defensor *Creature, dice rpg.RollInterface, logger *slog.Logger) *Attack {
 	a := Attack{
 		Round:    round,
 		Weapon:   weapon,

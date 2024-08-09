@@ -2,6 +2,7 @@ package pg
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/betorvs/playbypost/core/sys/web/types"
 )
@@ -54,7 +55,12 @@ func (db *DBX) CreateStoryTx(ctx context.Context, title, announcement, notes, en
 		return -1, err
 	}
 	// Defer a rollback in case anything fails.
-	defer tx.Rollback()
+	defer func() {
+		rollback := tx.Rollback()
+		if err != nil && rollback != nil {
+			err = fmt.Errorf("rolling back transaction: %w", err)
+		}
+	}()
 	// insert story
 	queryStory := "INSERT INTO story(title, notes, announcement, writer_id) VALUES($1, $2, $3, $4) RETURNING id"
 	stmtStory, err := db.Conn.PrepareContext(ctx, queryStory)

@@ -1,4 +1,4 @@
-package utils
+package rules
 
 import (
 	"math/rand"
@@ -7,25 +7,23 @@ import (
 
 	"github.com/betorvs/playbypost/core/rpg"
 	"github.com/betorvs/playbypost/core/rpg/d10hm"
-	"github.com/betorvs/playbypost/core/rules"
 )
 
-func GenD10Random(n string, rpgSystem *rpg.RPGSystem) (*rules.Creature, error) {
+func GenD10Random(n string, rpgSystem *rpg.RPGSystem) (*Creature, error) {
 	physical := "physical"
 	mental := "mental"
 	social := "social"
-	person1 := rules.NewCreature(n, rpgSystem)
+	person1 := NewCreature(n, rpgSystem)
 	rand.New(rand.NewSource(time.Now().UnixNano()))
 	{
 		a := []int{2, 3, 3}
 
 		rand.Shuffle(len(a), func(i, j int) { a[i], a[j] = a[j], a[i] })
 		for k, v := range rpgSystem.Ability.Grouped[physical] {
-			ability := rules.Ability{
+			ability := Ability{
 				Name:  v,
 				Value: a[k],
 			}
-			rpgSystem.Logger.Info("gen", "key", v, "value", a[k])
 			err := person1.AddAbility(ability)
 			if err != nil {
 				return person1, err
@@ -37,11 +35,10 @@ func GenD10Random(n string, rpgSystem *rpg.RPGSystem) (*rules.Creature, error) {
 		rand.Shuffle(len(a), func(i, j int) { a[i], a[j] = a[j], a[i] })
 
 		for k, v := range rpgSystem.Ability.Grouped[mental] {
-			ability := rules.Ability{
+			ability := Ability{
 				Name:  v,
 				Value: a[k],
 			}
-			rpgSystem.Logger.Info("gen", "key", v, "value", a[k])
 			err := person1.AddAbility(ability)
 			if err != nil {
 				return person1, err
@@ -53,11 +50,10 @@ func GenD10Random(n string, rpgSystem *rpg.RPGSystem) (*rules.Creature, error) {
 		rand.Shuffle(len(a), func(i, j int) { a[i], a[j] = a[j], a[i] })
 
 		for k, v := range rpgSystem.Ability.Grouped[social] {
-			ability := rules.Ability{
+			ability := Ability{
 				Name:  v,
 				Value: a[k],
 			}
-			rpgSystem.Logger.Info("gen", "key", v, "value", a[k])
 			err := person1.AddAbility(ability)
 			if err != nil {
 				return person1, err
@@ -70,12 +66,11 @@ func GenD10Random(n string, rpgSystem *rpg.RPGSystem) (*rules.Creature, error) {
 		count := 0
 		for _, v := range rpgSystem.Skill.Grouped[physical] {
 			if slices.Contains(rpgSystem.Skill.Tags[v], "auto-gen") {
-				s := rules.Skill{
+				s := Skill{
 					Name:  v,
 					Value: b[count],
 					Base:  rpgSystem.GetSkillBase(v),
 				}
-				rpgSystem.Logger.Info("gen", "key", v, "value", b[count])
 				err := person1.AddSkill(s)
 				if err != nil {
 					return person1, err
@@ -91,12 +86,11 @@ func GenD10Random(n string, rpgSystem *rpg.RPGSystem) (*rules.Creature, error) {
 		count := 0
 		for _, v := range rpgSystem.Skill.Grouped[social] {
 			if slices.Contains(rpgSystem.Skill.Tags[v], "auto-gen") {
-				s := rules.Skill{
+				s := Skill{
 					Name:  v,
 					Value: b[count],
 					Base:  rpgSystem.GetSkillBase(v),
 				}
-				rpgSystem.Logger.Info("gen", "key", v, "value", b[count])
 				err := person1.AddSkill(s)
 				if err != nil {
 					return person1, err
@@ -112,12 +106,11 @@ func GenD10Random(n string, rpgSystem *rpg.RPGSystem) (*rules.Creature, error) {
 		count := 0
 		for _, v := range rpgSystem.Skill.Grouped[mental] {
 			if slices.Contains(rpgSystem.Skill.Tags[v], "auto-gen") {
-				s := rules.Skill{
+				s := Skill{
 					Name:  v,
 					Value: b[count],
 					Base:  rpgSystem.GetSkillBase(v),
 				}
-				rpgSystem.Logger.Info("gen", "key", v, "value", b[count])
 				err := person1.AddSkill(s)
 				if err != nil {
 					return person1, err

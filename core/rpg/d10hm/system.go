@@ -42,7 +42,7 @@ func (a *D10Extented) SetValues(values map[string]interface{}, convertInterfaceI
 	a.Initiative = convertInterfaceInt(values["initiative"])
 	a.Size = convertInterfaceInt(values["size"])
 	a.Armor = convertInterfaceInt(values["armor"])
-	a.Weapon.Scan(values["weapon"])
+	_ = a.Weapon.Scan(values["weapon"])
 }
 
 func (d D10Extented) String() string {
