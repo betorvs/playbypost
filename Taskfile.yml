@@ -15,6 +15,11 @@ tasks:
       - go get -u -v ./...
       - go mod tidy
 
+  test:
+    cmd: 
+      - golangci-lint run
+      - go test -v ./...
+
   stop_postgres:
     cmds:
       - docker stop postgres

@@ -508,3 +508,25 @@ func (db *DBX) GetCreatureFromParticipantsList(ctx context.Context, players []ty
 
 	return playersMap, npcsMap, nil
 }
+
+// stage_next_encounter
+func (db *DBX) GetNextEncounterByEncounterID(ctx context.Context, id int) (types.NextEncounter, error) {
+	ne := types.NextEncounter{}
+	query := "select display_text, stage_id, current_encounter_id, next_encounter_id FROM stage_next_encounter WHERE current_encounter_id = $1"
+	rows, err := db.Conn.QueryContext(ctx, query, id)
+	if err != nil {
+		db.Logger.Error("query on stage_next_encounter by encounter_id failed", "error", err.Error())
+		return ne, err
+	}
+	defer rows.Close()
+	for rows.Next() {
+		if err := rows.Scan(&ne.Text, &ne.StageID, &ne.EncounterID, &ne.NextEncounterID); err != nil {
+			db.Logger.Error("scan error on stage_next_encounter by encounter_id ", "error", err.Error())
+		}
+	}
+	// Check for errors from iterating over rows.
+	if err := rows.Err(); err != nil {
+		db.Logger.Error("rows err on stage_next_encounter by encounter_id", "error", err.Error())
+	}
+	return ne, nil
+}

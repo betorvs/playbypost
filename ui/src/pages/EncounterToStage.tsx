@@ -97,7 +97,7 @@ const EncounterToStage = () => {
               onChange={(e) => setText(e.target.value)}
             />
             <Form.Text className="text-muted">
-              Character's Name.
+              Encounter's Name.
             </Form.Text>
           </Form.Group>
           <Button variant="primary" type="submit">

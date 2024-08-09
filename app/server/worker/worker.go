@@ -123,6 +123,30 @@ func (a *WorkerAPI) parseCommand(cmd types.StageEncounterActivities) error {
 			return err
 		}
 		// get next encounter and start it
+		nextEncounter, err := a.db.GetNextEncounterByEncounterID(a.ctx, cmd.EncounterID)
+		if err != nil {
+			a.logger.Error("error getting next encounter by encounter id", "error", err.Error())
+			return err
+		}
+		if nextEncounter.NextEncounterID != 0 {
+			// change next encounter to started
+			err := a.db.UpdatePhase(a.ctx, nextEncounter.NextEncounterID, int(types.Started))
+			if err != nil {
+				a.logger.Error("error updating next encounter phase to started", "error", err.Error())
+				return err
+			}
+			encounterToAnnounce, err := a.db.GetStageEncounterByEncounterID(a.ctx, nextEncounter.NextEncounterID)
+			if err != nil {
+				a.logger.Error("error getting encounter to announce", "error", err.Error())
+				return err
+			}
+			encounterAnnounce := fmt.Sprintf("Encounter %s has started: _%s_", encounterToAnnounce.Title, encounterToAnnounce.Announcement)
+			body, err := a.client.PostEvent(cmd.Actions["channel"], "ALL", encounterAnnounce, types.EventAnnounce)
+			if err != nil {
+				a.logger.Error("error posting event start next encounter", "error", err.Error(), "body", string(body))
+				return err
+			}
+		}
 
 		processed = true
 

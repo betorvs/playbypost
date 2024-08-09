@@ -50,6 +50,7 @@ type DBClient interface {
 	CreateStageTx(ctx context.Context, text, userid string, storyID int) (int, error)
 	AddChannelToStage(ctx context.Context, channel string, id int) (int, error)
 	AddEncounterToStage(ctx context.Context, text string, stage_id, storyteller_id, encounter_id int) (int, error)
+	GetNextEncounterByEncounterID(ctx context.Context, id int) (types.NextEncounter, error)
 	AddNextEncounter(ctx context.Context, text string, stageID, encounterID, nextEncounterID int) error
 	AddRunningTask(ctx context.Context, text string, stageID, taskID, StorytellerID, encounterID int) error
 	GetStageEncounterActivities(ctx context.Context) ([]types.StageEncounterActivities, error)
