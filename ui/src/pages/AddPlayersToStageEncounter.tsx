@@ -69,24 +69,15 @@ const AddPlayerToStageEncounter = () => {
                         players != null ? (
                             players.map((player) => (
                                 <Form.Check type="checkbox" id={String(player.id)} value={player.id} label={player.name}
-                                onClick={e => {
-                                    console.log("e:", e);  
-                                    const numValue = Number(player.id);
-                                    if (ids.includes(numValue)) {
-                                        setIDs(ids.filter((id) => id !== numValue));
-                                    } else {
-                                        setIDs([...ids, numValue]);
-                                    }
-                                }}
-                                onChange={e => {
-                                    console.log("e:", e);  
-                                    const numValue = Number(player.id);
-                                    if (ids.includes(numValue)) {
-                                        setIDs(ids.filter((id) => id !== numValue));
-                                    } else {
-                                        setIDs([...ids, numValue]);
-                                    }
-                                }} />
+                                  onClick={() => {
+                                      const numValue = Number(player.id);
+                                      if (ids.includes(numValue)) {
+                                          setIDs(ids.filter((id) => id !== numValue));
+                                      } else {
+                                          setIDs([...ids, numValue]);
+                                      }
+                                  }}
+                                />
                             ))) : (
                                 <Form.Check disabled type="checkbox" label={`disabled `} id={`disabled-default`} />
                             )
