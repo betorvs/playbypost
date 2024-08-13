@@ -394,6 +394,11 @@ func (a *app) events(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprint(w, "{\"msg\":\"json decode error\"}")
 		return
 	}
+	if obj.Channel == "" || obj.UserID == "" || obj.Message == "" {
+		w.WriteHeader(http.StatusBadRequest)
+		fmt.Fprint(w, "{\"msg\":\"missing required fields\"}")
+		return
+	}
 	attachment := slack.Attachment{}
 	attachment.Text = obj.Message
 	if obj.Kind != "" {

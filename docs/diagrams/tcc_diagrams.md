@@ -1,5 +1,7 @@
 # TCC diagrams
 
+## Use Case2 1
+
 ```
 @startuml
 left to right direction
@@ -15,6 +17,8 @@ left to right direction
 @enduml
 ```
 
+## Use Cases 2
+
 ```
 @startuml
 left to right direction
@@ -27,6 +31,34 @@ left to right direction
 @enduml
 
 ```
+
+## Sequence Diagram
+
+```
+@startuml
+actor User
+participant ChatPlugin
+participant Backend
+database Postgres
+queue Queue
+
+User -> ChatPlugin: "/playbypost options"
+ChatPlugin --> Backend: Post /api/v1/command"
+Backend -> Postgres: Get Options
+Postgres --> Backend: "[]options"
+Backend --> ChatPlugin: "[]options"
+ChatPlugin --> User: DropDown Menu
+User -> ChatPlugin: option
+ChatPlugin --> Backend: user+option
+Backend -> Queue: user+option
+Queue --> Backend: "accepted"
+Backend --> ChatPlugin: "accepted"
+ChatPlugin --> User: "accepted"
+
+@enduml
+```
+
+## Entity Diagram
 
 ```
 @startuml

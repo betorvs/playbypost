@@ -1,0 +1,55 @@
+openapi: '3.0.3'
+info:
+  title: Commands API
+  version: '1.0'
+servers:
+  - url: http://api.server.test/
+components:
+  schemas:
+    genericid:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+    Msg:
+      type: object
+      properties:
+        msg:
+          type: string
+        options:
+          type: array
+          items:
+            $ref: '#/components/schemas/genericid'
+
+paths:
+  /api/v1/commands:
+    post:
+      security:
+        - customHeaderAuth: 
+          - X-UserID
+          - X-Story-Channel
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - text
+              properties:
+                text:
+                  type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Msg'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Msg'
