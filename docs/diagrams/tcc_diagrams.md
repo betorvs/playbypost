@@ -99,7 +99,7 @@ entity "encounters" as e05 {
   *writer_id : number <<FK>>
 }
 
-entity "slack_information" as e06 {
+entity "chat_information" as e06 {
   *id : number <<generated>>
   --
 }

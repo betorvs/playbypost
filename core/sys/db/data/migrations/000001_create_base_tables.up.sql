@@ -46,7 +46,7 @@ CREATE TABLE tasks (
   target int NOT NULL DEFAULT 0
 );
 
-CREATE TABLE slack_information (
+CREATE TABLE chat_information (
   id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   userid VARCHAR(50) NOT NULL,
   channel VARCHAR(50) NOT NULL,

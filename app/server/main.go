@@ -125,7 +125,7 @@ func main() {
 	srv.Register("GET /api/v1/initiative/encounter/{id}", app.GetInitiativeByEncounterId)
 	// command api
 	srv.Register("POST /api/v1/command", app.ExecuteCommand)
-	srv.Register("POST /api/v1/info", app.AddSlackInfo)
+	srv.Register("POST /api/v1/info", app.AddChatInfo)
 	srv.Register("GET /api/v1/info/users", app.GetUsersInformation)
 	srv.Register("GET /api/v1/info/channel", app.GetChannelsInformation)
 	srv.Register("GET /api/v1/info/phases", app.GetEncountersPhase)

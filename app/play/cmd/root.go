@@ -30,7 +30,8 @@ var rootCmd = &cobra.Command{
 	Use:     "play",
 	Short:   "it's a command line interface to interact with play by post server as a player",
 	Version: Version,
-	Long:    ``,
+	Long: `
+	Play by post is a server to play RPG games in a chat platform.`,
 
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
@@ -69,7 +70,7 @@ func init() {
 	// Cobra also supports local flags, which will only run
 	// when this action is called directly.
 	// rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
-	rootCmd.PersistentFlags().StringVar(&server, "server", "http://localhost:8090", "player http server, default: ")
+	rootCmd.PersistentFlags().StringVar(&server, "server", "http://localhost:3000", "play by post http server, default: ")
 
 }
 

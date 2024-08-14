@@ -9,12 +9,12 @@ import (
 	"github.com/lib/pq"
 )
 
-func (a MainApi) AddSlackInfo(w http.ResponseWriter, r *http.Request) {
+func (a MainApi) AddChatInfo(w http.ResponseWriter, r *http.Request) {
 	if a.Session.CheckAuth(r) {
 		a.s.ErrJSON(w, http.StatusForbidden, "required authentication headers")
 		return
 	}
-	obj := types.SlackInfo{}
+	obj := types.ChatInfo{}
 	err := json.NewDecoder(r.Body).Decode(&obj)
 	if err != nil {
 		a.s.ErrJSON(w, http.StatusBadRequest, "json decode error")
@@ -24,7 +24,7 @@ func (a MainApi) AddSlackInfo(w http.ResponseWriter, r *http.Request) {
 		a.s.ErrJSON(w, http.StatusBadRequest, "empty body")
 		return
 	}
-	_, err = a.db.AddSlackInformation(a.ctx, obj.Username, obj.UserID, obj.Channel)
+	_, err = a.db.AddChatInformation(a.ctx, obj.Username, obj.UserID, obj.Channel)
 	if err != nil {
 		pgErr, ok := err.(*pq.Error)
 		if ok {
@@ -44,7 +44,7 @@ func (a MainApi) GetUsersInformation(w http.ResponseWriter, r *http.Request) {
 	// 	a.s.ErrJSON(w, http.StatusForbidden, "required authentication headers")
 	// 	return
 	// }
-	obj, err := a.db.GetSlackInformation(a.ctx)
+	obj, err := a.db.GetChatInformation(a.ctx)
 	if err != nil {
 		a.s.ErrJSON(w, http.StatusBadRequest, "slack information for users database issue")
 		return
@@ -57,7 +57,7 @@ func (a MainApi) GetChannelsInformation(w http.ResponseWriter, r *http.Request) 
 	// 	a.s.ErrJSON(w, http.StatusForbidden, "required authentication headers")
 	// 	return
 	// }
-	obj, err := a.db.GetSlackChannelInformation(a.ctx)
+	obj, err := a.db.GetChatChannelInformation(a.ctx)
 	if err != nil {
 		a.s.ErrJSON(w, http.StatusBadRequest, "slack information for channel database issue")
 		return

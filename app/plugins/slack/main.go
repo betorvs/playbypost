@@ -160,7 +160,7 @@ func (a *app) middlewareEventsAPI(evt *socketmode.Event, client *socketmode.Clie
 			attachment.Text = fmt.Sprintf("Hello %s", user.Profile.RealName)
 			if strings.Contains(ev.Text, "join") {
 				attachment.Text = fmt.Sprintf("Let's play %s", user.Profile.RealName)
-				body, err := a.web.AddSlackInformation(user.ID, user.Profile.RealName, ev.Channel)
+				body, err := a.web.AddChatInformation(user.ID, user.Profile.RealName, ev.Channel)
 				if err != nil {
 					a.logger.Error("error adding user info", "error", err.Error())
 					attachment.Text = fmt.Sprintf("Sorry, it did not work %s", user.Profile.RealName)

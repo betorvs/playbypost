@@ -53,3 +53,38 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Msg'
+  /api/v1/info:
+    post:
+      security:
+        - customHeaderAuth: 
+          - X-Username
+          - X-Access-Token
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - user_id
+                - channel
+                - username
+              properties:
+                user_id:
+                  type: string
+                channel:
+                  type: string
+                username:
+                  type: string
+      responses:
+        '200':
+          description: added
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Msg'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Msg'

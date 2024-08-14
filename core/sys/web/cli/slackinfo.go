@@ -10,8 +10,8 @@ const (
 	slack string = "info"
 )
 
-func (c *Cli) AddSlackInformation(userid, username, channel string) ([]byte, error) {
-	u := types.SlackInfo{
+func (c *Cli) AddChatInformation(userid, username, channel string) ([]byte, error) {
+	u := types.ChatInfo{
 		Username: username,
 		UserID:   userid,
 		Channel:  channel,

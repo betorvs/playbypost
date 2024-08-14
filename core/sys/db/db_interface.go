@@ -92,8 +92,8 @@ type DBClient interface {
 	// GetPlayersByEncounterID(ctx context.Context, encounterID int, npc bool, rpg *rpg.RPGSystem) (map[int]*rules.Creature, error)
 	// Extension
 	SaveExtension(ctx context.Context, playerId int, npc bool, rpg *rpg.RPGSystem, extension interface{}) (int, error)
-	// Slack
-	AddSlackInformation(ctx context.Context, username, userid, channel string) (int, error)
-	GetSlackInformation(ctx context.Context) ([]types.SlackInfo, error)
-	GetSlackChannelInformation(ctx context.Context) ([]string, error)
+	// Chat
+	AddChatInformation(ctx context.Context, username, userid, channel string) (int, error)
+	GetChatInformation(ctx context.Context) ([]types.ChatInfo, error)
+	GetChatChannelInformation(ctx context.Context) ([]string, error)
 }

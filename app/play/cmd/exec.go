@@ -5,6 +5,7 @@ package cmd
 
 import (
 	"encoding/json"
+	"fmt"
 	"os"
 	"strings"
 
@@ -17,17 +18,21 @@ import (
 var execCmd = &cobra.Command{
 	Use:     "exec",
 	Aliases: []string{"x", "perform", "p"},
-	Short:   "execute an action as a player in a story",
+	Short:   "execute an action as a player in a channel",
 	Long:    ``,
 	PreRun:  loadApp,
 	Run: func(cmd *cobra.Command, args []string) {
-		story := viper.GetString("story")
+		channel := viper.GetString("channel")
 		userid := viper.GetString("user-id")
-		// player := viper.GetInt("player-id")
-		text := strings.Join(args, " ")
-		body, err := app.Web.PostCommand(userid, story, text)
+		tmpText := strings.Join(args, " ")
+		var text string
+		if strings.Contains(tmpText, ";") {
+			text = fmt.Sprintf("cmd;%s", tmpText)
+		}
+		app.Logger.Info("text", "text", text)
+		body, err := app.Web.PostCommand(userid, text, channel)
 		if err != nil {
-			app.Logger.Error("post command failed", "error", err.Error())
+			app.Logger.Error("post command failed", "error", err.Error(), "text", text)
 			os.Exit(1)
 		}
 		var msg types.Msg
@@ -42,14 +47,4 @@ var execCmd = &cobra.Command{
 
 func init() {
 	rootCmd.AddCommand(execCmd)
-
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// execCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// execCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
