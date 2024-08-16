@@ -93,7 +93,7 @@ CREATE TABLE stage_running_tasks (
   storyteller_id int NOT NULL REFERENCES users(id),
   stage_encounters_id int NOT NULL REFERENCES stage_encounters(id),
   task_id int NOT NULL REFERENCES tasks(id),
-  UNIQUE(display_text, encounters_id, tasks_id)
+  UNIQUE(display_text, stage_encounters_id, task_id)
 );
 
 CREATE TABLE stage_next_encounter (
