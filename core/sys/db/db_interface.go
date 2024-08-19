@@ -93,7 +93,7 @@ type DBClient interface {
 	// Extension
 	SaveExtension(ctx context.Context, playerId int, npc bool, rpg *rpg.RPGSystem, extension interface{}) (int, error)
 	// Chat
-	AddChatInformation(ctx context.Context, username, userid, channel string) (int, error)
+	AddChatInformation(ctx context.Context, username, userid, channel, chat string) (int, error)
 	GetChatInformation(ctx context.Context) ([]types.ChatInfo, error)
 	GetChatChannelInformation(ctx context.Context) ([]string, error)
 }

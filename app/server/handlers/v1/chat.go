@@ -20,11 +20,11 @@ func (a MainApi) AddChatInfo(w http.ResponseWriter, r *http.Request) {
 		a.s.ErrJSON(w, http.StatusBadRequest, "json decode error")
 		return
 	}
-	if obj.UserID == "" || obj.Username == "" || obj.Channel == "" {
+	if obj.UserID == "" || obj.Username == "" || obj.Channel == "" || obj.Chat == "" {
 		a.s.ErrJSON(w, http.StatusBadRequest, "empty body")
 		return
 	}
-	_, err = a.db.AddChatInformation(a.ctx, obj.Username, obj.UserID, obj.Channel)
+	_, err = a.db.AddChatInformation(a.ctx, obj.Username, obj.UserID, obj.Channel, obj.Chat)
 	if err != nil {
 		pgErr, ok := err.(*pq.Error)
 		if ok {

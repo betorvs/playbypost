@@ -186,7 +186,7 @@ func (a *app) interactionCommand(s *discordgo.Session, i *discordgo.InteractionC
 			// Do something
 			if userid != "" {
 				attachment := ""
-				body, err := a.web.AddChatInformation(userid, username, i.ChannelID)
+				body, err := a.web.AddChatInformation(userid, username, i.ChannelID, types.Discord)
 				if err != nil {
 					a.logger.Error("error adding user info", "error", err.Error())
 					attachment = fmt.Sprintf("Sorry, it did not work %s", username)

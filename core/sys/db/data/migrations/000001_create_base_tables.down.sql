@@ -17,4 +17,4 @@ DROP TABLE access_story_keys;
 DROP TABLE story_keys;
 DROP TABLE story;
 DROP TABLE storytellers;
-DROP TABLE slack_information;
+DROP TABLE chat_information;

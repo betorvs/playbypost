@@ -7,8 +7,8 @@ import (
 	"github.com/betorvs/playbypost/core/sys/web/types"
 )
 
-func (db *DBX) AddChatInformation(ctx context.Context, username, userid, channel string) (int, error) {
-	query := "INSERT INTO chat_information(userid, channel, username) VALUES($1, $2, $3) RETURNING id"
+func (db *DBX) AddChatInformation(ctx context.Context, username, userid, channel, chat string) (int, error) {
+	query := "INSERT INTO chat_information(userid, channel, username, chat) VALUES($1, $2, $3, $4) RETURNING id"
 	stmt, err := db.Conn.PrepareContext(ctx, query)
 	if err != nil {
 		db.Logger.Error("prepare insert into chat information failed", "error", err.Error())
@@ -27,7 +27,7 @@ func (db *DBX) AddChatInformation(ctx context.Context, username, userid, channel
 func (db *DBX) GetChatInformation(ctx context.Context) ([]types.ChatInfo, error) {
 	info := []types.ChatInfo{}
 	infoMap := make(map[string]types.ChatInfo)
-	query := "SELECT id, userid, username, channel FROM chat_information"
+	query := "SELECT id, userid, username, channel, chat FROM chat_information"
 	rows, err := db.Conn.QueryContext(ctx, query)
 	if err != nil {
 		db.Logger.Error("query on chat_information failed", "error", err.Error())
@@ -36,7 +36,7 @@ func (db *DBX) GetChatInformation(ctx context.Context) ([]types.ChatInfo, error)
 	defer rows.Close()
 	for rows.Next() {
 		var s types.ChatInfo
-		if err := rows.Scan(&s.ID, &s.UserID, &s.Username, &s.Channel); err != nil {
+		if err := rows.Scan(&s.ID, &s.UserID, &s.Username, &s.Channel, &s.Chat); err != nil {
 			db.Logger.Error("scan error on chat_information", "error", err.Error())
 		}
 		if v, ok := infoMap[s.UserID]; ok {

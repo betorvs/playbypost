@@ -50,7 +50,8 @@ CREATE TABLE chat_information (
   id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   userid VARCHAR(50) NOT NULL,
   channel VARCHAR(50) NOT NULL,
-  username VARCHAR(50) NOT NULL
+  username VARCHAR(50) NOT NULL,
+  chat VARCHAR(50) NOT NULL
 );
 
 CREATE TABLE users (
