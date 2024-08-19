@@ -35,7 +35,7 @@ type app struct {
 func main() {
 	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
 	slog.SetDefault(logger)
-	log := slog.NewLogLogger(logger.Handler(), slog.LevelInfo)
+	// log := slog.NewLogLogger(logger.Handler(), slog.LevelInfo)
 	logger.Info("starting slack bot test", "version", Version)
 	token := os.Getenv("SLACK_AUTH_TOKEN")
 	appToken := os.Getenv("SLACK_APP_TOKEN")
@@ -52,7 +52,7 @@ func main() {
 	socket := socketmode.New(
 		client,
 		socketmode.OptionDebug(false),
-		socketmode.OptionLog(log),
+		// socketmode.OptionLog(log),
 	)
 	slack := slack.New(token)
 
@@ -159,7 +159,6 @@ func (a *app) middlewareEventsAPI(evt *socketmode.Event, client *socketmode.Clie
 			a.logger.Info(fmt.Sprintf("ID: %s, Fullname: %s, Email: %s\n", user.ID, user.Profile.RealName, user.Profile.Email))
 			attachment.Text = fmt.Sprintf("Hello %s", user.Profile.RealName)
 			if strings.Contains(ev.Text, "join") {
-				attachment.Text = fmt.Sprintf("Let's play %s", user.Profile.RealName)
 				body, err := a.web.AddChatInformation(user.ID, user.Profile.RealName, ev.Channel)
 				if err != nil {
 					a.logger.Error("error adding user info", "error", err.Error())
@@ -174,31 +173,15 @@ func (a *app) middlewareEventsAPI(evt *socketmode.Event, client *socketmode.Clie
 				if strings.Contains(msg.Msg, "already added") {
 					attachment.Text = fmt.Sprintf("Already subscribed. Great, %s", user.Profile.RealName)
 				}
+				if strings.EqualFold(msg.Msg, "added") {
+					attachment.Text = fmt.Sprintf("Let's play %s", user.Profile.RealName)
+				}
 
 			}
 			_, _, err = client.PostMessage(ev.Channel, slack.MsgOptionAttachments(attachment))
 			if err != nil {
 				a.logger.Error("failed to post message", "error", err.Error())
 			}
-
-			// var message string
-			// userid, story, text := ev.User, ev.Channel, ev.Text
-			// body, err := a.web.PostCommand(userid, "", text, story, 0)
-			// if err != nil {
-			// 	a.logger.Error("post command", "error", err.Error())
-			// 	message = "sorry, something goes wrong. Try later, please."
-			// } else {
-			// 	var msg types.Msg
-			// 	err = json.Unmarshal(body, &msg)
-			// 	if err != nil {
-			// 		a.logger.Error("json unmarshal", "error", err.Error())
-			// 	}
-			// 	message = msg.Msg
-			// }
-			// _, _, err = client.Client.PostMessage(ev.Channel, slack.MsgOptionText(message, false))
-			// if err != nil {
-			// 	a.logger.Error("failed posting message", "error", err.Error())
-			// }
 
 		case *slackevents.MemberJoinedChannelEvent:
 			a.logger.Info(fmt.Sprintf("user %q joined to channel %q", ev.User, ev.Channel))

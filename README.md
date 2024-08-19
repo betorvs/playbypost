@@ -6,12 +6,72 @@
 - core: main packages, not designed to be shared with others (not using pkg pattern because of it)
 - docs: documentation about this project
 
-## migrations
+## Environment variables
+
+- `PGUSER` : string variable. 
+- `PGPASSWORD` : string variable. 
+- `PGHOST` : string variable. 
+- `PGPORT` : string variable. 
+- `PGDATABASE` : string variable. 
+- `SLACK_AUTH_TOKEN` : string variable. 
+- `SLACK_APP_TOKEN` : string variable. 
+- `SLACK_CHANNEL_ID` : string variable. 
+- `DISCORD_TOKEN` : string variable. 
+- `DISCORD_GUILD_ID` : string variable. 
+
+## development
+
+### Create both files with all environment variables
+```bash
+.env
+.env.task
+```
+
+### Change Tiltfile
+
+tiltfile for slack
+```
+local_resource(
+  name='playbypost-server',
+  cmd='task tidy build_assets build_local',
+  serve_cmd='./playbypost',
+  deps=["app/", "go.mod", "go.sum", "core/"]
+)
+local_resource(
+  name='slack-plugin',
+  serve_cmd='./slack-plugin',
+  resource_deps=['playbypost-server'],
+  deps=["./slack-plugin"]
+)
+```
+
+tiltfile for discord
+```
+local_resource(
+  name='playbypost-server',
+  cmd='task tidy build_assets build_local',
+  serve_cmd='./playbypost',
+  deps=["app/", "go.mod", "go.sum", "core/"]
+)
+local_resource(
+  name='discord-plugin',
+  serve_cmd='./discord-plugin',
+  resource_deps=['playbypost-server'],
+  deps=["./discord-plugin"]
+)
+```
+
+### Create playbypost database:
+```
+. .env
+./admin-ctl db create
+./admin-ctl db up
+```
+
+### Run tilt
 
 ```bash
-cd core/sys/db/migrate
-migrate create -ext sql -dir migrations/ -seq create_base_tables
-migrate create -ext sql -dir migrations/ -seq create_encounter_and_participants_table
+tilt dev
 ```
 
 ## References

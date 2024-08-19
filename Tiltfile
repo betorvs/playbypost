@@ -5,8 +5,8 @@ local_resource(
   deps=["app/", "go.mod", "go.sum", "core/"]
 )
 local_resource(
-  name='slack-plugin',
-  serve_cmd='./slack-plugin',
+  name='discord-plugin',
+  serve_cmd='./discord-plugin',
   resource_deps=['playbypost-server'],
-  deps=["./slack-plugin"]
+  deps=["./discord-plugin"]
 )

@@ -10,9 +10,9 @@ CREATE TABLE story (
   title VARCHAR(50) UNIQUE NOT NULL,
   notes text,
   announcement text,
-  storyteller_id int NOT NULL REFERENCES writers(id),
+  writer_id int NOT NULL REFERENCES writers(id),
   rpg VARCHAR(25),
-  UNIQUE(title, storyteller_id)
+  UNIQUE(title, writer_id)
 );
 
 CREATE TABLE story_keys (
