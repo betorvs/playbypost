@@ -44,17 +44,6 @@ var initiativeCmd = &cobra.Command{
 
 func init() {
 	rootCmd.AddCommand(initiativeCmd)
-
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// initiativeCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// initiativeCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
-	// initiativeCmd.Flags().StringVar(&name, "name", "", "initiative name")
 	initiativeCmd.Flags().StringVarP(&userID, "user-id", "u", "", "userid from chat integration")
 	initiativeCmd.Flags().StringVarP(&channel, "channel", "c", "", "channel from chat integration")
 	initiativeCmd.Flags().IntVar(&encounterID, "encounter-id", 0, "encounter ID")

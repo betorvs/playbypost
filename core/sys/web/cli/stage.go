@@ -2,6 +2,7 @@ package cli
 
 import (
 	"encoding/json"
+	"fmt"
 
 	"github.com/betorvs/playbypost/core/sys/web/types"
 )
@@ -34,5 +35,35 @@ func (c *Cli) CreateStage(text, userID string, storyID int) ([]byte, error) {
 		return []byte{}, err
 	}
 	res, err := c.postGeneric(stage, body)
+	return res, err
+}
+
+func (c *Cli) AddEncounterToStage(text string, storyId, stageID, encounterID int) ([]byte, error) {
+	s := types.EncounterAssociation{
+		StageID:     stageID,
+		EncounterID: encounterID,
+		StoryID:     storyId,
+		Text:        text,
+	}
+	body, err := json.Marshal(s)
+	if err != nil {
+		return []byte{}, err
+	}
+	encounter := fmt.Sprintf("%s/encounter", stage)
+	res, err := c.postGeneric(encounter, body)
+	return res, err
+}
+
+func (c *Cli) StartStage(stageID int, channelID string) ([]byte, error) {
+	s := types.Channel{
+		StageID: stageID,
+		Channel: channelID,
+	}
+	body, err := json.Marshal(s)
+	if err != nil {
+		return []byte{}, err
+	}
+	start := fmt.Sprintf("%s/channel", stage)
+	res, err := c.postGeneric(start, body)
 	return res, err
 }

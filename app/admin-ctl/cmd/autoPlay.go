@@ -16,9 +16,12 @@ var autoPlayCmd = &cobra.Command{
 	Use:     "auto-play",
 	Aliases: []string{"auto", "ap"},
 	Short:   "creates or list a auto play from a story",
-	Long:    ``,
-	PreRun:  loadApp,
-	Args:    cobra.ExactArgs(1),
+	Long: `
+
+- create-by-title: will receive a encounter and next encounter title and create a auto play for you
+	`,
+	PreRun: loadApp,
+	Args:   cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		switch args[0] {
 		case "create":
@@ -50,20 +53,19 @@ var autoPlayCmd = &cobra.Command{
 			app.Logger.Info(msg.Msg, "text", displayText)
 
 		case "next-by-title":
-			encounters, err := app.Web.GetEncounters()
+			encounters, err := app.getEncounters()
 			if err != nil {
-				app.Logger.Error("get encounters", "error", err.Error())
 				os.Exit(1)
 			}
-			var encounterID int
-			var nextEncounterID int
-			for _, v := range encounters {
-				if v.Title == encounterTitle {
-					encounterID = v.ID
-				}
-				if v.Title == nextEncounterTitle {
-					nextEncounterID = v.ID
-				}
+			encounterID := app.findEncounterID(encounterTitle, encounters)
+			if encounterID == 0 {
+				app.Logger.Error("encounter not found", "title", encounterTitle)
+				os.Exit(1)
+			}
+			nextEncounterID := app.findEncounterID(nextEncounterTitle, encounters)
+			if nextEncounterID == 0 {
+				app.Logger.Error("next encounter not found", "title", nextEncounterTitle)
+				os.Exit(1)
 			}
 			body, err := app.Web.AddNextEncounter(autoPlayID, encounterID, nextEncounterID, displayText)
 			if err != nil {
@@ -83,17 +85,6 @@ var autoPlayCmd = &cobra.Command{
 }
 
 func init() {
-	rootCmd.AddCommand(autoPlayCmd)
-
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// autoPlayCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// autoPlayCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 	autoPlayCmd.Flags().BoolVar(&solo, "solo", false, "solo adventure")
 	autoPlayCmd.Flags().IntVar(&storyID, "story-id", 0, "story id")
 	autoPlayCmd.Flags().StringVar(&displayText, "text", "", "text to be used")

@@ -13,22 +13,22 @@ type GeneratePlayer struct {
 }
 
 type Players struct {
-	ID        int            `json:"id,omitempty"`
-	Name      string         `json:"name"`
-	StageID   int            `json:"stage_id"`
-	PlayerID  int            `json:"player_id"`
-	Abilities map[string]int `json:"abilities"`
-	Skills    map[string]int `json:"skills"`
-	RPG       string         `json:"rpg"`
-	Extension map[string]int `json:"extension"`
-	Destroyed bool           `json:"destroyed"`
+	ID         int            `json:"id,omitempty"`
+	Name       string         `json:"name"`
+	StageID    int            `json:"stage_id"`
+	PlayerID   int            `json:"player_id"`
+	Abilities  map[string]int `json:"abilities"`
+	Skills     map[string]int `json:"skills"`
+	RPG        string         `json:"rpg"`
+	Extensions map[string]int `json:"extensions"`
+	Destroyed  bool           `json:"destroyed"`
 }
 
 func NewPlayer() *Players {
 	return &Players{
-		Abilities: make(map[string]int),
-		Skills:    make(map[string]int),
-		Extension: map[string]int{},
+		Abilities:  make(map[string]int),
+		Skills:     make(map[string]int),
+		Extensions: map[string]int{},
 	}
 }
 
@@ -48,6 +48,15 @@ func CreatureToPlayer(p *Players, c *rules.Creature) {
 			key = v.DisplayName
 		}
 		p.Skills[key] = v.Value
+	}
+	// extensions
+	p.Extensions = make(map[string]int)
+	for k, v := range c.Extension.GetValues() {
+		switch x := v.(type) {
+		case int:
+			p.Extensions[k] = x
+		}
+
 	}
 }
 

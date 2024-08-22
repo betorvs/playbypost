@@ -9,8 +9,8 @@ type GenerateNPC struct {
 
 func NewNPC() *Players {
 	return &Players{
-		Abilities: make(map[string]int),
-		Skills:    make(map[string]int),
-		Extension: map[string]int{},
+		Abilities:  make(map[string]int),
+		Skills:     make(map[string]int),
+		Extensions: map[string]int{},
 	}
 }

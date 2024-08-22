@@ -197,7 +197,7 @@ func (a MainApi) ExecuteCommand(w http.ResponseWriter, r *http.Request) {
 
 func (a MainApi) getRunningStageByChannelID(channelID, userID string) (types.RunningStage, bool, error) {
 	storyteller := false
-	runningStage, err := a.db.GetRunningStageByChannelID(a.ctx, channelID, userID)
+	runningStage, err := a.db.GetRunningStageByChannelID(a.ctx, channelID, userID, a.rpg)
 	if err != nil {
 		return types.RunningStage{}, storyteller, err
 	}

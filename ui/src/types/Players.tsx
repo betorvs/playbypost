@@ -4,6 +4,7 @@ type Players = {
   rpg: string;
   abilities: Map<string, string>;
   skills: Record<string, string>;
+  extensions: Record<string, string>;
   destroyed: boolean;
 };
 

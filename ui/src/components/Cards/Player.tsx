@@ -13,6 +13,10 @@ const PlayerCards = ({ player }: props) => {
   if (player.skills != null ) {
     skills = JSON.stringify(player.skills)
   }
+  let extensions = "extensions not found";
+  if (player.extensions != null ) {
+    extensions = JSON.stringify(player.extensions)
+  }
   return (
     <>
     <div className="col-md-6">
@@ -29,6 +33,7 @@ const PlayerCards = ({ player }: props) => {
           </p>
           <h6 className="card-title">Others</h6>
           <p className="card-text">
+            {extensions}
           </p>
           {/* <a href="#" className="btn btn-primary">
             Go somewhere

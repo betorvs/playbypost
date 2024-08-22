@@ -156,7 +156,7 @@ func (db *DBX) GetStageEncountersByStageID(ctx context.Context, id int) ([]types
 	return list, nil
 }
 
-func (db *DBX) GetRunningStageByChannelID(ctx context.Context, channelID, userID string) (types.RunningStage, error) {
+func (db *DBX) GetRunningStageByChannelID(ctx context.Context, channelID, userID string, rpgSystem *rpg.RPGSystem) (types.RunningStage, error) {
 	db.Logger.Info("GetRunningStageByChannelID", "channelID", channelID, "userID", userID)
 	running := types.RunningStage{}
 	aggr := types.StageAggregated{}
@@ -215,7 +215,7 @@ func (db *DBX) GetRunningStageByChannelID(ctx context.Context, channelID, userID
 
 	// players
 	if !storyteller {
-		players, err := db.GetPlayerByUserID(ctx, userID, channelID)
+		players, err := db.GetPlayerByUserID(ctx, userID, channelID, rpgSystem)
 		if err != nil {
 			db.Logger.Error("rows err on players", "error", err.Error())
 		}

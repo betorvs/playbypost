@@ -2,12 +2,13 @@ package cli
 
 import (
 	"encoding/json"
+	"fmt"
 
 	"github.com/betorvs/playbypost/core/sys/web/types"
 )
 
 const (
-	slack string = "info"
+	chat string = "info"
 )
 
 func (c *Cli) AddChatInformation(userid, username, channel, chat string) ([]byte, error) {
@@ -21,6 +22,20 @@ func (c *Cli) AddChatInformation(userid, username, channel, chat string) ([]byte
 	if err != nil {
 		return []byte{}, err
 	}
-	res, err := c.postGeneric(slack, body)
+	res, err := c.postGeneric(chat, body)
 	return res, err
+}
+
+func (c *Cli) GetChatInformation() ([]types.ChatInfo, error) {
+	users := fmt.Sprintf("%s/%s", chat, "users")
+	body, err := c.getGeneric(users)
+	if err != nil {
+		return []types.ChatInfo{}, err
+	}
+	var u []types.ChatInfo
+	err = json.Unmarshal(body, &u)
+	if err != nil {
+		return []types.ChatInfo{}, err
+	}
+	return u, nil
 }

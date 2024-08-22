@@ -92,7 +92,7 @@ func (a MainApi) GetPlayersByStageID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	a.logger.Info("get players by story id", "story-id", id)
-	obj, err := a.db.GetPlayerByStageID(a.ctx, id)
+	obj, err := a.db.GetPlayerByStageID(a.ctx, id, a.rpg)
 	if err != nil {
 		a.s.ErrJSON(w, http.StatusBadRequest, "players database issue")
 		return
@@ -113,7 +113,7 @@ func (a MainApi) GetPlayersByID(w http.ResponseWriter, r *http.Request) {
 		npc = true
 	}
 	a.logger.Info("get players by id", "player-id", id, "query_npc", npc)
-	obj, err := a.db.GetPlayerByID(a.ctx, id)
+	obj, err := a.db.GetPlayerByID(a.ctx, id, a.rpg)
 	if err != nil {
 		a.s.ErrJSON(w, http.StatusBadRequest, "players database issue")
 		return
@@ -126,7 +126,7 @@ func (a MainApi) GetPlayers(w http.ResponseWriter, r *http.Request) {
 		a.s.ErrJSON(w, http.StatusForbidden, "required authentication headers")
 		return
 	}
-	obj, err := a.db.GetPlayers(a.ctx)
+	obj, err := a.db.GetPlayers(a.ctx, a.rpg)
 	if err != nil {
 		a.s.ErrJSON(w, http.StatusBadRequest, "players database issue")
 		return

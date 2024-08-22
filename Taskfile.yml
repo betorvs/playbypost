@@ -156,6 +156,20 @@ tasks:
       TOKEN:
         sh: cat creds
 
+  load_stage:
+    cmds:
+      - ./admin-ctl stage create-by-title --display-text "adv-hero-1" --story-title "heroes save the world" --user-id "U947BLKME" --token {{.TOKEN}}
+      - ./admin-ctl player add-player-stage-by-title --stage-title "adv-hero-1" --user-id "UMNL1CU1M" --token {{.TOKEN}}
+      - ./admin-ctl stage add-encounter --stage-title "adv-hero-1" --encounter-title "first encounter on story 1" --story-title "heroes save the world" --display-text "enc-1" --token {{.TOKEN}}
+      - ./admin-ctl stage add-encounter --stage-title "adv-hero-1" --encounter-title "2 encounter on story 1" --story-title "heroes save the world" --display-text "enc-2" --token {{.TOKEN}}
+      - ./admin-ctl stage add-encounter --stage-title "adv-hero-1" --encounter-title "3 encounter on story 1" --story-title "heroes save the world" --display-text "enc-3" --token {{.TOKEN}}
+      - ./admin-ctl stage add-encounter --stage-title "adv-hero-1" --encounter-title "4 encounter on story 1" --story-title "heroes save the world" --display-text "enc-4" --token {{.TOKEN}}
+      - ./admin-ctl stage add-encounter --stage-title "adv-hero-1" --encounter-title "5 encounter on story 1" --story-title "heroes save the world" --display-text "enc-5" --token {{.TOKEN}}
+      - ./admin-ctl stage add-encounter --stage-title "adv-hero-1" --encounter-title "last encounter on story 1" --story-title "heroes save the world" --display-text "enc-6" --token {{.TOKEN}}
+    vars:
+      TOKEN:
+        sh: cat creds
+
   load:
     cmds:
       - task: load_writer

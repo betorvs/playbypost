@@ -9,8 +9,10 @@ var (
 	notes              string // cmd: story, encounter
 	writerID           int    // cmd: story
 	name               string // cmd: player
-	playerid           int    // cmd: player
-	storyid            int    // cmd: player, encounter
+	playerID           int    // cmd: player
+	storyID            int    // cmd: player, encounter, stage
+	stageTitle         string // cmd: player, stage
+	stageID            int    // cmd: player
 	encounterID        int    // cmd: encounter, initiative
 	listPlayersID      []int  // cmd: encounter
 	isNPC              bool   //cmd: encounter
@@ -24,12 +26,16 @@ var (
 	skill              string //cmd: task
 	kind               int    //cmd: task
 	target             int    //cmd: task
-	storyID            int    //cmd: stage
 	userID             string //cmd: stage
+	storyTitle         string //cmd: stage
 	channel            string // cmd: initiative
 	solo               bool   // cmd: auto-play
 	autoPlayID         int    // cmd: auto-play
 	nextEncounterID    int    // cmd: auto-play
-	encounterTitle     string // cmd: auto-play
+	encounterTitle     string // cmd: auto-play, stage
 	nextEncounterTitle string // cmd: auto-play
+	chatUserID         string // cmd: chat
+	chatChannelID      string // cmd: chat
+	chatUserName       string // cmd: chat
+
 )

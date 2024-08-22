@@ -26,9 +26,9 @@ func (c *Cli) GeneratePlayer(name string, playerid, stageid int) ([]byte, error)
 	return res, err
 }
 
-func (c *Cli) GetPlayersByStoryID(id int) (map[int]rules.Creature, error) {
+func (c *Cli) GetPlayersByStageID(id int) (map[int]rules.Creature, error) {
 	var list map[int]rules.Creature
-	play := fmt.Sprintf("%s/story/%d", player, id)
+	play := fmt.Sprintf("stage/%s/%d", player, id)
 	body, err := c.getGeneric(play)
 	if err != nil {
 		return list, err
@@ -44,6 +44,20 @@ func (c *Cli) GetPlayersByID(id int) (rules.Creature, error) {
 	var list rules.Creature
 	play := fmt.Sprintf("%s/%d", player, id)
 	body, err := c.getGeneric(play)
+	if err != nil {
+		return list, err
+	}
+	err = json.Unmarshal(body, &list)
+	if err != nil {
+		return list, err
+	}
+	return list, nil
+}
+
+func (c *Cli) GetPlayers() ([]types.Players, error) {
+	var list []types.Players
+	// play := fmt.Sprintf("%s", player)
+	body, err := c.getGeneric(player)
 	if err != nil {
 		return list, err
 	}

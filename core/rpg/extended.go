@@ -6,7 +6,6 @@ import (
 	"errors"
 
 	"github.com/betorvs/playbypost/core/rpg/d10hm"
-	"github.com/betorvs/playbypost/core/rpg/d10os"
 	"github.com/betorvs/playbypost/core/rpg/d20e35"
 )
 
@@ -19,6 +18,9 @@ type ExtendedSystem interface {
 	WeaponBonus(s string) (int, string, error)
 	Damage(v int) error
 	HealthStatus() int
+	SetWeapon(name string, value int, description string)
+	SetArmor(v int)
+	GetValues() map[string]interface{}
 	String() string
 }
 
@@ -30,8 +32,8 @@ func NewExtendedSystem(r *RPGSystem, values map[string]interface{}) ExtendedSyst
 		return extended
 	case D2035:
 		return d20e35.NewExtended()
-	case D10OS:
-		return d10os.NewExtended()
+	// case D10OS:
+	// 	return d10os.NewExtended()
 	default:
 		return nil
 	}

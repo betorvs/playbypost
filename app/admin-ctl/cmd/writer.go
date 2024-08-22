@@ -53,16 +53,6 @@ var writersCmd = &cobra.Command{
 
 func init() {
 	rootCmd.AddCommand(writersCmd)
-
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// usersCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// usersCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 	writersCmd.Flags().StringVarP(&username, "username", "u", "", " username to be used")
 	writersCmd.Flags().StringVar(&password, "password", "", "password should be unique")
 }

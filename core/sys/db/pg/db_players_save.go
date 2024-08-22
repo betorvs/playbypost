@@ -53,7 +53,7 @@ import (
 // 	return res, nil
 // }
 
-func (db *DBX) SavePlayerTx(ctx context.Context, id, storyID int, creature *rules.Creature, rpg *rpg.RPGSystem) (int, error) {
+func (db *DBX) SavePlayerTx(ctx context.Context, id, storyID int, creature *rules.Creature, rpgSystem *rpg.RPGSystem) (int, error) {
 	var playerID int
 	tx, err := db.Conn.BeginTx(ctx, nil)
 	if err != nil {
@@ -75,7 +75,7 @@ func (db *DBX) SavePlayerTx(ctx context.Context, id, storyID int, creature *rule
 		return -1, err
 	}
 	defer stmt.Close()
-	err = tx.StmtContext(ctx, stmt).QueryRow(creature.Name, id, storyID, false, creature.Abilities, creature.Skills, creature.Extension, rpg.Name).Scan(&playerID)
+	err = tx.StmtContext(ctx, stmt).QueryRow(creature.Name, id, storyID, false, creature.Abilities, creature.Skills, creature.Extension, rpgSystem.Name).Scan(&playerID)
 	if err != nil {
 		db.Logger.Error("tx statement on players failed", "error", err.Error())
 		return -1, err

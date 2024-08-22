@@ -44,15 +44,6 @@ func Execute() {
 }
 
 func init() {
-	// Here you will define your flags and configuration settings.
-	// Cobra supports persistent flags, which, if defined here,
-	// will be global for your application.
-
-	// rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.admin.yaml)")
-
-	// Cobra also supports local flags, which will only run
-	// when this action is called directly.
-	// rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 	rootCmd.PersistentFlags().StringVar(&server, "server", "http://localhost:3000", "playbypost http server, default: ")
 	rootCmd.PersistentFlags().StringVar(&adminToken, "token", "", "admin token to access playbypost http server")
 	rootCmd.PersistentFlags().StringVar(&adminUser, "admin-user", "admin", "admin token to access playbypost http server")

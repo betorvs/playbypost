@@ -52,6 +52,37 @@ func (d D10Extented) String() string {
 	return fmt.Sprintf("Creature Extended: Health %d, Defense %d, WillPower %d, Initiative %d, Size %d, Weapons %v", d.Health, d.Defense, d.WillPower, d.Initiative, d.Size, d.Weapon)
 }
 
+func (a *D10Extented) SetWeapon(name string, value int, description string) {
+	a.Weapon[name] = Weapon{
+		Name:        name,
+		Value:       value,
+		Description: description,
+	}
+}
+
+func (a *D10Extented) SetArmor(v int) {
+	a.Armor = v
+}
+
+func (a D10Extented) GetValues() map[string]interface{} {
+	weapon := "weapon"
+	var weaponValue int
+	for _, v := range a.Weapon {
+		weapon = fmt.Sprintf("weapon:%s", v.Name)
+		weaponValue = v.Value
+	}
+
+	return map[string]interface{}{
+		"health":     a.Health,
+		"defense":    a.Defense,
+		"willpower":  a.WillPower,
+		"initiative": a.Initiative,
+		"size":       a.Size,
+		"armor":      a.Armor,
+		weapon:       weaponValue,
+	}
+}
+
 // type Advantages struct {
 // 	Name        string
 // 	Value       int

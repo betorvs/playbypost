@@ -147,6 +147,39 @@ func (d *D20Extended) calcHitPoints(level, bonus int, method HitPointsMethod) in
 	return value
 }
 
+func (d *D20Extended) SetWeapon(name string, value int, damageDice string) {
+	d.Weapon[name] = Weapon{
+		Name:        name,
+		AttackBonus: value,
+		Description: fmt.Sprintf("%s and %s", name, damageDice),
+		DamageDice:  damageDice,
+	}
+}
+
+func (d *D20Extended) SetArmor(v int) {
+	d.ArmorClass = v
+}
+
+func (d *D20Extended) GetValues() map[string]interface{} {
+	weapon := "weapon"
+	var weaponValue int
+	for _, v := range d.Weapon {
+		weapon = fmt.Sprintf("weapon:%s", v.Name)
+		weaponValue = v.AttackBonus
+	}
+	return map[string]interface{}{
+		"Level":      d.Level,
+		"HitPoints":  d.HitPoints,
+		"HitDice":    d.HitDice,
+		"BaseAttack": d.BaseAttack,
+		"Saving":     d.SavingThrows,
+		"ArmorClass": d.ArmorClass,
+		"Class":      d.Class,
+		"Multiclass": d.Multiclass,
+		weapon:       weaponValue,
+	}
+}
+
 func AddValuesExtended(bonus, level int, hitDices HitDices, hitDicesMethod HitPointsMethod, class string) *D20Extended {
 	// weapon := make(map[string]Weapon)
 	// classes := make(map[string]int)
