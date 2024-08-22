@@ -25,19 +25,48 @@ func (a MainApi) ExecuteCommand(w http.ResponseWriter, r *http.Request) {
 		a.s.ErrJSON(w, http.StatusBadRequest, "json decode error")
 		return
 	}
-	a.logger.Info("command received", "command", obj.Text, "userid", headerUserID, "channel", headerStoryChannel)
-	runningStage, err := a.db.GetRunningStageByChannelID(a.ctx, headerStoryChannel, headerUserID)
-	if err != nil {
-		a.s.ErrJSON(w, http.StatusBadRequest, "invalid userid")
-		return
-	}
-	a.logger.Info("running stage", "runningStage", runningStage)
-	storyteller := false
-	if runningStage.Stage.UserID == headerUserID {
-		storyteller = true
-	}
+	text := strings.ToLower(obj.Text)
+	a.logger.Info("command received", "command", text, "userid", headerUserID, "channel", headerStoryChannel)
+
 	switch {
-	case strings.Contains(strings.ToLower(obj.Text), "opt"):
+	case strings.HasPrefix(text, "solo-start"):
+		// solo mode: decide workflow
+		// list all available solo modes
+		// will return a list of auto_play entries
+		opts, err := a.db.GetAutoPlay(a.ctx)
+		if err != nil {
+			a.s.ErrJSON(w, http.StatusBadRequest, "get auto play")
+			return
+		}
+		encOptions := parser.ParserAutoPlaysSolo(opts)
+		composed := types.Composed{Msg: "Solo start options", Opt: encOptions}
+		a.logger.Info("msg back", "composed", composed)
+		a.s.JSON(w, composed)
+		return
+
+	case strings.HasPrefix(text, "solo-next"):
+		// start solo mode: requires channel id and user id
+		opt, err := a.getAutoPlayOptByChannelID(headerStoryChannel, headerUserID)
+		if err != nil {
+			a.s.ErrJSON(w, http.StatusBadRequest, "no auto play found")
+			return
+		}
+		a.logger.Info("auto play found", "opt", opt)
+		composed := types.Composed{Msg: "Solo next options"}
+		if len(opt.NextEncounters) > 0 {
+			encOptions := parser.ParserAutoPlaysNext(opt.NextEncounters)
+			composed.Opt = encOptions
+		}
+
+		a.s.JSON(w, composed)
+		return
+
+	case strings.Contains(text, "opt"):
+		runningStage, storyteller, err := a.getRunningStageByChannelID(headerStoryChannel, headerUserID)
+		if err != nil {
+			a.s.ErrJSON(w, http.StatusBadRequest, "invalid userid")
+			return
+		}
 		msg := fmt.Sprintf("Player '%s' ", runningStage.Players.Name)
 		if storyteller {
 			msg = fmt.Sprintf("Storyteller '%s' ", runningStage.Stage.UserID)
@@ -49,7 +78,12 @@ func (a MainApi) ExecuteCommand(w http.ResponseWriter, r *http.Request) {
 		a.logger.Info("msg back", "composed", composed)
 		a.s.JSON(w, composed)
 		return
-	case strings.HasPrefix(strings.ToLower(obj.Text), "cmd"):
+	case strings.HasPrefix(text, "cmd"):
+		runningStage, storyteller, err := a.getRunningStageByChannelID(headerStoryChannel, headerUserID)
+		if err != nil {
+			a.s.ErrJSON(w, http.StatusBadRequest, "invalid userid")
+			return
+		}
 		actions := types.NewActions()
 		cmd, err := parser.TextToCommand(obj.Text)
 		if err != nil {
@@ -104,8 +138,82 @@ func (a MainApi) ExecuteCommand(w http.ResponseWriter, r *http.Request) {
 		}
 		a.s.JSON(w, types.Msg{Msg: msg})
 		return
+
+	case strings.HasPrefix(text, "choice"):
+		// process solo choices for player
+		// start solo mode: requires channel id and user id
+		// next solo mode: requires channel id and user id
+		a.logger.Info("choice command received", "text", text)
+		actions := types.NewActions()
+		cmd, err := parser.TextToCommand(obj.Text)
+		if err != nil {
+			a.s.ErrJSON(w, http.StatusBadRequest, "command error")
+			return
+		}
+		actions["command"] = cmd.Act
+		actions["text"] = cmd.Text
+		actions["channel"] = headerStoryChannel
+		actions["userid"] = headerUserID
+		a.logger.Info("choice command received", "cmd", cmd)
+		// command=choice;start-solo-solo-adventure-1:1;1 userid=1272952428379242611 channel=1275626175678517289
+		// err = a.db.RegisterActivitiesAutoPlay(a.ctx, cmd.ID, cmd.NF, actions)
+		switch {
+		case strings.HasPrefix(cmd.Act, parser.StartSolo):
+			actions["auto_play_id"] = strconv.Itoa(cmd.ID)
+			// add auto play
+			encounterID, err := a.db.CreateAutoPlayChannelTx(a.ctx, headerStoryChannel, headerUserID, cmd.ID)
+			if err != nil {
+				a.s.ErrJSON(w, http.StatusBadRequest, "create auto play channel")
+				return
+			}
+			actions["encounter_id"] = strconv.Itoa(encounterID)
+			// create registry
+			err = a.db.RegisterActivitiesAutoPlay(a.ctx, cmd.ID, encounterID, actions)
+			if err != nil {
+				a.s.ErrJSON(w, http.StatusBadRequest, "register activities auto play")
+				return
+			}
+
+		case strings.HasPrefix(cmd.Act, parser.NextSolo):
+			// {ID:8 Act:next-solo-for-A-go-enc-2 Text:choice;next-solo-for-A-go-enc-2:8;1 NF:1}"
+			actions["auto_play_id"] = strconv.Itoa(cmd.NF)
+			actions["encounter_id"] = strconv.Itoa(cmd.ID)
+			err = a.db.RegisterActivitiesAutoPlay(a.ctx, cmd.NF, cmd.ID, actions)
+			if err != nil {
+				a.s.ErrJSON(w, http.StatusBadRequest, "register activities auto play")
+				return
+			}
+		}
+
+		msg := "command accepted"
+		a.s.JSON(w, types.Msg{Msg: msg})
+		return
+
 	}
 	// msg := fmt.Sprintf("player found '%s' and story id found '%d' ", player.Name, scene.Story.ID)
 	msg := "no options for you"
 	a.s.JSON(w, types.Msg{Msg: msg})
+}
+
+func (a MainApi) getRunningStageByChannelID(channelID, userID string) (types.RunningStage, bool, error) {
+	storyteller := false
+	runningStage, err := a.db.GetRunningStageByChannelID(a.ctx, channelID, userID)
+	if err != nil {
+		return types.RunningStage{}, storyteller, err
+	}
+	if runningStage.Stage.UserID == userID {
+		storyteller = true
+	}
+	return runningStage, storyteller, nil
+}
+
+func (a MainApi) getAutoPlayOptByChannelID(channel, userID string) (types.AutoPlayOptions, error) {
+	opt, err := a.db.GetAutoPlayOptByChannelID(a.ctx, channel, userID)
+	if err != nil {
+		return types.AutoPlayOptions{}, err
+	}
+	if opt.ID == 0 {
+		return types.AutoPlayOptions{}, fmt.Errorf("no auto play found")
+	}
+	return opt, nil
 }

@@ -29,6 +29,10 @@ import AddPlayerToStageEncounter from "./pages/AddPlayersToStageEncounter";
 import TaskToEncounter from "./pages/TaskToEncounter";
 import NextEncounter from "./pages/NextEncounter";
 import AddNPCToStageEncounter from "./pages/AddNPCToStageEncounter";
+import AutoPlayPage from "./pages/AutoPlay";
+import AutoPlayAdd from "./pages/AutoPlayAdd";
+import AutoPlayDetail from "./pages/AutoPlayDetail";
+import AutoPlayNext from "./pages/AutoPlayNext";
 
 const PrivateRoutes = () => {
   const { authenticated } = useContext(AuthContext);
@@ -88,6 +92,12 @@ const Routes = () => {
           <Route path="/stages/:id/story/:story/encounter/:encounterid/task/:storyteller_id" element={<TaskToEncounter />} />
           <Route path="/stages/:id/story/:story/encounter/:encounterid/encounter" element={<NextEncounter />} />
           <Route path="/stages/start/:id" element={<StageStart />} />
+        </Route>
+        <Route path="/autoplay" >
+          <Route path="/autoplay" element={<AutoPlayPage />} />
+          <Route path="/autoplay/new" element={<AutoPlayAdd />} />
+          <Route path="/autoplay/:id/story/:story" element={<AutoPlayDetail />} />
+          <Route path="/autoplay/:id/story/:story/next" element={<AutoPlayNext />} />
         </Route>
         <Route path="/users"  >
           <Route path="/users" element={<UsersPage />} />

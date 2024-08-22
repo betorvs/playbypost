@@ -38,6 +38,11 @@ const Layout = ({ Logoff }: Props) => {
               Stages
             </NavLink>{" "}
           </li>
+          <li className="nav-item">
+            <NavLink className="nav-link" to="/autoplay">
+              Auto Play
+            </NavLink>{" "}
+          </li>
           <li></li>
         </ul>
 

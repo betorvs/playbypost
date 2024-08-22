@@ -13,30 +13,33 @@ import (
 )
 
 type MainApi struct {
-	Session *handlers.Session
-	Worker  *worker.WorkerAPI
-	logger  *slog.Logger
-	s       *server.SvrWeb
-	db      db.DBClient
-	ctx     context.Context
-	dice    rpg.Roll
-	client  *cli.Cli
-	rpg     *rpg.RPGSystem
+	Session  *handlers.Session
+	Worker   *worker.WorkerAPI
+	logger   *slog.Logger
+	s        *server.SvrWeb
+	db       db.DBClient
+	ctx      context.Context
+	dice     rpg.Roll
+	client   *cli.Cli
+	rpg      *rpg.RPGSystem
+	autoPlay *rpg.RPGSystem
 }
 
 func NewMainApi(ctx context.Context, dice rpg.Roll, db db.DBClient, l *slog.Logger, s *server.SvrWeb, client *cli.Cli, rpgSystem *rpg.RPGSystem) *MainApi {
 	session := handlers.NewSession(l, db, s, ctx)
-	worker := worker.NewWorkerAPI(ctx, dice, db, l, client, rpgSystem)
+	autoPlay := rpg.LoadRPGSystemsDefault(rpg.AutoPlay)
+	worker := worker.NewWorkerAPI(ctx, dice, db, l, client, rpgSystem, autoPlay)
 	return &MainApi{
-		Session: session,
-		Worker:  worker,
-		ctx:     ctx,
-		dice:    dice,
-		db:      db,
-		logger:  l,
-		s:       s,
-		client:  client,
-		rpg:     rpgSystem,
+		Session:  session,
+		Worker:   worker,
+		ctx:      ctx,
+		dice:     dice,
+		db:       db,
+		logger:   l,
+		s:        s,
+		client:   client,
+		rpg:      rpgSystem,
+		autoPlay: autoPlay,
 	}
 }
 

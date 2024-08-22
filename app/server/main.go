@@ -44,7 +44,9 @@ func main() {
 	db := db.NewDB(conn, logger)
 	defer db.Close()
 	// rpg loading
-	rpgFlag := flag.String("rpg", rpg.D10HM, fmt.Sprintf("-rpg [%s|%s|%s|%s|%s]", rpg.D10HM, rpg.D10OS, rpg.D2035, rpg.Solo, rpg.Didactic))
+	rpgFlag := flag.String("rpg", rpg.D10HM, fmt.Sprintf("-rpg [%s|%s|%s]", rpg.D10HM, rpg.D10OS, rpg.D2035))
+	stageWorker := flag.Bool("stage-worker", false, "-stage-worker")
+	autoPlayWorker := flag.Bool("autoplay-worker", false, "-autoplay-worker")
 	flag.Parse()
 	rpgSystem := loadRPG(*rpgFlag, logger)
 	d := rpg.Roll{
@@ -64,22 +66,20 @@ func main() {
 
 	srv.RegisterStatic()
 
+	// sessions
 	srv.Register("POST /login", app.Session.Signin)
-	// srv.Register("OPTIONS /login", srv.Options)
 	srv.Register("POST /logoff", app.Session.Logout)
 	srv.Register("POST /refresh", app.Session.Refresh)
 
+	// writers
 	srv.Register("GET /api/v1/writer", app.GetWriters)
-	// srv.Register("OPTIONS /api/v1/writer", srv.Options)
 	srv.Register("POST /api/v1/writer", app.CreateWriters)
 
+	// story
 	srv.Register("GET /api/v1/story", app.GetStory)
 	srv.Register("GET /api/v1/story/{id}", app.GetStoryById)
-	// srv.Register("OPTIONS /api/v1/story/{id}", srv.Options)
 	srv.Register("GET /api/v1/story/writer/{id}", app.GetStoryByWriterId)
-	// srv.Register("OPTIONS /api/v1/story/writer/{id}", srv.Options)
 	srv.Register("POST /api/v1/story", app.CreateStory)
-	// srv.Register("OPTIONS /api/v1/story", srv.Options)
 
 	// stage
 	srv.Register("GET /api/v1/stage", app.GetStage)
@@ -95,41 +95,45 @@ func main() {
 	srv.Register("PUT /api/v1/stage/encounter/{id}/{phase}", app.UpdateEncounterPhaseById)
 	srv.Register("POST /api/v1/stage/encounter", app.AddEncounterToStage)
 	srv.Register("POST /api/v1/stage/encounter/participants", app.AddParticipants)
-	// stage_next_encounter
 	srv.Register("POST /api/v1/stage/encounter/next", app.AddNextEncounter)
-	// stage_running_tasks
 	srv.Register("POST /api/v1/stage/encounter/task", app.AddRunningTask)
-	// stage_encounter_activities
 	srv.Register("GET /api/v1/stage/encounter/activities", app.GetStageEncounterActivities)
 	srv.Register("GET /api/v1/stage/encounter/activities/{id}", app.GetStageEncounterActivitiesByEncounterID)
 
+	// players
 	srv.Register("POST /api/v1/player", app.GeneratePlayer)
 	srv.Register("GET /api/v1/player", app.GetPlayers)
 	srv.Register("GET /api/v1/player/{id}", app.GetPlayersByID)
 	// srv.Register("GET /api/v1/player/stage/{id}", app.GetPlayersByStageID)
 	// srv.Register("OPTIONS /api/v1/player/story/{id}", srv.Options)
 
+	// encounters
 	srv.Register("GET /api/v1/encounter", app.GetEncounters)
 	srv.Register("GET /api/v1/encounter/{id}", app.GetEncounterById)
 	srv.Register("GET /api/v1/encounter/story/{id}", app.GetEncounterByStoryId)
-	// srv.Register("OPTIONS /api/v1/encounter/story/{id}", srv.Options)
 	srv.Register("POST /api/v1/encounter", app.CreateEncounter)
 	//
 	srv.Register("GET /api/v1/task", app.GetTask)
 	srv.Register("POST /api/v1/task", app.CreateTasks)
 
-	// srv.Register("OPTIONS /api/v1/encounter", srv.Options)
-	// srv.Register("PUT /api/v1/encounter/{id}/{phase}", app.UpdateEncounterPhaseById)
-
+	// initiative
 	srv.Register("POST /api/v1/initiative", app.GenerateInitiative)
 	srv.Register("GET /api/v1/initiative/encounter/{id}", app.GetInitiativeByEncounterId)
 	// command api
 	srv.Register("POST /api/v1/command", app.ExecuteCommand)
+	// chat api
 	srv.Register("POST /api/v1/info", app.AddChatInfo)
 	srv.Register("GET /api/v1/info/users", app.GetUsersInformation)
 	srv.Register("GET /api/v1/info/channel", app.GetChannelsInformation)
 	srv.Register("GET /api/v1/info/phases", app.GetEncountersPhase)
 
+	// auto play
+	srv.Register("GET /api/v1/autoplay", app.GetAutoPlay)
+	srv.Register("GET /api/v1/autoplay/{id}", app.GetAutoPlayByID)
+	srv.Register("GET /api/v1/autoplay/encounter/story/{id}", app.GetNextEncounterByStoryId)
+	srv.Register("POST /api/v1/autoplay", app.CreateAutoPlay)
+	srv.Register("POST /api/v1/autoplay/next", app.AddAutoPlayNext)
+	// options
 	srv.Register("OPTIONS /*", srv.Options)
 
 	app.Session.AddAdminSession(adminUser, adminToken)
@@ -141,8 +145,16 @@ func main() {
 		os.Exit(1)
 	}
 
+	if *stageWorker {
+		app.Worker.StageActive = true
+		logger.Info("starting stage worker job scheduler")
+	}
+	if *autoPlayWorker {
+		app.Worker.AutoPlayActive = true
+		logger.Info("starting auto play worker job scheduler")
+	}
+
 	jobScheduler := scheduler.NewJobScheduler(10 * time.Second)
-	logger.Info("starting job scheduler")
 	jobScheduler.JobQueue = app.Worker
 	ctxJob, jobCancel := context.WithCancel(ctx)
 	defer jobCancel()
@@ -190,11 +202,6 @@ func loadRPG(k string, logger *slog.Logger) *rpg.RPGSystem {
 		rpgSystem = *rpg.LoadRPGSystemsDefault(rpg.D10OS)
 		rpgSystem.InitDefinitions("./library/definitions-d10OS.json", logger)
 
-	case rpg.Solo:
-		rpgSystem = *rpg.LoadRPGSystemsDefault(rpg.Solo)
-
-	case rpg.Didactic:
-		rpgSystem = *rpg.LoadRPGSystemsDefault(rpg.Didactic)
 	}
 	return &rpgSystem
 }

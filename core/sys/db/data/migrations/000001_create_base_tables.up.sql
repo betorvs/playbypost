@@ -34,6 +34,8 @@ CREATE TABLE encounters (
   announcement text,
   story_id int NOT NULL REFERENCES story(id),
   writer_id int NOT NULL REFERENCES writers(id),
+  first_encounter BOOLEAN NOT NULL DEFAULT FALSE,
+  last_encounter BOOLEAN NOT NULL DEFAULT FALSE,
   UNIQUE(title, story_id)
 );
 
@@ -166,4 +168,49 @@ CREATE TABLE initiative_participants (
   participant_bonus int NOT NULL,
   participant_result int NOT NULL,
   active BOOLEAN NOT NULL DEFAULT TRUE
+);
+
+CREATE TABLE auto_play (
+  id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  display_text VARCHAR(50) NOT NULL,
+  encoding_key VARCHAR(16) NOT NULL,
+  story_id int NOT NULL REFERENCES story(id),
+  solo BOOLEAN NOT NULL DEFAULT TRUE
+);
+
+CREATE TABLE auto_play_next_encounter (
+  id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  display_text VARCHAR(50) NOT NULL,
+  auto_play_id int NOT NULL REFERENCES auto_play(id),
+  current_encounter_id int NOT NULL REFERENCES encounters(id),
+  next_encounter_id int NOT NULL REFERENCES encounters(id),
+  UNIQUE(display_text, current_encounter_id, next_encounter_id)
+);
+
+CREATE TABLE auto_play_channel (
+  id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  channel VARCHAR(50) UNIQUE NOT NULL,
+  auto_play_id int NOT NULL REFERENCES auto_play(id),
+  active BOOLEAN NOT NULL DEFAULT TRUE,
+  UNIQUE(channel, auto_play_id)
+);
+
+CREATE TABLE auto_play_encounter_activities (
+  id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  auto_play_id int NOT NULL REFERENCES auto_play(id),
+  encounter_id int NOT NULL REFERENCES encounters(id),
+  actions JSONB,
+  processed BOOLEAN NOT NULL DEFAULT FALSE
+);
+
+CREATE TABLE auto_play_group (
+  id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  user_id int NOT NULL REFERENCES users(id),
+  auto_play_id int NOT NULL REFERENCES auto_play(id)
+);
+
+CREATE TABLE auto_play_state (
+  id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  auto_play_id int NOT NULL REFERENCES auto_play(id),
+  encounter_id int NOT NULL REFERENCES encounters(id)
 );

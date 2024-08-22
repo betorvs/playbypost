@@ -38,14 +38,15 @@ func (c *Cli) GetEncounterByID(id int) (types.Encounter, error) {
 	return list, nil
 }
 
-func (c *Cli) CreateEncounter(title, displayText, announcement, notes string, storyID, writerID int) ([]byte, error) {
+func (c *Cli) CreateEncounter(title, announcement, notes string, storyID, writerID int, first, last bool) ([]byte, error) {
 	s := types.Encounter{
-		Title: title,
-		// DisplayText:  displayText,
-		Announcement: announcement,
-		Notes:        notes,
-		StoryID:      storyID,
-		WriterID:     writerID,
+		Title:          title,
+		Announcement:   announcement,
+		Notes:          notes,
+		StoryID:        storyID,
+		WriterID:       writerID,
+		FirstEncounter: first,
+		LastEncounter:  last,
 	}
 	body, err := json.Marshal(s)
 	if err != nil {

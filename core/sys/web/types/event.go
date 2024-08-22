@@ -1,10 +1,12 @@
 package types
 
 const (
-	EventAnnounce = "announce"
-	EventSuccess  = "success"
-	EventFailure  = "failure"
-	EventDead     = "dead"
+	EventAnnounce    = "announce"
+	EventSuccess     = "success"
+	EventFailure     = "failure"
+	EventDead        = "dead"
+	EventInformation = "information"
+	EventEnd         = "end"
 )
 
 type Event struct {

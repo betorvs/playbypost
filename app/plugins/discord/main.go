@@ -37,6 +37,16 @@ var (
 					Name:        "options",
 					Description: "Options select menu",
 				},
+				{
+					Type:        discordgo.ApplicationCommandOptionSubCommand,
+					Name:        "solo-start",
+					Description: "Solo list select menu",
+				},
+				{
+					Type:        discordgo.ApplicationCommandOptionSubCommand,
+					Name:        "solo-next",
+					Description: "Solo next select menu",
+				},
 			},
 			Description: "Main Play by Post command",
 		},
@@ -136,7 +146,7 @@ func main() {
 		}
 	}
 	logger.Info("commands deleted")
-	logger.Info("shutting bot...")
+	logger.Info("shutting down bot...")
 	discord.Close()
 
 	ctxTimeout, ctxCancel := context.WithTimeout(context.Background(), 10*time.Second)
@@ -221,6 +231,7 @@ func (a *app) interactionCommand(s *discordgo.Session, i *discordgo.InteractionC
 			var response *discordgo.InteractionResponse
 			switch i.ApplicationCommandData().Options[0].Name {
 			case "options", "opt":
+				a.logger.Info("options")
 				// post command
 				msg, err := a.postCommand(userid, "opt", i.ChannelID)
 				if err != nil {
@@ -232,7 +243,7 @@ func (a *app) interactionCommand(s *discordgo.Session, i *discordgo.InteractionC
 				}
 				if len(msg.Opt) > 0 {
 					// create select menu
-					options := make([]discordgo.SelectMenuOption, len(msg.Opt))
+					options := []discordgo.SelectMenuOption{}
 					for _, v := range msg.Opt {
 						options = append(options, discordgo.SelectMenuOption{
 							Label: v.Name,
@@ -246,7 +257,7 @@ func (a *app) interactionCommand(s *discordgo.Session, i *discordgo.InteractionC
 					}
 					// create action row
 					actionRow := discordgo.ActionsRow{
-						Components: []discordgo.MessageComponent{&selectMenu},
+						Components: []discordgo.MessageComponent{selectMenu},
 					}
 					// send response back to discord
 					response = &discordgo.InteractionResponse{
@@ -254,7 +265,7 @@ func (a *app) interactionCommand(s *discordgo.Session, i *discordgo.InteractionC
 						Data: &discordgo.InteractionResponseData{
 							Content:    "Select an option",
 							Flags:      discordgo.MessageFlagsEphemeral,
-							Components: []discordgo.MessageComponent{&actionRow},
+							Components: []discordgo.MessageComponent{actionRow},
 						},
 					}
 				} else {
@@ -267,8 +278,111 @@ func (a *app) interactionCommand(s *discordgo.Session, i *discordgo.InteractionC
 						},
 					}
 				}
+
+			case "solo-start":
+				a.logger.Info("solo-start")
+				// post command
+				msg, err := a.postCommand(userid, "solo-start", i.ChannelID)
+				if err != nil {
+					a.logger.Error("error posting to backend", "error", err.Error())
+				}
+				textPickItem := "Pick an item "
+				if msg.Msg != "" {
+					textPickItem = fmt.Sprintf("%s Pick an item", msg.Msg)
+				}
+				a.logger.Info("msg", "msg", msg)
+				if len(msg.Opt) > 0 {
+					// create select menu
+					options := []discordgo.SelectMenuOption{}
+					for _, v := range msg.Opt {
+						options = append(options, discordgo.SelectMenuOption{
+							Label: v.Name,
+							Value: fmt.Sprintf(`cuni;%s;%s;%s;%d`, i.ChannelID, userid, v.Name, v.ID),
+						})
+					}
+					selectMenu := discordgo.SelectMenu{
+						CustomID:    "choice",
+						Placeholder: textPickItem,
+						Options:     options,
+					}
+					// create action row
+					actionRow := discordgo.ActionsRow{
+						Components: []discordgo.MessageComponent{selectMenu},
+					}
+					// send response back to discord
+					response = &discordgo.InteractionResponse{
+						Type: discordgo.InteractionResponseChannelMessageWithSource,
+						Data: &discordgo.InteractionResponseData{
+							Content:    "Select an option",
+							Flags:      discordgo.MessageFlagsEphemeral,
+							Components: []discordgo.MessageComponent{actionRow},
+						},
+					}
+				} else {
+					response = &discordgo.InteractionResponse{
+						Type: discordgo.InteractionResponseChannelMessageWithSource,
+						Data: &discordgo.InteractionResponseData{
+							Content:    "No options available",
+							Flags:      discordgo.MessageFlagsEphemeral,
+							Components: nil,
+						},
+					}
+				}
+
+			case "solo-next":
+				a.logger.Info("solo-next")
+				// post command
+				msg, err := a.postCommand(userid, "solo-next", i.ChannelID)
+				if err != nil {
+					a.logger.Error("error posting to backend", "error", err.Error())
+				}
+				textPickItem := "Pick an item "
+				if msg.Msg != "" {
+					textPickItem = fmt.Sprintf("%s Pick an item", msg.Msg)
+				}
+				if len(msg.Opt) > 0 {
+					// create select menu
+					options := []discordgo.SelectMenuOption{}
+					for _, v := range msg.Opt {
+						options = append(options, discordgo.SelectMenuOption{
+							Label: v.Name,
+							Value: fmt.Sprintf(`cuni;%s;%s;%s;%d`, i.ChannelID, userid, v.Name, v.ID),
+						})
+					}
+					selectMenu := discordgo.SelectMenu{
+						CustomID:    "choice",
+						Placeholder: textPickItem,
+						Options:     options,
+					}
+					// create action row
+					actionRow := discordgo.ActionsRow{
+						Components: []discordgo.MessageComponent{selectMenu},
+					}
+					// send response back to discord
+					response = &discordgo.InteractionResponse{
+						Type: discordgo.InteractionResponseChannelMessageWithSource,
+						Data: &discordgo.InteractionResponseData{
+							Content:    "Select an option",
+							Flags:      discordgo.MessageFlagsEphemeral,
+							Components: []discordgo.MessageComponent{actionRow},
+						},
+					}
+				} else {
+					response = &discordgo.InteractionResponse{
+						Type: discordgo.InteractionResponseChannelMessageWithSource,
+						Data: &discordgo.InteractionResponseData{
+							Content:    "No options available",
+							Flags:      discordgo.MessageFlagsEphemeral,
+							Components: nil,
+						},
+					}
+				}
+
 			}
 			// send response back to discord
+			if len(response.Data.Components) > 0 {
+				a.logger.Info("response", "content", fmt.Sprintf("%+v", response.Data.Components[0]))
+			}
 			err := s.InteractionRespond(i.Interaction, response)
 			if err != nil {
 				a.logger.Error("error responding to interaction", "error", err)
@@ -309,6 +423,40 @@ func (a *app) interactionCommand(s *discordgo.Session, i *discordgo.InteractionC
 			if err != nil {
 				a.logger.Error("error responding to interaction", "error", err)
 			}
+
+		case "choice":
+			data := i.MessageComponentData()
+			var userid, text, channel, display string
+			splitted := strings.Split(data.Values[0], ";")
+			a.logger.Info("splitted", "values", splitted, "len", len(splitted))
+			if len(splitted) == 5 {
+				channel = splitted[1]
+				userid = splitted[2]
+				text = fmt.Sprintf("choice;%s;%s", splitted[3], splitted[4])
+				display = splitted[3]
+			}
+			errorMessage := ""
+			msg, err := a.postCommand(userid, text, channel)
+			if err != nil {
+				a.logger.Error("error posting to backend", "error", err.Error())
+				errorMessage = "error posting to backend, try again in a few minutes"
+			}
+			returnMessage := msg.Msg
+			if errorMessage != "" {
+				returnMessage = errorMessage
+			}
+			response := &discordgo.InteractionResponse{
+				Type: discordgo.InteractionResponseChannelMessageWithSource,
+				Data: &discordgo.InteractionResponseData{
+					Content: fmt.Sprintf("Selected: %s; and answer: %s", display, returnMessage),
+					Flags:   discordgo.MessageFlagsEphemeral,
+				},
+			}
+			err = s.InteractionRespond(i.Interaction, response)
+			if err != nil {
+				a.logger.Error("error responding to interaction", "error", err)
+			}
+
 		}
 	}
 }
@@ -353,6 +501,14 @@ func (a *app) events(w http.ResponseWriter, r *http.Request) {
 		case types.EventDead:
 			emoji := ":skull:"
 			attachment.Title = fmt.Sprintf("%s Last Results", emoji)
+
+		case types.EventInformation:
+			emoji := ":information_source:"
+			attachment.Title = fmt.Sprintf("%s Message", emoji)
+
+		case types.EventEnd:
+			emoji := ":stop_sign:"
+			attachment.Title = fmt.Sprintf("%s End", emoji)
 		}
 	}
 	res, err := a.session.ChannelMessageSendEmbed(obj.Channel, &attachment)

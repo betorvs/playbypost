@@ -215,80 +215,166 @@ func (a *app) middlewareSlashCommand(evt *socketmode.Event, client *socketmode.C
 		return
 	}
 
-	// client.Debugf("Slash command received: %+v", cmd)
 	a.logger.Info(fmt.Sprintf("slash command from %v by %s", cmd.ChannelID, cmd.UserID))
-	// opt := "options"
-	// switch {
-	// case strings.Contains(strings.ToLower(cmd.Text), "opt"):
-	//
-	// }
-	// switch: text startWith option* or more values allowed
-	// body, err := a.web.PostCommand(cmd.UserID, "opt", cmd.ChannelID)
-	// if err != nil {
-	// 	a.logger.Error("error posting to backend", "error", err.Error())
-	// }
-	// var msg types.Composed
-	// err = json.Unmarshal(body, &msg)
-	// if err != nil {
-	// 	a.logger.Error("error decoding message from backend", "error", err.Error())
-	// }
-	msg, err := a.postCommand(cmd.UserID, "opt", cmd.ChannelID)
-	if err != nil {
-		a.logger.Error("error posting to backend", "error", err.Error())
-	}
-	// options := []*slack.OptionBlockObject{}
-	// {
-	// 	Text: &slack.TextBlockObject{
-	// 		Type:  "plain_text",
-	// 		Text:  "*No options for you*",
-	// 		Emoji: true,
-	// 	},
-	// 	Value: "no-value-0",
-	// }}
-
-	textPickItem := "Pick an item "
-	if msg.Msg != "" {
-		textPickItem = fmt.Sprintf("%s Pick an item", msg.Msg)
-	}
-	if len(msg.Opt) > 0 {
-		a.logger.Info(fmt.Sprintf("options: %v", msg.Opt))
-		options := []*slack.OptionBlockObject{}
-		for _, v := range msg.Opt {
-			options = append(options, &slack.OptionBlockObject{
-				Text: &slack.TextBlockObject{
-					Type:  "plain_text",
-					Text:  v.Name,
-					Emoji: true,
-				},
-				Value: fmt.Sprintf(`cuni;%s;%s;%s;%d`, cmd.ChannelID, cmd.UserID, v.Name, v.ID),
-			})
+	text := cmd.Text
+	switch text {
+	case "opt":
+		msg, err := a.postCommand(cmd.UserID, "opt", cmd.ChannelID)
+		if err != nil {
+			a.logger.Error("error posting to backend", "error", err.Error())
 		}
-		payload2 := map[string]interface{}{
-			"blocks": []slack.Block{
-				slack.SectionBlock{
-					Type: "section",
+
+		textPickItem := "Pick an item "
+		if msg.Msg != "" {
+			textPickItem = fmt.Sprintf("%s Pick an item", msg.Msg)
+		}
+		if len(msg.Opt) > 0 {
+			a.logger.Info(fmt.Sprintf("options: %v", msg.Opt))
+			options := []*slack.OptionBlockObject{}
+			for _, v := range msg.Opt {
+				options = append(options, &slack.OptionBlockObject{
 					Text: &slack.TextBlockObject{
-						Type: "mrkdwn",
-						Text: textPickItem,
+						Type:  "plain_text",
+						Text:  v.Name,
+						Emoji: true,
 					},
-					Accessory: &slack.Accessory{
-						SelectElement: &slack.SelectBlockElement{
-							Type: "static_select",
-							Placeholder: &slack.TextBlockObject{
-								Type:  "plain_text",
-								Text:  "Select an item",
-								Emoji: true,
+					Value: fmt.Sprintf(`cuni;%s;%s;%s;%d`, cmd.ChannelID, cmd.UserID, v.Name, v.ID),
+				})
+			}
+			payload := map[string]interface{}{
+				"blocks": []slack.Block{
+					slack.SectionBlock{
+						Type: "section",
+						Text: &slack.TextBlockObject{
+							Type: "mrkdwn",
+							Text: textPickItem,
+						},
+						Accessory: &slack.Accessory{
+							SelectElement: &slack.SelectBlockElement{
+								Type: "static_select",
+								Placeholder: &slack.TextBlockObject{
+									Type:  "plain_text",
+									Text:  "Select an item",
+									Emoji: true,
+								},
+								ActionID: "static_select-action",
+								Options:  options,
 							},
-							ActionID: "static_select-action",
-							Options:  options,
 						},
 					},
 				},
-			},
+			}
+
+			client.Ack(*evt.Request, payload)
+			return
 		}
 
-		client.Ack(*evt.Request, payload2)
-		return
+	case "solo-start":
+		a.logger.Info("Solo game start")
+		msg, err := a.postCommand(cmd.UserID, "solo-start", cmd.ChannelID)
+		if err != nil {
+			a.logger.Error("error posting to backend", "error", err.Error())
+		}
+
+		textPickItem := "Pick an item "
+		if msg.Msg != "" {
+			textPickItem = fmt.Sprintf("%s Pick an item", msg.Msg)
+		}
+		if len(msg.Opt) > 0 {
+			a.logger.Info(fmt.Sprintf("options: %v", msg.Opt))
+			options := []*slack.OptionBlockObject{}
+			for _, v := range msg.Opt {
+				options = append(options, &slack.OptionBlockObject{
+					Text: &slack.TextBlockObject{
+						Type:  "plain_text",
+						Text:  v.Name,
+						Emoji: true,
+					},
+					Value: fmt.Sprintf(`cuni;%s;%s;%s;%d`, cmd.ChannelID, cmd.UserID, v.Name, v.ID),
+				})
+			}
+			payload := map[string]interface{}{
+				"blocks": []slack.Block{
+					slack.SectionBlock{
+						Type: "section",
+						Text: &slack.TextBlockObject{
+							Type: "mrkdwn",
+							Text: textPickItem,
+						},
+						Accessory: &slack.Accessory{
+							SelectElement: &slack.SelectBlockElement{
+								Type: "static_select",
+								Placeholder: &slack.TextBlockObject{
+									Type:  "plain_text",
+									Text:  "Select an item",
+									Emoji: true,
+								},
+								ActionID: "static_select-action",
+								Options:  options,
+							},
+						},
+					},
+				},
+			}
+
+			client.Ack(*evt.Request, payload)
+			return
+		}
+
+	case "solo-next":
+		a.logger.Info("Solo game next")
+		msg, err := a.postCommand(cmd.UserID, "solo-next", cmd.ChannelID)
+		if err != nil {
+			a.logger.Error("error posting to backend", "error", err.Error())
+		}
+
+		textPickItem := "Pick an item "
+		if msg.Msg != "" {
+			textPickItem = fmt.Sprintf("%s Pick an item", msg.Msg)
+		}
+		if len(msg.Opt) > 0 {
+			a.logger.Info(fmt.Sprintf("options: %v", msg.Opt))
+			options := []*slack.OptionBlockObject{}
+			for _, v := range msg.Opt {
+				options = append(options, &slack.OptionBlockObject{
+					Text: &slack.TextBlockObject{
+						Type:  "plain_text",
+						Text:  v.Name,
+						Emoji: true,
+					},
+					Value: fmt.Sprintf(`cuni;%s;%s;%s;%d`, cmd.ChannelID, cmd.UserID, v.Name, v.ID),
+				})
+			}
+			payload := map[string]interface{}{
+				"blocks": []slack.Block{
+					slack.SectionBlock{
+						Type: "section",
+						Text: &slack.TextBlockObject{
+							Type: "mrkdwn",
+							Text: textPickItem,
+						},
+						Accessory: &slack.Accessory{
+							SelectElement: &slack.SelectBlockElement{
+								Type: "static_select",
+								Placeholder: &slack.TextBlockObject{
+									Type:  "plain_text",
+									Text:  "Select an item",
+									Emoji: true,
+								},
+								ActionID: "static_select-action",
+								Options:  options,
+							},
+						},
+					},
+				},
+			}
+
+			client.Ack(*evt.Request, payload)
+			return
+		}
+
+	default:
+		a.logger.Info("No options for you")
 	}
 
 	payload2 := map[string]interface{}{
@@ -400,6 +486,14 @@ func (a *app) events(w http.ResponseWriter, r *http.Request) {
 
 		case types.EventDead:
 			emoji := ":skull:"
+			attachment.Text = fmt.Sprintf("%s %s", emoji, obj.Message)
+
+		case types.EventInformation:
+			emoji := ":information_source:"
+			attachment.Text = fmt.Sprintf("%s %s", emoji, obj.Message)
+
+		case types.EventEnd:
+			emoji := ":end:"
 			attachment.Text = fmt.Sprintf("%s %s", emoji, obj.Message)
 		}
 	}

@@ -34,24 +34,10 @@ func (db *DBX) CreateStageTx(ctx context.Context, text, userid string, storyID i
 	err = tx.StmtContext(ctx, stmtQueryUser).QueryRow(userid).Scan(&userID)
 	if err != nil {
 		db.Logger.Info("user not found", "return", err.Error())
-		// just log this error
-		// return -1, err
 
 	}
 	// insert user if it does not exist
 	if userID == 0 {
-		// queryInsertUser := "INSERT INTO users(userid) VALUES($1) RETURNING id"
-		// stmtInsertUser, err := db.Conn.PrepareContext(ctx, queryInsertUser)
-		// if err != nil {
-		// 	db.Logger.Error("tx prepare on story_keys failed", "error", err.Error())
-		// 	return -1, err
-		// }
-		// defer stmtInsertUser.Close()
-		// err = tx.StmtContext(ctx, stmtInsertUser).QueryRow(userid).Scan(&userID)
-		// if err != nil {
-		// 	db.Logger.Error("query row insert into users failed", "error", err.Error())
-		// 	return -1, err
-		// }
 		id, err := db.createUser(ctx, userid, tx)
 		if err != nil {
 			db.Logger.Error("insert into users failed", "error", err.Error())

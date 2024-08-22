@@ -33,7 +33,7 @@ type DBClient interface {
 	GetEncounters(ctx context.Context) ([]types.Encounter, error)
 	GetEncounterByStoryID(ctx context.Context, storyID int) ([]types.Encounter, error)
 	GetEncounterByID(ctx context.Context, id int) (types.Encounter, error)
-	CreateEncounter(ctx context.Context, title, announcement, notes string, storyID, WriterID int) (int, error)
+	CreateEncounter(ctx context.Context, title, announcement, notes string, storyID, storytellerID int, first, last bool) (int, error)
 	// UpdatePhase(ctx context.Context, id, phase int) error
 	AddParticipants(ctx context.Context, encounterID int, npc bool, players []int) error
 	// Tasks
@@ -96,4 +96,18 @@ type DBClient interface {
 	AddChatInformation(ctx context.Context, username, userid, channel, chat string) (int, error)
 	GetChatInformation(ctx context.Context) ([]types.ChatInfo, error)
 	GetChatChannelInformation(ctx context.Context) ([]string, error)
+	//  Auto Play
+	GetAutoPlay(ctx context.Context) ([]types.AutoPlay, error)
+	GetAutoPlayByID(ctx context.Context, autoPlayID int) (types.AutoPlay, error)
+	GetNextEncounterByStoryID(ctx context.Context, storyID int) (types.AutoPlayEncounterList, error)
+	GetAutoPlayOptByChannelID(ctx context.Context, channelID, userID string) (types.AutoPlayOptions, error)
+	CreateAutoPlayTx(ctx context.Context, text string, storyID int, solo bool) (int, error)
+	AddAutoPlayNext(ctx context.Context, text string, autoPlayID, encounterID, nextEncounterID int) error
+	CreateAutoPlayChannelTx(ctx context.Context, channelID, userID string, autoPlayID int) (int, error)
+	RegisterActivitiesAutoPlay(ctx context.Context, autoPlayID, encounterID int, actions types.Actions) error
+	GetAutoPlayActivities(ctx context.Context) ([]types.AutoPlayActivities, error)
+	GetAnnounceByEncounterID(ctx context.Context, encounterID, autoPlayID int) (string, bool, error)
+	UpdateProcessedAutoPlay(ctx context.Context, id int, processed bool, actions types.Actions) error
+	UpdateAutoPlayState(ctx context.Context, autoPlayID int, encounterID int) error
+	CloseAutoPlayChannel(ctx context.Context, channelID string, autoPlayID int) error
 }

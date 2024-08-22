@@ -16,6 +16,7 @@ const NewEncounter = () => {
   const [title, setTitle] = useState("");
   const [announce, setAnnouncement] = useState("");
   const [note, setNotes] = useState("");
+  const [firstEncounter, setFirstEncounter] = useState(false);
   const user_id = GetUserID();
 
   const safeID: string = id ?? "";
@@ -44,6 +45,7 @@ const NewEncounter = () => {
         notes: note,
         story_id: Number(safeID),
         writer_id: user_id,
+        first_encounter: firstEncounter,
       }),
     });
     if (response.ok) {
@@ -99,6 +101,18 @@ const NewEncounter = () => {
             <Form.Text className="text-muted">
               It will be used only for you. Keep here good notes about what
               should happen.
+            </Form.Text>
+          </Form.Group>
+          <Form.Group className="mb-3" controlId="formFirstEncounter">
+            <Form.Label>First Encounter</Form.Label>
+            <Form.Check
+              type="checkbox"
+              label="This is the first encounter of the story" 
+              checked={firstEncounter}
+              onChange={(e) => setFirstEncounter(e.target.checked)}
+              />
+            <Form.Text className="text-muted">
+              If this is the first encounter of the story, mark this checkbox. Can be only one.
             </Form.Text>
           </Form.Group>
           <Button variant="primary" type="submit">

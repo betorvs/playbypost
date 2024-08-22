@@ -213,20 +213,6 @@ func (db *DBX) GetRunningStageByChannelID(ctx context.Context, channelID, userID
 
 	}
 
-	// 	encOptions := []types.GenericIDName{}
-	// 	p := types.PhaseAtoi(enc.Phase)
-	// 	db.Logger.Info("phase", "phase", p)
-	// 	count := 1
-	// 	encOptions = append(encOptions, types.GenericIDName{ID: count, Name: fmt.Sprintf("change-encounter-to-%s", p.NextPhase().String())})
-	// 	if len(enc.NPC) > 0 {
-	// 		encOptions = append(encOptions, types.GenericIDName{ID: count + 1, Name: "roll-initiative"})
-	// 		for _, v := range enc.NPC {
-	// 			count++
-	// 			encOptions = append(encOptions, types.GenericIDName{ID: count, Name: fmt.Sprintf("act-as-npc-%s", v.Name)})
-	// 		}
-	// 	}
-	// 	running.Options = encOptions
-	// }
 	// players
 	if !storyteller {
 		players, err := db.GetPlayerByUserID(ctx, userID, channelID)

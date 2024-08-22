@@ -82,12 +82,14 @@ func (a MainApi) GetEncounterByStoryId(w http.ResponseWriter, r *http.Request) {
 		announce, _ := utils.DecryptText(v.Announcement, user.EncodingKeys[id])
 		note, _ := utils.DecryptText(v.Notes, user.EncodingKeys[id])
 		encounters = append(encounters, types.Encounter{
-			ID:           v.ID,
-			Title:        v.Title,
-			Announcement: announce,
-			Notes:        note,
-			StoryID:      v.StoryID,
-			WriterID:     v.WriterID,
+			ID:             v.ID,
+			Title:          v.Title,
+			Announcement:   announce,
+			Notes:          note,
+			StoryID:        v.StoryID,
+			WriterID:       v.WriterID,
+			FirstEncounter: v.FirstEncounter,
+			LastEncounter:  v.LastEncounter,
 		})
 	}
 
@@ -125,7 +127,7 @@ func (a MainApi) CreateEncounter(w http.ResponseWriter, r *http.Request) {
 		a.s.ErrJSON(w, http.StatusBadRequest, "notes encoding fails")
 		return
 	}
-	res, err := a.db.CreateEncounter(a.ctx, obj.Title, announce, notes, obj.StoryID, obj.WriterID)
+	res, err := a.db.CreateEncounter(a.ctx, obj.Title, announce, notes, obj.StoryID, obj.WriterID, obj.FirstEncounter, obj.LastEncounter)
 	if err != nil {
 		a.s.ErrJSON(w, http.StatusBadRequest, "error creating encounter on database")
 		return

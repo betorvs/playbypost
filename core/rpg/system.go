@@ -12,8 +12,7 @@ import (
 )
 
 const (
-	Solo     string = "solo"     // solo adventures
-	Didactic string = "didactic" // didactic adventures using 1d6
+	AutoPlay string = "autoplay" // solo and didatic adventures
 	D10      string = "d10base"
 	D20      string = "d20Base"
 	D2035    string = "d20-3.5"      // Based on d20 3.5 SRD
@@ -116,15 +115,9 @@ func LoadRPGSystemsDefault(k string) *RPGSystem {
 		Skill:             s,
 	}
 	switch k {
-	case Solo:
+	case AutoPlay:
 		return &RPGSystem{
-			Name:             Solo,
-			BaseDice:         "1d6",
-			RestrictiveTasks: true,
-		}
-	case Didactic:
-		return &RPGSystem{
-			Name:             Didactic,
+			Name:             AutoPlay,
 			BaseDice:         "1d6",
 			RestrictiveTasks: true,
 		}

@@ -12,6 +12,7 @@ type Encounter = {
   text: number;
   storyteller_id: number;
   writer_id: number;
+  first_encounter: boolean;
   pc: Participant[];
   npc: Participant[]
 };
