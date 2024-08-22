@@ -13,7 +13,7 @@ import (
 
 func (db *DBX) GetStage(ctx context.Context) ([]types.Stage, error) {
 	stages := []types.Stage{}
-	query := "SELECT id, display_text, story_id, storyteller_id FROM stage"
+	query := "SELECT id, display_text, story_id, storyteller_id FROM stage WHERE finished = false"
 	rows, err := db.Conn.QueryContext(ctx, query)
 	if err != nil {
 		db.Logger.Error("query on stage failed", "error", err.Error())
@@ -36,7 +36,7 @@ func (db *DBX) GetStage(ctx context.Context) ([]types.Stage, error) {
 
 func (db *DBX) GetStageByStoryID(ctx context.Context, id int) ([]types.Stage, error) {
 	stages := []types.Stage{}
-	query := "SELECT id, display_text, story_id, storyteller_id FROM stage WHERE story_id = $1"
+	query := "SELECT id, display_text, story_id, storyteller_id FROM stage WHERE story_id = $1 AND finished = false"
 	rows, err := db.Conn.QueryContext(ctx, query, id)
 	if err != nil {
 		db.Logger.Error("query on stage by story_id failed", "error", err.Error())
@@ -59,7 +59,7 @@ func (db *DBX) GetStageByStoryID(ctx context.Context, id int) ([]types.Stage, er
 
 func (db *DBX) GetStageByStageID(ctx context.Context, id int) (types.StageAggregated, error) {
 	aggr := types.StageAggregated{}
-	query := "SELECT sa.id, sa.display_text, sa.story_id, sa.storyteller_id, sa.encoding_key, sy.title, sy.announcement, sy.notes, sy.writer_id, u.userid, sc.channel, sc.active FROM stage AS sa JOIN story AS sy ON sa.story_id = sy.id JOIN users AS u ON sa.storyteller_id = u.id LEFT JOIN stage_channel AS sc ON sc.stage_id = sa.id WHERE sa.id = $1"
+	query := "SELECT sa.id, sa.display_text, sa.story_id, sa.storyteller_id, sa.encoding_key, sy.title, sy.announcement, sy.notes, sy.writer_id, u.userid, sc.channel, sc.active FROM stage AS sa JOIN story AS sy ON sa.story_id = sy.id JOIN users AS u ON sa.storyteller_id = u.id LEFT JOIN stage_channel AS sc ON sc.stage_id = sa.id WHERE sa.id = $1 AND WHERE sa.finished = false"
 	rows, err := db.Conn.QueryContext(ctx, query, id)
 	if err != nil {
 		db.Logger.Error("query on stage failed", "error", err.Error())
@@ -99,7 +99,7 @@ func (db *DBX) GetStageEncounterByEncounterID(ctx context.Context, id int) (type
 
 func (db *DBX) GetStageEncountersByStageID(ctx context.Context, id int) ([]types.StageEncounter, error) {
 	list := []types.StageEncounter{}
-	query := "select se.ID, se.display_text, e.title, se.storyteller_id, e.notes, e.announcement, e.writer_id, e.story_id, s.encoding_key, se.updated_at, se.phase from stage_encounters AS se JOIN encounters AS e ON se.encounters_id = e.id JOIN stage AS s ON se.stage_id = s.id WHERE s.id = $1"
+	query := "select se.ID, se.display_text, e.title, se.storyteller_id, e.notes, e.announcement, e.writer_id, e.story_id, s.encoding_key, se.updated_at, se.phase from stage_encounters AS se JOIN encounters AS e ON se.encounters_id = e.id JOIN stage AS s ON se.stage_id = s.id WHERE s.id = $1 AND s.finished = false"
 	rows, err := db.Conn.QueryContext(ctx, query, id)
 	if err != nil {
 		db.Logger.Error("query on stage_encounters by stage_id failed", "error", err.Error())
@@ -131,7 +131,7 @@ func (db *DBX) GetRunningStageByChannelID(ctx context.Context, channelID, userID
 	db.Logger.Info("GetRunningStageByChannelID", "channelID", channelID, "userID", userID)
 	running := types.RunningStage{}
 	aggr := types.StageAggregated{}
-	query := "SELECT sa.id, sa.display_text, sa.story_id, sa.storyteller_id, sa.encoding_key, sy.title, sy.announcement, sy.notes, sy.writer_id, u.userid, sc.channel, sc.active FROM stage AS sa JOIN story AS sy ON sa.story_id = sy.id JOIN users AS u ON sa.storyteller_id = u.id LEFT JOIN stage_channel AS sc ON sc.stage_id = sa.id WHERE sc.channel = $1"
+	query := "SELECT sa.id, sa.display_text, sa.story_id, sa.storyteller_id, sa.encoding_key, sy.title, sy.announcement, sy.notes, sy.writer_id, u.userid, sc.channel, sc.active FROM stage AS sa JOIN story AS sy ON sa.story_id = sy.id JOIN users AS u ON sa.storyteller_id = u.id LEFT JOIN stage_channel AS sc ON sc.stage_id = sa.id WHERE sc.channel = $1 AND sa.finished = false"
 	rows, err := db.Conn.QueryContext(ctx, query, channelID)
 	if err != nil {
 		db.Logger.Error("query on stage failed", "error", err.Error())
@@ -209,7 +209,7 @@ func (db *DBX) GetRunningStageByChannelID(ctx context.Context, channelID, userID
 // stage_encounter_activities
 func (db *DBX) GetStageEncounterActivitiesByEncounterID(ctx context.Context, id int) ([]types.StageEncounterActivities, error) {
 	list := []types.StageEncounterActivities{}
-	query := "select sa.id, sa.actions, sa.stage_id, sa.encounter_id, sa.processed from stage_encounter_activities AS sa WHERE sa.encounter_id = $1"
+	query := "select sa.id, sa.actions, sa.stage_id, sa.encounter_id, sa.processed from stage_encounter_activities AS sa WHERE sa.encounter_id = $1 AND sa.finished = false"
 	rows, err := db.Conn.QueryContext(ctx, query, id)
 	if err != nil {
 		db.Logger.Error("query on stage_encounter_activities by encounter_id failed", "error", err.Error())
@@ -390,7 +390,7 @@ func (db *DBX) getStageEncounterByEncounterID(ctx context.Context, id int, phase
 	switch {
 	case phase == -1 && id != 0:
 		//
-		query := "select se.ID, se.display_text, e.title, se.storyteller_id, se.phase, e.notes, e.announcement, e.writer_id, e.story_id, s.encoding_key, i.id from stage_encounters AS se JOIN encounters AS e ON se.encounters_id = e.id JOIN stage AS s ON se.stage_id = s.id LEFT JOIN initiative AS i ON i.stage_encounters_id = se.id WHERE se.ID = $1"
+		query := "select se.ID, se.display_text, e.title, se.storyteller_id, se.phase, e.notes, e.announcement, e.writer_id, e.story_id, s.encoding_key, i.id from stage_encounters AS se JOIN encounters AS e ON se.encounters_id = e.id JOIN stage AS s ON se.stage_id = s.id LEFT JOIN initiative AS i ON i.stage_encounters_id = se.id WHERE se.ID = $1 AND s.finished = false"
 		rows, err := db.Conn.QueryContext(ctx, query, id)
 		if err != nil {
 			db.Logger.Error("query on stage_encounters by stage_encounters.ID failed", "error", err.Error())
@@ -400,7 +400,7 @@ func (db *DBX) getStageEncounterByEncounterID(ctx context.Context, id int, phase
 		r = rows
 	case phase > 0 && id == -1:
 		// can return a initiative id
-		query := "select se.ID, se.display_text, e.title, se.storyteller_id, se.phase, e.notes, e.announcement, e.writer_id, e.story_id, s.encoding_key, i.id from stage_encounters AS se JOIN encounters AS e ON se.encounters_id = e.id JOIN stage AS s ON se.stage_id = s.id LEFT JOIN initiative AS i ON i.stage_encounters_id = se.id WHERE se.phase = $1"
+		query := "select se.ID, se.display_text, e.title, se.storyteller_id, se.phase, e.notes, e.announcement, e.writer_id, e.story_id, s.encoding_key, i.id from stage_encounters AS se JOIN encounters AS e ON se.encounters_id = e.id JOIN stage AS s ON se.stage_id = s.id LEFT JOIN initiative AS i ON i.stage_encounters_id = se.id WHERE se.phase = $1 AND s.finished = false"
 		rows, err := db.Conn.QueryContext(ctx, query, phase)
 		if err != nil {
 			db.Logger.Error("query on stage_encounters by phase equal 3 (running) failed", "error", err.Error())
