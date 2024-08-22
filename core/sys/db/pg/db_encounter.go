@@ -73,7 +73,7 @@ func (db *DBX) GetEncounterByID(ctx context.Context, id int) (types.Encounter, e
 	return enc, nil
 }
 
-func (db *DBX) CreateEncounter(ctx context.Context, title, announcement, notes string, storyID, storytellerID int, first, last bool) (int, error) {
+func (db *DBX) CreateEncounterTx(ctx context.Context, title, announcement, notes string, storyID, storytellerID int, first, last bool) (int, error) {
 
 	tx, err := db.Conn.BeginTx(ctx, nil)
 	if err != nil {

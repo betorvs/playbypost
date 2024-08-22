@@ -286,33 +286,6 @@ func (db *DBX) AddEncounterActivities(ctx context.Context, text string, stageID,
 	return nil
 }
 
-// func (db *DBX) GetParticipants(ctx context.Context, encounterID int, npc bool, players []int) ([]types.Players, error) {
-
-// 	enc := types.StageEncounter{}
-// 	query := "select se.ID, se.display_text, e.title, se.storyteller_id, e.notes, e.announcement, s.encoding_key from stage_encounters AS se JOIN encounters AS e ON se.encounters_id = e.id JOIN stage AS s ON se.stage_id = s.id WHERE se.ID = $1"
-// 	rows, err := db.Conn.QueryContext(ctx, query, id)
-// 	if err != nil {
-// 		db.Logger.Error("query on stage_encounters by stage_encounters.ID failed", "error", err.Error())
-// 		return enc, err
-// 	}
-// 	defer rows.Close()
-// 	for rows.Next() {
-// 		var s types.StageEncounter
-// 		var notes, announce, encodingKey string
-// 		if err := rows.Scan(&s.ID, &s.Text, &s.Title, &s.StorytellerID, &notes, &announce, &encodingKey); err != nil {
-// 			db.Logger.Error("scan error on stage_encounters by stage_encounters.ID ", "error", err.Error())
-// 		}
-// 		s.Notes, _ = utils.DecryptText(notes, encodingKey)
-// 		s.Announcement, _ = utils.DecryptText(announce, encodingKey)
-// 		enc = s
-// 	}
-// 	// Check for errors from iterating over rows.
-// 	if err := rows.Err(); err != nil {
-// 		db.Logger.Error("rows err on stage_encounters by stage_encounters.ID", "error", err.Error())
-// 	}
-// 	return enc, nil
-// }
-
 // stage_encounter_activities
 func (db *DBX) RegisterActivities(ctx context.Context, stageID, encounterID int, actions types.Actions) error {
 	db.Logger.Info("RegisterActivities", "stageID", stageID, "encounterID", encounterID, "actions", actions)
@@ -356,6 +329,63 @@ func (db *DBX) UpdateProcessedActivities(ctx context.Context, id int, processed 
 	}()
 
 	_, err = tx.ExecContext(ctx, query, processed, actions, id)
+	if err != nil {
+		return err
+	}
+
+	// Commit the transaction.
+	if err = tx.Commit(); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (db *DBX) CloseStage(ctx context.Context, id int) error {
+	tx, err := db.Conn.BeginTx(ctx, nil)
+	if err != nil {
+		return err
+	}
+	// Defer a rollback in case anything fails.
+	defer func() {
+		rollback := tx.Rollback()
+		if err != nil && rollback != nil {
+			err = fmt.Errorf("rolling back transaction: %w", err)
+		}
+	}()
+	// verify if all encounters are finished
+	// types.Running = 3
+	query := "SELECT (se.phase = 3), se.id, sc.channel, s.display_text FROM stage_encounters AS se JOIN stage_channel AS sc ON sc.stage_id = se.stage_id JOIN stage AS s ON s.id = se.stage_id WHERE se.stage_id = $1"
+	rows, err := tx.QueryContext(ctx, query, id)
+	if err != nil {
+		return err
+	}
+	defer rows.Close()
+	var lastEncounterID int
+	var channel, displayText string
+	for rows.Next() {
+		var finished bool
+		if err := rows.Scan(&finished, &lastEncounterID, &channel, &displayText); err != nil {
+			return err
+		}
+		if !finished {
+			return fmt.Errorf("not all encounters are finished")
+		}
+	}
+
+	queryUpdate := "UPDATE stage SET finished = $1 WHERE id = $2"
+	_, err = tx.ExecContext(ctx, queryUpdate, true, id)
+	if err != nil {
+		return err
+	}
+
+	// insert stage_encounter_activities
+	queryInsert := "INSERT INTO stage_encounter_activities (actions, stage_id, encounter_id) VALUES ($1, $2, $3)"
+	actions := types.NewActions()
+	actions["channel"] = channel
+	actions["text"] = "Stage is finished"
+	actions["command"] = "close-stage"
+	actions["display_text"] = displayText
+	_, err = tx.ExecContext(ctx, queryInsert, actions, id, lastEncounterID)
 	if err != nil {
 		return err
 	}

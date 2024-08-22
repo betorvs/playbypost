@@ -15,6 +15,7 @@ const (
 	ChangeEncounterToStarted  = "change-encounter-to-started"
 	ChangeEncounterToRunning  = "change-encounter-to-running"
 	ChangeEncounterToFinished = "change-encounter-to-finished"
+	CloseStage                = "close-stage"
 	RollInitiative            = "roll-initiative"
 	CurrentInitiative         = "current-initiative"
 	Task                      = "task"

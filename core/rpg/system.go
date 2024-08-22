@@ -15,10 +15,8 @@ const (
 	AutoPlay string = "autoplay" // solo and didatic adventures
 	D10      string = "d10base"
 	D20      string = "d20Base"
-	D2035    string = "d20-3.5"      // Based on d20 3.5 SRD
-	D10HM    string = "D10HomeMade"  // D10 based on World of Darkness
-	D10OS    string = "D10OldSchool" // D10 Based on old Vampire the masquerade 2nd edition system
-
+	D2035    string = "d20-3.5"     // Based on d20 3.5 SRD
+	D10HM    string = "D10HomeMade" // D10 based on World of Darkness
 )
 
 /*
@@ -133,18 +131,6 @@ func LoadRPGSystemsDefault(k string) *RPGSystem {
 			Ability:           a,
 			Skill:             s,
 		}
-	case D10OS:
-		return &RPGSystem{
-			Name:              D10OS,
-			BaseDice:          "d10",
-			BaseSystem:        D10,
-			SuccessRule:       DifficultAndCount,
-			AbilityRank:       OnePerOne,
-			SkillRank:         OnePerOne,
-			DamageCalculation: DifficultAndCount,
-			Ability:           a,
-			Skill:             s,
-		}
 	case D2035:
 		return d20
 	default:
@@ -196,8 +182,6 @@ func (r *RPGSystem) InitiativeDice() string {
 	case D2035:
 		return r.BaseDice
 	case D10HM:
-		return fmt.Sprintf("%d%s", 1, r.BaseDice)
-	case D10OS:
 		return fmt.Sprintf("%d%s", 1, r.BaseDice)
 	}
 	return r.BaseDice
@@ -302,8 +286,6 @@ func (r Roll) FormatDice(m, target int) string {
 	switch r.RPGSystem.Name {
 	case D10HM:
 		dice = fmt.Sprintf("%d%srv8", dices, r.RPGSystem.BaseDice)
-	case D10OS:
-		dice = fmt.Sprintf("%d%srv%d", dices, r.RPGSystem.BaseDice, target)
 	}
 	return dice
 }

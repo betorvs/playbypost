@@ -93,7 +93,7 @@ func (db *DBX) GetNextEncounterByStoryID(ctx context.Context, storyID int) (type
 // GetAutoPlayByChannelID returns auto play by channel id
 // case channel id is not found, return nil, []AutoPlayStartOptions, error
 // case channel id is found, return auto play, []AutoPlayStartOptions, error
-func (db *DBX) GetAutoPlayOptByChannelID(ctx context.Context, channelID, userID string) (types.AutoPlayOptions, error) {
+func (db *DBX) GetAutoPlayOptionsByChannelID(ctx context.Context, channelID, userID string) (types.AutoPlayOptions, error) {
 	var autoPlay types.AutoPlayOptions
 
 	query := "SELECT ap.id, ap.display_text, ap.story_id, ap.solo, ap.encoding_key, ac.id AS auto_play_channel_id, ac.channel AS channel_id, apg.id, apg.user_id, apne.id, apne.auto_play_id, apne.display_text, apne.current_encounter_id, apne.next_encounter_id FROM auto_play_channel AS ac JOIN auto_play AS ap ON ap.id = ac.auto_play_id JOIN auto_play_state AS aps ON aps.auto_play_id = ap.id JOIN auto_play_group AS apg ON apg.auto_play_id = ap.id JOIN auto_play_next_encounter AS apne ON apne.auto_play_id = ap.id WHERE ac.active = 'true' AND apne.current_encounter_id = aps.encounter_id AND ac.channel = $1"

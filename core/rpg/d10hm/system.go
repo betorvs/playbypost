@@ -23,15 +23,6 @@ func (a D10Extented) Value() (driver.Value, error) {
 	return json.Marshal(a)
 }
 
-// func (a *D10Extented) Scan(value interface{}) error {
-// 	b, ok := value.([]byte)
-// 	if !ok {
-// 		return errors.New("type assertion to []byte failed")
-// 	}
-
-// 	return json.Unmarshal(b, &a)
-// }
-
 func (a *D10Extented) SetValues(values map[string]interface{}, convertInterfaceInt func(interface{}) int) {
 	if values == nil {
 		return
@@ -46,9 +37,6 @@ func (a *D10Extented) SetValues(values map[string]interface{}, convertInterfaceI
 }
 
 func (d D10Extented) String() string {
-	// if d == nil {
-	// 	return "<nil>"
-	// }
 	return fmt.Sprintf("Creature Extended: Health %d, Defense %d, WillPower %d, Initiative %d, Size %d, Weapons %v", d.Health, d.Defense, d.WillPower, d.Initiative, d.Size, d.Weapon)
 }
 
@@ -83,17 +71,6 @@ func (a D10Extented) GetValues() map[string]interface{} {
 	}
 }
 
-// type Advantages struct {
-// 	Name        string
-// 	Value       int
-// 	Description string
-// }
-
-// type MoralSystem struct {
-// 	Name  string
-// 	Value int
-// }
-
 type Weapons map[string]Weapon
 
 func (a Weapons) Value() (driver.Value, error) {
@@ -101,12 +78,6 @@ func (a Weapons) Value() (driver.Value, error) {
 }
 
 func (a *Weapons) Scan(value interface{}) error {
-	// b, ok := value.([]byte)
-	// if !ok {
-	// 	return errors.New("type assertion to []byte failed")
-	// }
-
-	// return json.Unmarshal(b, &a)
 	var data []byte
 	if b, ok := value.([]byte); ok {
 		data = b

@@ -30,23 +30,6 @@ func (db *DBX) GetStory(ctx context.Context) ([]types.Story, error) {
 	return story, nil
 }
 
-// func (db *DBX) CreateStory(ctx context.Context, title, announcement, notes string, WriterID int) (int, error) {
-// 	query := "INSERT INTO story(title, announcement, notes, master_id) VALUES($1, $2, $3, $4) RETURNING id"
-// 	stmt, err := db.Conn.PrepareContext(ctx, query)
-// 	if err != nil {
-// 		db.Logger.Error("prepare insert into story failed", "error", err.Error())
-// 		return -1, err
-// 	}
-// 	defer stmt.Close()
-// 	var res int
-// 	err = stmt.QueryRow(title, announcement, notes, WriterID).Scan(&res)
-// 	if err != nil {
-// 		db.Logger.Error("query row insert into story failed", "error", err.Error())
-// 		return -1, err
-// 	}
-// 	return res, nil
-// }
-
 func (db *DBX) CreateStoryTx(ctx context.Context, title, announcement, notes, encodingKey string, writerID int) (int, error) {
 	// TX
 	tx, err := db.Conn.BeginTx(ctx, nil)

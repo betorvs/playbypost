@@ -8,51 +8,6 @@ import (
 	"github.com/betorvs/playbypost/core/rules"
 )
 
-// func (db *DBX) SavePlayer(ctx context.Context, id, storyID int, npc bool, creature *rules.Creature, rpg *rpg.RPGSystem) (int, error) {
-
-// 	var playerID int
-// 	var err error
-// 	{
-// 		r, er := db.savePlayer(ctx, id, storyID, npc, creature)
-// 		playerID = r
-// 		err = er
-// 	}
-// 	{
-// 		switch {
-// 		case rpg.Name == "d20-3.5":
-// 		case rpg.Name == "D10HomeMade":
-// 			_, er := db.saveExtensionD10HM(ctx, playerID, npc, creature.Extension.(*d10hm.D10Extented))
-// 			err = er
-
-// 		case rpg.Name == "D10OldSchool":
-
-// 		}
-
-// 	}
-// 	return playerID, err
-// }
-
-// func (db *DBX) savePlayer(ctx context.Context, id, storyID int, npc bool, creature *rules.Creature) (int, error) {
-// 	query := "INSERT INTO players(character_name, player_id, stage_id, destroyed, abilities, skills, rpg) VALUES($1, $2, $3, $4, $5, $6, $7) RETURNING id"
-// 	if npc {
-// 		query = "INSERT INTO non_players(npc_name, player_id, stage_id, destroyed, abilities, skills, rpg) VALUES($1, $2, $3, $4, $5, $6, $7) RETURNING id"
-// 	}
-// 	stmt, err := db.Conn.PrepareContext(ctx, query)
-// 	if err != nil {
-// 		db.Logger.Error("save players prepare failed", "error", err.Error())
-// 		return -1, err
-// 	}
-// 	defer stmt.Close()
-// 	var res int
-// 	err = stmt.QueryRow(creature.Name, id, storyID, false, creature.Abilities, creature.Skills, creature.RPG.Name).Scan(&res)
-// 	if err != nil {
-// 		db.Logger.Error("save players queryRow failed", "error", err.Error())
-// 		return -1, err
-// 	}
-
-// 	return res, nil
-// }
-
 func (db *DBX) SavePlayerTx(ctx context.Context, id, storyID int, creature *rules.Creature, rpgSystem *rpg.RPGSystem) (int, error) {
 	var playerID int
 	tx, err := db.Conn.BeginTx(ctx, nil)

@@ -45,26 +45,3 @@ func (db *DBX) GetTask(ctx context.Context) ([]types.Task, error) {
 	}
 	return t, nil
 }
-
-// func (db *DBX) GetTasksByEncounterID(ctx context.Context, id int) (map[string]types.Task, error) {
-// 	tasks := make(map[string]types.Task)
-// 	rows, err := db.Conn.QueryContext(ctx, "SELECT id, title, display_text, kind, checks, target, options, finished FROM tasks WHERE encounters_id = $1", id)
-// 	if err != nil {
-// 		db.Logger.Error("query on tasks by encounter id failed", "error", err.Error())
-// 		return tasks, err
-// 	}
-// 	defer rows.Close()
-// 	for rows.Next() {
-// 		var id int
-// 		var task types.Task
-// 		if err := rows.Scan(&id, &task.Title, &task.DisplayText, &task.Kind, &task.Checks, &task.Target, &task.Options, &task.Finished); err != nil {
-// 			db.Logger.Error("scan error on tasks by id", "error", err.Error())
-// 		}
-// 		tasks[task.DisplayText] = task
-// 	}
-// 	// Check for errors from iterating over rows.
-// 	if err := rows.Err(); err != nil {
-// 		db.Logger.Error("rows error on story by id", "error", err.Error())
-// 	}
-// 	return tasks, nil
-// }

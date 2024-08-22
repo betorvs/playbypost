@@ -176,6 +176,17 @@ func (a *WorkerAPI) parseCommand(cmd types.StageEncounterActivities) error {
 	processed := false
 	// parse command
 	switch {
+	case cmd.Actions["command"] == parser.CloseStage:
+		// close stage
+		a.logger.Info("close stage")
+		// send message to chat
+		closingMessage := fmt.Sprintf("Stage %s closed. Congratulations!", cmd.Actions["display_text"])
+		body, err := a.client.PostEvent(cmd.Actions["channel"], "ALL", closingMessage, types.EventEnd)
+		if err != nil {
+			a.logger.Error("error posting event close stage", "error", err.Error(), "body", string(body))
+			return err
+		}
+		processed = true
 	case cmd.Actions["command"] == parser.ChangeEncounterToStarted:
 		// change encounter to started
 		a.logger.Info("change encounter to started")

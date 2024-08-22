@@ -32,8 +32,6 @@ func NewExtendedSystem(r *RPGSystem, values map[string]interface{}) ExtendedSyst
 		return extended
 	case D2035:
 		return d20e35.NewExtended()
-	// case D10OS:
-	// 	return d10os.NewExtended()
 	default:
 		return nil
 	}

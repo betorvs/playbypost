@@ -208,7 +208,7 @@ func (a MainApi) getRunningStageByChannelID(channelID, userID string) (types.Run
 }
 
 func (a MainApi) getAutoPlayOptByChannelID(channel, userID string) (types.AutoPlayOptions, error) {
-	opt, err := a.db.GetAutoPlayOptByChannelID(a.ctx, channel, userID)
+	opt, err := a.db.GetAutoPlayOptionsByChannelID(a.ctx, channel, userID)
 	if err != nil {
 		return types.AutoPlayOptions{}, err
 	}

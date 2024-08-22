@@ -44,7 +44,7 @@ func main() {
 	db := db.NewDB(conn, logger)
 	defer db.Close()
 	// rpg loading
-	rpgFlag := flag.String("rpg", rpg.D10HM, fmt.Sprintf("-rpg [%s|%s|%s]", rpg.D10HM, rpg.D10OS, rpg.D2035))
+	rpgFlag := flag.String("rpg", rpg.D10HM, fmt.Sprintf("-rpg [%s|%s]", rpg.D10HM, rpg.D2035))
 	stageWorker := flag.Bool("stage-worker", false, "-stage-worker")
 	autoPlayWorker := flag.Bool("autoplay-worker", false, "-autoplay-worker")
 	flag.Parse()
@@ -99,6 +99,7 @@ func main() {
 	srv.Register("POST /api/v1/stage/encounter/task", app.AddRunningTask)
 	srv.Register("GET /api/v1/stage/encounter/activities", app.GetStageEncounterActivities)
 	srv.Register("GET /api/v1/stage/encounter/activities/{id}", app.GetStageEncounterActivitiesByEncounterID)
+	srv.Register("PUT /api/v1/stage/{id}", app.CloseStage)
 
 	// players
 	srv.Register("POST /api/v1/player", app.GeneratePlayer)
@@ -197,10 +198,6 @@ func loadRPG(k string, logger *slog.Logger) *rpg.RPGSystem {
 	case rpg.D2035:
 		rpgSystem = *rpg.LoadRPGSystemsDefault(rpg.D2035)
 		rpgSystem.InitDefinitions("./library/definitions-d20.json", logger)
-
-	case rpg.D10OS:
-		rpgSystem = *rpg.LoadRPGSystemsDefault(rpg.D10OS)
-		rpgSystem.InitDefinitions("./library/definitions-d10OS.json", logger)
 
 	}
 	return &rpgSystem

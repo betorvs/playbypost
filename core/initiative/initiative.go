@@ -20,7 +20,6 @@ type Initiative struct {
 }
 
 func (i *Initiative) Next() int {
-	// fmt.Println("executing next ", i.Position, "len", i.Participants.Len())
 	if i.Position >= i.Participants.Len()-1 || i.Position == -1 {
 		i.Position = 0
 		return 0
@@ -40,7 +39,6 @@ func (i *Initiative) Current() string {
 }
 
 func (i Initiative) NextInfo() int {
-	// fmt.Println("executing next ", i.Position, "len", i.Participants.Len())
 	if i.Position >= i.Participants.Len()-1 || i.Position == -1 {
 		return 0
 	}
@@ -79,8 +77,6 @@ func (p Participants) Len() int {
 // Implement the Less method required by sort.Interface
 func (p Participants) Less(i, j int) bool {
 	if p[i].Result == p[j].Result {
-		// fmt.Printf("result i %v j %v \n", p[i].Result, p[j].Result)
-		// fmt.Printf("bonus i %v j %v \n", p[i].Bonus, p[j].Bonus)
 		return p[i].Bonus < p[j].Bonus
 	}
 	return p[i].Result < p[j].Result

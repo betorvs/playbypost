@@ -105,5 +105,23 @@ const FetchStageEncounterByEncounterID = async (
   }
 };
 
+const CloseStage = async (
+  id: string,
+): Promise<void> => {
+  const requestHeaders: HeadersInit = new Headers();
+  requestHeaders.set("Content-Type", "application/json");
+  requestHeaders.set("X-Username", GetUsername());
+  requestHeaders.set("X-Access-Token", GetToken());
+  const apiURL = UseLocation();
+  const urlAPI = new URL("api/v1/stage/" + id, apiURL);
+  const response = await fetch(urlAPI, {
+    method: "PUT",
+    headers: requestHeaders,
+  });
+  if (response.ok) {
+    console.log("Stage closed");
+  }
+}
+
 export default FetchStages;
-export { FetchStage, FetchStageByStoryID, FetchStageEncountersByID, FetchStageEncounterByEncounterID };
+export { FetchStage, FetchStageByStoryID, FetchStageEncountersByID, FetchStageEncounterByEncounterID, CloseStage };

@@ -125,36 +125,6 @@ func (a *Attack) singleMeleeAttack() {
 		// 	return response, err
 		// }
 
-	case rpg.D10OS:
-		// dex + melee - against - dex + melee || dodge
-		// damage require rolls = str + weapon bonus
-		melee := "melee"
-		dexterity := "dexterity"
-		abilityBonus := a.Attacker.calcAbilityModifier(dexterity)
-		bonus := a.Attacker.calcSkillModifier(melee)
-		calcDices := a.Dice.FormatDice(abilityBonus+bonus, 6)
-		result, _ := a.Dice.FreeRoll(diceName, calcDices)
-
-		defenseAbilityBonus := a.Attacker.calcAbilityModifier(dexterity)
-		defensebonus := a.Attacker.calcSkillModifier(melee)
-		defenseCalcDices := a.Dice.FormatDice(defenseAbilityBonus+defensebonus, 6)
-		defenseDiceName := fmt.Sprintf("defense-roll-%s-%s", a.Defensor.Name, dexterity)
-		defenseResult, _ := a.Dice.FreeRoll(defenseDiceName, defenseCalcDices)
-		a.Logger.Info("results", "round", a.Round, "attack_details", result.Rolled, "defense_details", defenseResult.Rolled)
-
-		if result.Result >= defenseResult.Result {
-			a.Response.Success = true
-			damageAbility := a.Attacker.calcAbilityModifier(strenght)
-			weaponBonus, _, _ := a.Attacker.Extension.WeaponBonus(a.Weapon)
-			calcDices := a.Dice.FormatDice(damageAbility+weaponBonus, 6)
-			damageDiceName := fmt.Sprintf("damage-roll-%s-%s", a.Attacker.Name, strenght)
-			damageResult, _ := a.Dice.FreeRoll(damageDiceName, calcDices)
-			a.Response.Damage = damageResult.Result
-			if a.Defensor.Extension.HealthStatus() <= 0 {
-				_ = a.Defensor.Destroy()
-			}
-			a.Logger.Info("results", "round", a.Round, "damage_details", damageResult.Rolled)
-		}
 	}
 }
 
@@ -168,9 +138,6 @@ func (a *Attack) singleRangedAttack() {
 		// dex + firearms - armor
 		// damage is equal success
 
-	case rpg.D10OS:
-		// dex + firearms - against - dex + dodge
-		// damage require rolls = weapon damage + accuracy
 	}
 }
 
@@ -185,9 +152,6 @@ func (a *Attack) singleUnarmedAttack() {
 		// str + brawl - defense + armor
 		// damage is equal success
 
-	case rpg.D10OS:
-		// dex + brawl - against - dex + dodge
-		// damage require rolls = Str
 	}
 }
 

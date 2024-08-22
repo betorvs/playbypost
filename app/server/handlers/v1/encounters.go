@@ -127,7 +127,7 @@ func (a MainApi) CreateEncounter(w http.ResponseWriter, r *http.Request) {
 		a.s.ErrJSON(w, http.StatusBadRequest, "notes encoding fails")
 		return
 	}
-	res, err := a.db.CreateEncounter(a.ctx, obj.Title, announce, notes, obj.StoryID, obj.WriterID, obj.FirstEncounter, obj.LastEncounter)
+	res, err := a.db.CreateEncounterTx(a.ctx, obj.Title, announce, notes, obj.StoryID, obj.WriterID, obj.FirstEncounter, obj.LastEncounter)
 	if err != nil {
 		a.s.ErrJSON(w, http.StatusBadRequest, "error creating encounter on database")
 		return

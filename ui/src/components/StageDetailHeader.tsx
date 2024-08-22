@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import NavigateButton from "./Button/NavigateButton";
-import { FetchStage } from "../functions/Stages";
+import { CloseStage, FetchStage } from "../functions/Stages";
 import StageAggregated from "../types/StageAggregated";
 
 interface props {
@@ -15,6 +15,11 @@ const StageDetailHeader = ({ id, storyID, detail }: props) => {
   useEffect(() => {
     FetchStage(id, setStage);
   }, []);
+  const handleClose = () => {
+    console.log("Close stage");
+    CloseStage(id);
+  }
+
   return (
     <div
       className="p-4 p-md-5 mb-4 rounded text-body-emphasis bg-body-secondary"
@@ -43,6 +48,12 @@ const StageDetailHeader = ({ id, storyID, detail }: props) => {
             <NavigateButton link={`/stages/${id}/story/${storyID}/players`} variant="primary">
               Players List
             </NavigateButton>{" "}
+
+            <span>
+              <button className="btn btn-secondary" onClick={handleClose}>
+                Close Stage
+                </button>{" "}
+            </span>
           </>
         ) : (
           <>
