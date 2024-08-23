@@ -47,6 +47,7 @@ func TestCombatD10HM(t *testing.T) {
 	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
 	rpgSystem := rpg.LoadRPGSystemsDefault(rpg.D10HM)
 	rpgSystem.AppendAbilities("strength")
+	rpgSystem.AppendSkills("weaponry")
 	dice := mock.NewRollMock("d10", rpg.D10HM)
 	person1 := NewCreature("test-combat-p1-d10hm-1", rpgSystem)
 	err := person1.AddAbility(Ability{Name: "strength", Value: 5})

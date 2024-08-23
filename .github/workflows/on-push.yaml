@@ -1,0 +1,33 @@
+name: on-push
+
+on:
+  push:
+
+jobs:
+  # https://github.com/golangci/golangci-lint-action 
+  golangci:
+    name: lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332  # v4.1.7
+      - uses: actions/setup-go@0a12ed9d6a96ab950c8f026ed9f722fe0da7ef32  # v5.0.2
+        with:
+          go-version: '1.22'
+          cache: false
+      # https://github.com/golangci/golangci-lint-action/issues/953
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@a4f60bb28d35aeee14e6880718e0c85ff1882e64  # v6.0.1
+        with:
+          version: v1.54
+          args: --timeout=10m
+  golang-test:
+    name: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332  # v4.1.7
+      - uses: actions/setup-go@0a12ed9d6a96ab950c8f026ed9f722fe0da7ef32  # v5.0.2
+        with:
+          go-version: '1.22'
+          cache: false
+      - name: go test
+        run: go test -v ./...
