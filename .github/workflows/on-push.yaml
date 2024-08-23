@@ -18,9 +18,9 @@ jobs:
         with:
           node-version: 20
       - name: Install Task
-        uses: arduino/setup-task@v2 # v2.0.0
+        uses: arduino/setup-task@v2 # v2.6.1
         with:
-          version: 2.6.1
+          version: 3.24.0
       - name: Run Task tidy
         run: task tidy
       - name: Run Task build_assets
