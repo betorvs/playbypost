@@ -5,8 +5,8 @@ on:
 
 jobs:
   # https://github.com/golangci/golangci-lint-action 
-  golangci:
-    name: tests
+  test:
+    name: lint-unit-test
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332  # v4.1.7
@@ -14,32 +14,22 @@ jobs:
         with:
           go-version: '1.22'
           cache: false
-      # https://github.com/golangci/golangci-lint-action/issues/953
-      - name: golangci-lint
-        uses: golangci/golangci-lint-action@a4f60bb28d35aeee14e6880718e0c85ff1882e64  # v6.0.1
-        with:
-          version: v1.54
-          args: --timeout=10m
-  golang-test:
-    name: unit-test
-    needs: golangci
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332  # v4.1.7
-      - uses: actions/setup-go@0a12ed9d6a96ab950c8f026ed9f722fe0da7ef32  # v5.0.2
-        with:
-          go-version: '1.22'
-          cache: false
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4 # v2.4.0
         with:
           node-version: 20
       - name: Install Task
-        uses: arduino/setup-task@v2
+        uses: arduino/setup-task@v2 # v2.6.1
         with:
           version: 2.6.1
       - name: Run Task tidy
         run: task tidy
       - name: Run Task build_assets
         run: task build_assets
+      # https://github.com/golangci/golangci-lint-action/issues/953
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@a4f60bb28d35aeee14e6880718e0c85ff1882e64  # v6.0.1
+        with:
+          version: v1.54
+          args: --timeout=10m
       - name: go test
         run: go test -v ./...
