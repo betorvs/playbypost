@@ -6,7 +6,7 @@ on:
 jobs:
   # https://github.com/golangci/golangci-lint-action 
   golangci:
-    name: lint
+    name: tests
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332  # v4.1.7
@@ -21,7 +21,8 @@ jobs:
           version: v1.54
           args: --timeout=10m
   golang-test:
-    name: test
+    name: unit-test
+    needs: golangci
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332  # v4.1.7
@@ -29,5 +30,16 @@ jobs:
         with:
           go-version: '1.22'
           cache: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Install Task
+        uses: arduino/setup-task@v2
+        with:
+          version: 2.6.1
+      - name: Run Task tidy
+        run: task tidy
+      - name: Run Task build_assets
+        run: task build_assets
       - name: go test
         run: go test -v ./...
