@@ -1,5 +1,7 @@
 # playbypost
 
+[![on-push](https://github.com/betorvs/playbypost/actions/workflows/on-push.yaml/badge.svg)](https://github.com/betorvs/playbypost/actions/workflows/on-push.yaml)
+
 ## Directories
 
 - cmd: command line tools to run it
