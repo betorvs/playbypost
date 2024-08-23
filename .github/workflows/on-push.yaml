@@ -23,6 +23,8 @@ jobs:
           version: 3.24.0
       - name: Run Task tidy
         run: task tidy
+      - name: Run Task install ui deps
+        run: task install_ui_deps
       - name: Run Task build_assets
         run: task build_assets
       # https://github.com/golangci/golangci-lint-action/issues/953

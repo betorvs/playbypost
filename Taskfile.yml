@@ -64,6 +64,10 @@ tasks:
       VERSION:
         sh: openssl rand -hex 4
 
+  install_ui_deps:
+    cmds:
+      - cd ui && npm install
+
   build_assets:
     cmds:
       - cd ui && npm run build
