@@ -38,6 +38,7 @@ tasks:
 
   migrate_up:
     cmds:
+      - ./admin-ctl db ping
       - ./admin-ctl db create
       - ./admin-ctl db up
 

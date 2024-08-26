@@ -66,7 +66,8 @@ func init() {
 
 func ping() {
 	creds := utils.LoadDBEnvVars()
-	db, err := pg.New(creds)
+	conn := strings.Replace(creds, "playbypost", "postgres", -1)
+	db, err := pg.New(conn)
 	if err != nil {
 		fmt.Println("error ", err.Error())
 		os.Exit(2)
