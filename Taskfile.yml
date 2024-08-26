@@ -17,8 +17,11 @@ tasks:
 
   test:
     cmds: 
-      - golangci-lint run
       - go test -v ./...
+
+  lint:
+    cmds: 
+      - golangci-lint run
 
   stop_postgres:
     cmds:

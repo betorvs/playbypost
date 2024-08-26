@@ -140,7 +140,7 @@ func main() {
 	app.Session.AddAdminSession(adminUser, adminToken)
 	logger.Info("adding admin user one year token", "admin", adminUser, "token", adminToken)
 	adminFile := utils.GetEnv("CREDS_FILE", "./creds")
-	err := save(adminToken, adminFile)
+	err := utils.Save(adminToken, adminFile)
 	if err != nil {
 		logger.Error("cannot write to file", "error", err)
 		os.Exit(1)
@@ -201,17 +201,4 @@ func loadRPG(k string, logger *slog.Logger) *rpg.RPGSystem {
 
 	}
 	return &rpgSystem
-}
-
-func save(value, file string) error {
-	f, err := os.Create(file)
-	if err != nil {
-		return err
-	}
-	defer f.Close()
-	_, err = f.WriteString(value)
-	if err != nil {
-		return err
-	}
-	return nil
 }

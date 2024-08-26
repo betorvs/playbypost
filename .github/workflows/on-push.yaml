@@ -38,4 +38,22 @@ jobs:
           version: v1.54
           args: --timeout=10m
       - name: go test
-        run: go test -v ./...
+        run: task test
+      - name: build binaries
+        run: task build_local
+      - name: gen env file
+        run: ./admin-ctl genenv
+      - name: Create postgres 
+        run: task create_postgres
+      - name: Run migrations
+        run: |
+            ./admin-ctl db create
+            ./admin-ctl db up
+      - name: Run playbypost
+        run: |
+            source .env
+            nohup playbypost > nohup.out 2> nohup.err < /dev/null &
+      - name: Run load 
+        run: task load
+      - name: Run list_encounters
+        run: task list_encounters

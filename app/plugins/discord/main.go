@@ -70,7 +70,7 @@ func main() {
 	playbypost := utils.GetEnv("PLAYBYPOST_SERVER", "http://localhost:3000")
 	adminUser := utils.GetEnv("ADMIN_USER", "admin")
 	adminFile := utils.GetEnv("CREDS_FILE", "./creds")
-	adminToken, err := read(adminFile)
+	adminToken, err := utils.Read(adminFile)
 	if err != nil {
 		logger.Error("error reading creds file", "error", err.Error())
 	}
@@ -535,12 +535,4 @@ func (a *app) postCommand(userid, text, channel string) (types.Composed, error) 
 		a.logger.Error("error decoding message from backend", "error", err.Error())
 	}
 	return msg, nil
-}
-
-func read(file string) (string, error) {
-	data, err := os.ReadFile(file)
-	if err != nil {
-		return "", err
-	}
-	return string(data), nil
 }

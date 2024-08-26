@@ -42,7 +42,7 @@ func main() {
 	playbypost := utils.GetEnv("PLAYBYPOST_SERVER", "http://localhost:3000")
 	adminUser := utils.GetEnv("ADMIN_USER", "admin")
 	adminFile := utils.GetEnv("CREDS_FILE", "./creds")
-	adminToken, err := read(adminFile)
+	adminToken, err := utils.Read(adminFile)
 	if err != nil {
 		logger.Error("error reading creds file", "error", err.Error())
 	}
@@ -518,12 +518,4 @@ func (a *app) events(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusAccepted)
 	fmt.Fprint(w, "{\"msg\":\"Accepted\"}")
-}
-
-func read(file string) (string, error) {
-	data, err := os.ReadFile(file)
-	if err != nil {
-		return "", err
-	}
-	return string(data), nil
 }
