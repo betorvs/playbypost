@@ -37,5 +37,6 @@ var (
 	chatUserID         string // cmd: chat
 	chatChannelID      string // cmd: chat
 	chatUserName       string // cmd: chat
+	random             bool   // cmd: db
 
 )

@@ -12,6 +12,24 @@ jobs:
   test:
     name: lint-unit-test
     runs-on: ubuntu-latest
+    # Service containers to run with `container-job`
+    services:
+      # Label used to access the service container
+      postgres:
+        # Docker Hub image
+        image: postgres
+        # Provide the password for postgres
+        env:
+          POSTGRES_PASSWORD: mypassword
+        # Set health checks to wait until postgres has started
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          # Maps tcp port 5432 on service container to the host
+          - 5432:5432
     steps:
       - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332  # v4.1.7
       - uses: actions/setup-go@0a12ed9d6a96ab950c8f026ed9f722fe0da7ef32  # v5.0.2
@@ -43,8 +61,6 @@ jobs:
         run: task build_local
       - name: generates envs files
         run: ./admin-ctl db seed
-      - name: Create postgres 
-        run: task create_postgres
       - name: Run migrations
         run: task migrate_up
       - name: Run playbypost
