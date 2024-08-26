@@ -70,4 +70,4 @@ jobs:
       - name: Run load 
         run: |
           ls -lha
-          cat nothup.out
+          cat nohup.out
