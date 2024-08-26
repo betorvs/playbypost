@@ -85,6 +85,7 @@ var autoPlayCmd = &cobra.Command{
 }
 
 func init() {
+	rootCmd.AddCommand(autoPlayCmd)
 	autoPlayCmd.Flags().BoolVar(&solo, "solo", false, "solo adventure")
 	autoPlayCmd.Flags().IntVar(&storyID, "story-id", 0, "story id")
 	autoPlayCmd.Flags().StringVar(&displayText, "text", "", "text to be used")
