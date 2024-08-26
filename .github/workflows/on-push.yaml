@@ -41,8 +41,8 @@ jobs:
         run: task test
       - name: build binaries
         run: task build_local
-      - name: gen env file
-        run: ./admin-ctl genenv
+      - name: generates envs files
+        run: ./admin-ctl db seed
       - name: Create postgres 
         run: task create_postgres
       - name: Run migrations

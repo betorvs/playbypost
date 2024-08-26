@@ -17,6 +17,11 @@ import (
 	"github.com/spf13/cobra"
 )
 
+const (
+	envFileTask = ".env.task"
+	envFile     = ".env"
+)
+
 // dbCmd represents the db command
 var dbCmd = &cobra.Command{
 	Use:   "db [create|up|drop]",
@@ -31,6 +36,24 @@ var dbCmd = &cobra.Command{
 			up()
 		case "drop":
 			drop()
+		case "seed":
+			random := utils.RandomString(12)
+			{
+				values := fmt.Sprintf("PGUSER=\"postgres\"\nPGPASSWORD=\"%s\"\nPGHOST=\"localhost\"\nPGPORT=5432\nPGDATABASE=\"playbypost\"", random)
+				err := utils.Save(values, envFileTask)
+				if err != nil {
+					fmt.Println("error saving file", envFileTask, "error", err)
+				}
+				fmt.Println("file saved", envFileTask)
+			}
+			{
+				values := fmt.Sprintf("export PGUSER=\"postgres\"\nexport PGPASSWORD=\"%s\"\nexport PGHOST=\"localhost\"\nexport PGPORT=5432\nexport PGDATABASE=\"playbypost\"", random)
+				err := utils.Save(values, envFile)
+				if err != nil {
+					fmt.Println("error saving file", envFile, "error", err)
+				}
+				fmt.Println("file saved", envFile)
+			}
 		}
 	},
 }
