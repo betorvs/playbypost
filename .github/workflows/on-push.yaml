@@ -68,6 +68,6 @@ jobs:
             source .env
             nohup ./playbypost > nohup.out 2> nohup.err < /dev/null &
       - name: Run load 
-        run: |
-          ls -lha
-          cat nohup.out
+        run: task load
+      - name: Run list_encounters
+        run: task list_encounters
