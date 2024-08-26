@@ -36,6 +36,8 @@ var dbCmd = &cobra.Command{
 			up()
 		case "drop":
 			drop()
+		case "ping":
+			ping()
 		case "seed":
 			random := utils.RandomString(12)
 			{
@@ -60,6 +62,22 @@ var dbCmd = &cobra.Command{
 
 func init() {
 	rootCmd.AddCommand(dbCmd)
+}
+
+func ping() {
+	creds := utils.LoadDBEnvVars()
+	db, err := pg.New(creds)
+	if err != nil {
+		fmt.Println("error ", err.Error())
+		os.Exit(2)
+	}
+	defer db.Close()
+	err = db.Ping()
+	if err != nil {
+		fmt.Println("error ", err.Error())
+		os.Exit(1)
+	}
+	fmt.Println("ping executed ")
 }
 
 func create() {
