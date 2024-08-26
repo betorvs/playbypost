@@ -46,9 +46,7 @@ jobs:
       - name: Create postgres 
         run: task create_postgres
       - name: Run migrations
-        run: |
-            ./admin-ctl db create
-            ./admin-ctl db up
+        run: task migrate_up
       - name: Run playbypost
         run: |
             source .env
