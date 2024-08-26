@@ -34,6 +34,7 @@ tasks:
   create_postgres:
     cmds:
       - docker run -p 5432:5432 --name postgres -e "POSTGRES_PASSWORD=$PGPASSWORD" -d postgres
+      - docker ps -a
 
   migrate_up:
     cmds:
