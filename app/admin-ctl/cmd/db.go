@@ -39,7 +39,7 @@ var dbCmd = &cobra.Command{
 		case "seed":
 			random := utils.RandomString(12)
 			{
-				values := fmt.Sprintf("PGUSER=\"postgres\"\nPGPASSWORD=\"%s\"\nPGHOST=\"localhost\"\nPGPORT=5432\nPGDATABASE=\"playbypost\"", random)
+				values := fmt.Sprintf("PGUSER=\"postgres\"\nPGPASSWORD=\"%s\"\nPGHOST=\"127.0.0.1\"\nPGPORT=5432\nPGDATABASE=\"playbypost\"", random)
 				err := utils.Save(values, envFileTask)
 				if err != nil {
 					fmt.Println("error saving file", envFileTask, "error", err)
@@ -47,7 +47,7 @@ var dbCmd = &cobra.Command{
 				fmt.Println("file saved", envFileTask)
 			}
 			{
-				values := fmt.Sprintf("export PGUSER=\"postgres\"\nexport PGPASSWORD=\"%s\"\nexport PGHOST=\"localhost\"\nexport PGPORT=5432\nexport PGDATABASE=\"playbypost\"", random)
+				values := fmt.Sprintf("export PGUSER=\"postgres\"\nexport PGPASSWORD=\"%s\"\nexport PGHOST=\"127.0.0.1\"\nexport PGPORT=5432\nexport PGDATABASE=\"playbypost\"", random)
 				err := utils.Save(values, envFile)
 				if err != nil {
 					fmt.Println("error saving file", envFile, "error", err)
