@@ -15,9 +15,17 @@ tasks:
       - go get -u -v ./...
       - go mod tidy
 
+  unit:
+    cmds: 
+      - go test -v ./... -tags unit
+
+  integration:
+    cmds: 
+      - go test -v ./... -tags integration
+
   test:
     cmds: 
-      - go test -v ./...
+      - task: unit
 
   lint:
     cmds: 
