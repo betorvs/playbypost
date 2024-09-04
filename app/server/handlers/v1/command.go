@@ -33,13 +33,13 @@ func (a MainApi) ExecuteCommand(w http.ResponseWriter, r *http.Request) {
 		// solo mode: decide workflow
 		// list all available solo modes
 		// will return a list of auto_play entries
-		opts, err := a.db.GetAutoPlay(a.ctx)
+		options, err := a.db.GetAutoPlay(a.ctx)
 		if err != nil {
 			a.s.ErrJSON(w, http.StatusBadRequest, "get auto play")
 			return
 		}
-		encOptions := parser.ParserAutoPlaysSolo(opts)
-		composed := types.Composed{Msg: "Solo start options", Opt: encOptions}
+		encOptions, opts := parser.ParserAutoPlaysSolo(options)
+		composed := types.Composed{Msg: "Solo start options", Opt: encOptions, Opts: opts}
 		a.logger.Info("msg back", "composed", composed)
 		a.s.JSON(w, composed)
 		return
@@ -48,14 +48,18 @@ func (a MainApi) ExecuteCommand(w http.ResponseWriter, r *http.Request) {
 		// start solo mode: requires channel id and user id
 		opt, err := a.getAutoPlayOptByChannelID(headerStoryChannel, headerUserID)
 		if err != nil {
+			a.logger.Error("no auto play found", "error", err.Error())
 			a.s.ErrJSON(w, http.StatusBadRequest, "no auto play found")
 			return
 		}
 		a.logger.Info("auto play found", "opt", opt)
+
 		composed := types.Composed{Msg: "Solo next options"}
 		if len(opt.NextEncounters) > 0 {
-			encOptions := parser.ParserAutoPlaysNext(opt.NextEncounters)
+			encOptions, opts := parser.ParserAutoPlaysNext(opt.NextEncounters)
+			a.logger.Info("auto play found", "opts", opts)
 			composed.Opt = encOptions
+			composed.Opts = opts
 		}
 
 		a.s.JSON(w, composed)

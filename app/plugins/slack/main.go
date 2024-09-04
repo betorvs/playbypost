@@ -228,17 +228,17 @@ func (a *app) middlewareSlashCommand(evt *socketmode.Event, client *socketmode.C
 		if msg.Msg != "" {
 			textPickItem = fmt.Sprintf("%s Pick an item", msg.Msg)
 		}
-		if len(msg.Opt) > 0 {
+		if len(msg.Opts) > 0 {
 			a.logger.Info(fmt.Sprintf("options: %v", msg.Opt))
 			options := []*slack.OptionBlockObject{}
-			for _, v := range msg.Opt {
+			for _, v := range msg.Opts {
 				options = append(options, &slack.OptionBlockObject{
 					Text: &slack.TextBlockObject{
 						Type:  "plain_text",
 						Text:  v.Name,
 						Emoji: true,
 					},
-					Value: fmt.Sprintf(`cuni;%s;%s;%s;%d`, cmd.ChannelID, cmd.UserID, v.Name, v.ID),
+					Value: fmt.Sprintf(`cuni;%s;%s;%s;%d`, cmd.ChannelID, cmd.UserID, v.Value, v.ID),
 				})
 			}
 			payload := map[string]interface{}{

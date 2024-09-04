@@ -241,13 +241,13 @@ func (a *app) interactionCommand(s *discordgo.Session, i *discordgo.InteractionC
 				if msg.Msg != "" {
 					textPickItem = fmt.Sprintf("%s Pick an item", msg.Msg)
 				}
-				if len(msg.Opt) > 0 {
+				if len(msg.Opts) > 0 {
 					// create select menu
 					options := []discordgo.SelectMenuOption{}
-					for _, v := range msg.Opt {
+					for _, v := range msg.Opts {
 						options = append(options, discordgo.SelectMenuOption{
 							Label: v.Name,
-							Value: fmt.Sprintf(`cuni;%s;%s;%s;%d`, i.ChannelID, userid, v.Name, v.ID),
+							Value: fmt.Sprintf(`cuni;%s;%s;%s;%d`, i.ChannelID, userid, v.Value, v.ID),
 						})
 					}
 					selectMenu := discordgo.SelectMenu{
@@ -291,13 +291,13 @@ func (a *app) interactionCommand(s *discordgo.Session, i *discordgo.InteractionC
 					textPickItem = fmt.Sprintf("%s Pick an item", msg.Msg)
 				}
 				a.logger.Info("msg", "msg", msg)
-				if len(msg.Opt) > 0 {
+				if len(msg.Opts) > 0 {
 					// create select menu
 					options := []discordgo.SelectMenuOption{}
-					for _, v := range msg.Opt {
+					for _, v := range msg.Opts {
 						options = append(options, discordgo.SelectMenuOption{
 							Label: v.Name,
-							Value: fmt.Sprintf(`cuni;%s;%s;%s;%d`, i.ChannelID, userid, v.Name, v.ID),
+							Value: fmt.Sprintf(`cuni;%s;%s;%s;%d`, i.ChannelID, userid, v.Value, v.ID),
 						})
 					}
 					selectMenu := discordgo.SelectMenu{
@@ -340,13 +340,13 @@ func (a *app) interactionCommand(s *discordgo.Session, i *discordgo.InteractionC
 				if msg.Msg != "" {
 					textPickItem = fmt.Sprintf("%s Pick an item", msg.Msg)
 				}
-				if len(msg.Opt) > 0 {
+				if len(msg.Opts) > 0 {
 					// create select menu
 					options := []discordgo.SelectMenuOption{}
-					for _, v := range msg.Opt {
+					for _, v := range msg.Opts {
 						options = append(options, discordgo.SelectMenuOption{
 							Label: v.Name,
-							Value: fmt.Sprintf(`cuni;%s;%s;%s;%d`, i.ChannelID, userid, v.Name, v.ID),
+							Value: fmt.Sprintf(`cuni;%s;%s;%s;%d`, i.ChannelID, userid, v.Value, v.ID),
 						})
 					}
 					selectMenu := discordgo.SelectMenu{

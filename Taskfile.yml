@@ -159,11 +159,11 @@ tasks:
 
   load_next_encounters:
     cmds:
-      - ./admin-ctl auto-play next-by-title --auto-play-id 1 --encounter "first encounter on story 2" --next-encounter "2 encounter on story 2" --text "for-A-go-enc-2" --token {{.TOKEN}}
-      - ./admin-ctl auto-play next-by-title --auto-play-id 1 --encounter "first encounter on story 2" --next-encounter "3 encounter on story 2" --text "for-B-go-enc-3" --token {{.TOKEN}}
-      - ./admin-ctl auto-play next-by-title --auto-play-id 1 --encounter "2 encounter on story 2" --next-encounter "4 encounter on story 2" --text "go-to-enc-4" --token {{.TOKEN}}
-      - ./admin-ctl auto-play next-by-title --auto-play-id 1 --encounter "3 encounter on story 2" --next-encounter "bad end encounter on story 2" --text "go-to-enc-5" --token {{.TOKEN}}
-      - ./admin-ctl auto-play next-by-title --auto-play-id 1 --encounter "4 encounter on story 2" --next-encounter "last encounter on story 2" --text "go-to-enc-6" --token {{.TOKEN}}
+      - ./admin-ctl auto-play next-by-title --auto-play-id 1 --encounter "first encounter on story 2" --next-encounter "2 encounter on story 2" --text "If you want A" --token {{.TOKEN}}
+      - ./admin-ctl auto-play next-by-title --auto-play-id 1 --encounter "first encounter on story 2" --next-encounter "3 encounter on story 2" --text "If you want B" --token {{.TOKEN}}
+      - ./admin-ctl auto-play next-by-title --auto-play-id 1 --encounter "2 encounter on story 2" --next-encounter "4 encounter on story 2" --text "moving forward" --token {{.TOKEN}}
+      - ./admin-ctl auto-play next-by-title --auto-play-id 1 --encounter "3 encounter on story 2" --next-encounter "bad end encounter on story 2" --text "moving forward" --token {{.TOKEN}}
+      - ./admin-ctl auto-play next-by-title --auto-play-id 1 --encounter "4 encounter on story 2" --next-encounter "last encounter on story 2" --text "go to end notes" --token {{.TOKEN}}
     vars:
       TOKEN:
         sh: cat creds

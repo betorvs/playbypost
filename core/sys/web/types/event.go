@@ -15,3 +15,9 @@ type Event struct {
 	Message string `json:"message"`
 	Kind    string `json:"kind"`
 }
+
+type Options struct {
+	ID    int    `json:"id"`
+	Name  string `json:"name"`
+	Value string `json:"value"`
+}

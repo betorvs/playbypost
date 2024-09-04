@@ -64,7 +64,7 @@ CREATE TABLE users (
 
 CREATE TABLE stage (
   id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-  display_text VARCHAR(50) NOT NULL,
+  display_text VARCHAR(100) NOT NULL,
   encoding_key VARCHAR(16) NOT NULL,
   finished BOOLEAN NOT NULL DEFAULT FALSE,
   storyteller_id int NOT NULL REFERENCES users(id),
@@ -80,7 +80,7 @@ CREATE TABLE stage_channel (
 
 CREATE TABLE stage_encounters (
   id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-  display_text VARCHAR(50) NOT NULL,
+  display_text VARCHAR(100) NOT NULL,
   phase int NOT NULL DEFAULT 0,
   stage_id int NOT NULL REFERENCES stage(id),
   storyteller_id int NOT NULL REFERENCES users(id),
@@ -91,7 +91,7 @@ CREATE TABLE stage_encounters (
 
 CREATE TABLE stage_running_tasks (
   id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-  display_text VARCHAR(50) NOT NULL,
+  display_text VARCHAR(100) NOT NULL,
   stage_id int NOT NULL REFERENCES stage(id),
   storyteller_id int NOT NULL REFERENCES users(id),
   stage_encounters_id int NOT NULL REFERENCES stage_encounters(id),
@@ -101,7 +101,7 @@ CREATE TABLE stage_running_tasks (
 
 CREATE TABLE stage_next_encounter (
   id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-  display_text VARCHAR(50) NOT NULL,
+  display_text VARCHAR(100) NOT NULL,
   stage_id int NOT NULL REFERENCES stage(id),
   current_encounter_id int NOT NULL REFERENCES stage_encounters(id),
   next_encounter_id int NOT NULL REFERENCES stage_encounters(id),
@@ -172,7 +172,7 @@ CREATE TABLE initiative_participants (
 
 CREATE TABLE auto_play (
   id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-  display_text VARCHAR(50) NOT NULL,
+  display_text VARCHAR(100) NOT NULL,
   encoding_key VARCHAR(16) NOT NULL,
   story_id int NOT NULL REFERENCES story(id),
   solo BOOLEAN NOT NULL DEFAULT TRUE
@@ -180,7 +180,7 @@ CREATE TABLE auto_play (
 
 CREATE TABLE auto_play_next_encounter (
   id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-  display_text VARCHAR(50) NOT NULL,
+  display_text VARCHAR(100) NOT NULL,
   auto_play_id int NOT NULL REFERENCES auto_play(id),
   current_encounter_id int NOT NULL REFERENCES encounters(id),
   next_encounter_id int NOT NULL REFERENCES encounters(id),
@@ -189,10 +189,9 @@ CREATE TABLE auto_play_next_encounter (
 
 CREATE TABLE auto_play_channel (
   id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-  channel VARCHAR(50) UNIQUE NOT NULL,
+  channel VARCHAR(50) NOT NULL,
   auto_play_id int NOT NULL REFERENCES auto_play(id),
-  active BOOLEAN NOT NULL DEFAULT TRUE,
-  UNIQUE(channel, auto_play_id)
+  active BOOLEAN NOT NULL DEFAULT TRUE
 );
 
 CREATE TABLE auto_play_encounter_activities (
@@ -206,11 +205,13 @@ CREATE TABLE auto_play_encounter_activities (
 CREATE TABLE auto_play_group (
   id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   user_id int NOT NULL REFERENCES users(id),
-  auto_play_id int NOT NULL REFERENCES auto_play(id)
+  auto_play_id int NOT NULL REFERENCES auto_play(id),
+  active BOOLEAN NOT NULL DEFAULT TRUE
 );
 
 CREATE TABLE auto_play_state (
   id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   auto_play_id int NOT NULL REFERENCES auto_play(id),
-  encounter_id int NOT NULL REFERENCES encounters(id)
+  encounter_id int NOT NULL REFERENCES encounters(id),
+  active BOOLEAN NOT NULL DEFAULT TRUE
 );
