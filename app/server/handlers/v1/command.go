@@ -38,8 +38,8 @@ func (a MainApi) ExecuteCommand(w http.ResponseWriter, r *http.Request) {
 			a.s.ErrJSON(w, http.StatusBadRequest, "get auto play")
 			return
 		}
-		encOptions, opts := parser.ParserAutoPlaysSolo(options)
-		composed := types.Composed{Msg: "Solo start options", Opt: encOptions, Opts: opts}
+		opts := parser.ParserAutoPlaysSolo(options)
+		composed := types.Composed{Msg: "Solo start options", Opts: opts}
 		a.logger.Info("msg back", "composed", composed)
 		a.s.JSON(w, composed)
 		return
@@ -56,9 +56,8 @@ func (a MainApi) ExecuteCommand(w http.ResponseWriter, r *http.Request) {
 
 		composed := types.Composed{Msg: "Solo next options"}
 		if len(opt.NextEncounters) > 0 {
-			encOptions, opts := parser.ParserAutoPlaysNext(opt.NextEncounters)
+			opts := parser.ParserAutoPlaysNext(opt.NextEncounters)
 			a.logger.Info("auto play found", "opts", opts)
-			composed.Opt = encOptions
 			composed.Opts = opts
 		}
 
