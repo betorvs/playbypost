@@ -241,13 +241,13 @@ func (a *app) interactionCommand(s *discordgo.Session, i *discordgo.InteractionC
 				if msg.Msg != "" {
 					textPickItem = fmt.Sprintf("%s Pick an item", msg.Msg)
 				}
-				if len(msg.Opts) > 0 {
+				if len(msg.Opt) > 0 {
 					// create select menu
 					options := []discordgo.SelectMenuOption{}
-					for _, v := range msg.Opts {
+					for _, v := range msg.Opt {
 						options = append(options, discordgo.SelectMenuOption{
 							Label: v.Name,
-							Value: fmt.Sprintf(`cuni;%s;%s;%s;%d`, i.ChannelID, userid, v.Value, v.ID),
+							Value: fmt.Sprintf(`cuni;%s;%s;%s;%d`, i.ChannelID, userid, v.Name, v.ID),
 						})
 					}
 					selectMenu := discordgo.SelectMenu{

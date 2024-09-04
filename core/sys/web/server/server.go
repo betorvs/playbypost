@@ -6,6 +6,7 @@ import (
 	"log/slog"
 	"net/http"
 
+	"github.com/betorvs/playbypost/core/sys/web/types"
 	"github.com/betorvs/playbypost/ui"
 )
 
@@ -86,7 +87,8 @@ func (s *SvrWeb) ErrJSON(w http.ResponseWriter, code int, msg string) {
 	w.Header().Set("Access-Control-Request-Method", "GET, POST, DELETE, PUT, OPTIONS")
 	w.WriteHeader(code)
 
-	message := fmt.Sprintf("{\"msg\":\"%s\"}", msg)
+	// message := fmt.Sprintf("{\"msg\":\"%s\"}", msg)
+	message := types.Msg{Msg: msg}
 	fmt.Fprint(w, message)
 }
 
