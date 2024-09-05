@@ -67,3 +67,20 @@ func (c *Cli) StartStage(stageID int, channelID string) ([]byte, error) {
 	res, err := c.postGeneric(start, body)
 	return res, err
 }
+
+func (c *Cli) AssignTask(text string, stageID, taskID, storytellerID, encounterID int) ([]byte, error) {
+	s := types.RunningTask{
+		StageID:       stageID,
+		TaskID:        taskID,
+		StorytellerID: storytellerID,
+		EncounterID:   encounterID,
+		Text:          text,
+	}
+	body, err := json.Marshal(s)
+	if err != nil {
+		return []byte{}, err
+	}
+	task := fmt.Sprintf("%s/encounter/task", stage)
+	res, err := c.postGeneric(task, body)
+	return res, err
+}

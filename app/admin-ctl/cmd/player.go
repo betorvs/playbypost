@@ -73,7 +73,7 @@ var playerCmd = &cobra.Command{
 				app.Logger.Error("stage not found", "stage-title", stageTitle)
 				os.Exit(1)
 			}
-			body, err := app.Web.GeneratePlayer(name, playerID, storyID)
+			body, err := app.Web.GeneratePlayer(name, "", playerID, storyID)
 			if err != nil {
 				app.Logger.Error("generate player error", "error", err.Error())
 				os.Exit(1)
@@ -91,7 +91,7 @@ var playerCmd = &cobra.Command{
 				app.Logger.Error("all parameters are required")
 				os.Exit(2)
 			}
-			body, err := app.Web.GeneratePlayer(name, playerID, storyID)
+			body, err := app.Web.GeneratePlayer(name, "", playerID, storyID)
 			if err != nil {
 				app.Logger.Error("generate player error", "error", err.Error())
 				os.Exit(1)
