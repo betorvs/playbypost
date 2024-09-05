@@ -75,9 +75,9 @@ func (a MainApi) ExecuteCommand(w http.ResponseWriter, r *http.Request) {
 			msg = fmt.Sprintf("Storyteller '%s' ", runningStage.Stage.UserID)
 		}
 		// parse options
-		encOptions := parser.ParserOptions(storyteller, runningStage)
+		opts := parser.ParserOptions(storyteller, runningStage)
 
-		composed := types.Composed{Msg: msg, Opt: encOptions}
+		composed := types.Composed{Msg: msg, Opts: opts}
 		a.logger.Info("msg back", "composed", composed)
 		a.s.JSON(w, composed)
 		return

@@ -8,7 +8,7 @@ import (
 )
 
 const (
-	chat string = "info"
+	info string = "info"
 )
 
 func (c *Cli) AddChatInformation(userid, username, channel, chat string) ([]byte, error) {
@@ -22,12 +22,13 @@ func (c *Cli) AddChatInformation(userid, username, channel, chat string) ([]byte
 	if err != nil {
 		return []byte{}, err
 	}
-	res, err := c.postGeneric(chat, body)
+	fmt.Println(chat)
+	res, err := c.postGeneric(info, body)
 	return res, err
 }
 
 func (c *Cli) GetChatInformation() ([]types.ChatInfo, error) {
-	users := fmt.Sprintf("%s/%s", chat, "users")
+	users := fmt.Sprintf("%s/%s", info, "users")
 	body, err := c.getGeneric(users)
 	if err != nil {
 		return []types.ChatInfo{}, err

@@ -2,6 +2,7 @@ package parser
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/betorvs/playbypost/core/sys/web/types"
 )
@@ -21,25 +22,25 @@ const (
 	Task                      = "task"
 )
 
-func ParserOptions(storyteller bool, running types.RunningStage) []types.GenericIDName {
-	encOptions := []types.GenericIDName{}
+func ParserOptions(storyteller bool, running types.RunningStage) []types.Options {
+	opts := []types.Options{}
 
 	if storyteller {
 		// storyteller options
 		if len(running.Encounter.NPC) > 0 {
 			if running.Encounter.InitiativeID == 0 {
-				encOptions = append(encOptions, types.GenericIDName{ID: running.Stage.StorytellerID, Name: fmt.Sprintf("%s:%d", RollInitiative, running.Encounter.ID)})
+				opts = append(opts, types.Options{ID: running.Stage.StorytellerID, Name: strings.ToTitle(RollInitiative), Value: fmt.Sprintf("%s:%d", RollInitiative, running.Encounter.ID)})
 				for _, v := range running.Encounter.NPC {
-					encOptions = append(encOptions, types.GenericIDName{ID: v.ID, Name: fmt.Sprintf("%s:%s", ActAsNPC, v.Name)})
+					opts = append(opts, types.Options{ID: v.ID, Name: strings.ToTitle(ActAsNPC), Value: fmt.Sprintf("%s-%s:%d", ActAsNPC, v.Name, v.ID)})
 				}
 			} else {
-				encOptions = append(encOptions, types.GenericIDName{ID: running.Encounter.InitiativeID, Name: fmt.Sprintf("%s:%d", CurrentInitiative, running.Encounter.ID)})
+				opts = append(opts, types.Options{ID: running.Encounter.InitiativeID, Name: strings.ToTitle(CurrentInitiative), Value: fmt.Sprintf("%s:%d", CurrentInitiative, running.Encounter.ID)})
 				for _, v := range running.Encounter.NPC {
 					for _, p := range running.Encounter.PC {
-						encOptions = append(encOptions, types.GenericIDName{ID: v.ID, Name: fmt.Sprintf("%s-%s-npc-%s:%d", AttackPlayer, p.Name, v.Name, p.ID)})
+						opts = append(opts, types.Options{ID: v.ID, Name: strings.ToTitle(fmt.Sprintf("%s %s", AttackPlayer, p.Name)), Value: fmt.Sprintf("%s-%s-npc-%s:%d", AttackPlayer, p.Name, v.Name, p.ID)})
 					}
 					// healt status for npc
-					encOptions = append(encOptions, types.GenericIDName{ID: v.ID, Name: fmt.Sprintf("%s-npc-%s:%d", HealthStatus, v.Name, v.ID)})
+					opts = append(opts, types.Options{ID: v.ID, Name: strings.ToTitle(fmt.Sprintf("%s %s", HealthStatus, v.Name)), Value: fmt.Sprintf("%s-npc-%s:%d", HealthStatus, v.Name, v.ID)})
 				}
 			}
 
@@ -47,32 +48,32 @@ func ParserOptions(storyteller bool, running types.RunningStage) []types.Generic
 		if len(running.Encounters) > 0 {
 			for _, v := range running.Encounters {
 				p := types.PhaseAtoi(v.Phase)
-				encOptions = append(encOptions, types.GenericIDName{ID: v.ID, Name: fmt.Sprintf("%s:%d", changeEncounterText(p.NextPhase().String()), v.ID)})
+				opts = append(opts, types.Options{ID: v.ID, Name: strings.ToTitle(changeEncounterText(p.NextPhase().String())), Value: fmt.Sprintf("%s:%d", changeEncounterText(p.NextPhase().String()), v.ID)})
 			}
 		}
 		p := types.PhaseAtoi(running.Encounter.Phase)
 		if p == types.Running {
-			encOptions = append(encOptions, types.GenericIDName{ID: running.Encounter.ID, Name: fmt.Sprintf("%s:%d", changeEncounterText(p.NextPhase().String()), running.Encounter.ID)})
+			opts = append(opts, types.Options{ID: running.Encounter.ID, Name: strings.ToTitle(changeEncounterText(p.NextPhase().String())), Value: fmt.Sprintf("%s:%d", changeEncounterText(p.NextPhase().String()), running.Encounter.ID)})
 		}
-		return encOptions
+		return opts
 	}
 	// player options
 	count := len(running.Encounter.Options)
 	if count > 0 {
 		for _, v := range running.Encounter.Options {
-			encOptions = append(encOptions, types.GenericIDName{ID: v.ID, Name: fmt.Sprintf("%s-%s:%d", Task, v.Name, v.ID)})
+			opts = append(opts, types.Options{ID: v.ID, Name: strings.ToTitle(fmt.Sprintf("%s %s", Task, v.Name)), Value: fmt.Sprintf("%s-%s:%d", Task, v.Name, v.ID)})
 		}
 	}
 	if running.Encounter.InitiativeID != 0 {
 		for _, v := range running.Encounter.NPC {
-			encOptions = append(encOptions, types.GenericIDName{ID: v.ID, Name: fmt.Sprintf("%s-%s:%d", AttackNPC, v.Name, v.ID)})
+			opts = append(opts, types.Options{ID: v.ID, Name: strings.ToTitle(fmt.Sprintf("%s %s", AttackNPC, v.Name)), Value: fmt.Sprintf("%s-%s:%d", AttackNPC, v.Name, v.ID)})
 		}
-		encOptions = append(encOptions, types.GenericIDName{ID: running.Encounter.InitiativeID, Name: fmt.Sprintf("%s:%d", CurrentInitiative, running.Encounter.ID)})
+		opts = append(opts, types.Options{ID: running.Encounter.InitiativeID, Name: strings.ToTitle(CurrentInitiative), Value: fmt.Sprintf("%s:%d", CurrentInitiative, running.Encounter.ID)})
 		// health status for player
-		encOptions = append(encOptions, types.GenericIDName{ID: running.Encounter.InitiativeID, Name: fmt.Sprintf("%s-%s:%d", HealthStatus, running.Players.Name, running.Encounter.InitiativeID)})
+		opts = append(opts, types.Options{ID: running.Encounter.InitiativeID, Name: strings.ToTitle(fmt.Sprintf("%s %s", HealthStatus, running.Players.Name)), Value: fmt.Sprintf("%s-%s:%d", HealthStatus, running.Players.Name, running.Encounter.InitiativeID)})
 	}
 
-	return encOptions
+	return opts
 }
 
 func changeEncounterText(phase string) string {

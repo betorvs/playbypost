@@ -24,6 +24,7 @@ func (a MainApi) AddChatInfo(w http.ResponseWriter, r *http.Request) {
 		a.s.ErrJSON(w, http.StatusBadRequest, "empty body")
 		return
 	}
+	a.logger.Info("chat info received", "username", obj.Username, "userid", obj.UserID, "channel", obj.Channel, "chat", obj.Chat)
 	_, err = a.db.AddChatInformation(a.ctx, obj.Username, obj.UserID, obj.Channel, obj.Chat)
 	if err != nil {
 		pgErr, ok := err.(*pq.Error)

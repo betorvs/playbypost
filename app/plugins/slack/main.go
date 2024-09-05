@@ -163,18 +163,19 @@ func (a *app) middlewareEventsAPI(evt *socketmode.Event, client *socketmode.Clie
 				if err != nil {
 					a.logger.Error("error adding user info", "error", err.Error())
 					attachment.Text = fmt.Sprintf("Sorry, it did not work %s", user.Profile.RealName)
-				}
-				a.logger.Info("user join to playbypost", "username", user.Profile.RealName)
-				var msg types.Msg
-				err = json.Unmarshal(body, &msg)
-				if err != nil {
-					a.logger.Error("error json unmarshal", "error", err.Error())
-				}
-				if strings.Contains(msg.Msg, "already added") {
-					attachment.Text = fmt.Sprintf("Already subscribed. Great, %s", user.Profile.RealName)
-				}
-				if strings.EqualFold(msg.Msg, "added") {
-					attachment.Text = fmt.Sprintf("Let's play %s", user.Profile.RealName)
+				} else {
+					a.logger.Info("user join to playbypost", "username", user.Profile.RealName)
+					var msg types.Msg
+					err = json.Unmarshal(body, &msg)
+					if err != nil {
+						a.logger.Error("error json unmarshal", "error", err.Error())
+					}
+					if strings.Contains(msg.Msg, "already added") {
+						attachment.Text = fmt.Sprintf("Already subscribed. Great, %s", user.Profile.RealName)
+					}
+					if strings.EqualFold(msg.Msg, "added") {
+						attachment.Text = fmt.Sprintf("Let's play %s", user.Profile.RealName)
+					}
 				}
 
 			}
@@ -228,17 +229,17 @@ func (a *app) middlewareSlashCommand(evt *socketmode.Event, client *socketmode.C
 		if msg.Msg != "" {
 			textPickItem = fmt.Sprintf("%s Pick an item", msg.Msg)
 		}
-		if len(msg.Opt) > 0 {
+		if len(msg.Opts) > 0 {
 			a.logger.Info(fmt.Sprintf("options: %v", msg.Opt))
 			options := []*slack.OptionBlockObject{}
-			for _, v := range msg.Opt {
+			for _, v := range msg.Opts {
 				options = append(options, &slack.OptionBlockObject{
 					Text: &slack.TextBlockObject{
 						Type:  "plain_text",
 						Text:  v.Name,
 						Emoji: true,
 					},
-					Value: fmt.Sprintf(`cuni;%s;%s;%s;%d`, cmd.ChannelID, cmd.UserID, v.Name, v.ID),
+					Value: fmt.Sprintf(`cuni;%s;%s;%s;%d`, cmd.ChannelID, cmd.UserID, v.Value, v.ID),
 				})
 			}
 			payload := map[string]interface{}{

@@ -59,7 +59,7 @@ func (db *DBX) GetStageByStoryID(ctx context.Context, id int) ([]types.Stage, er
 
 func (db *DBX) GetStageByStageID(ctx context.Context, id int) (types.StageAggregated, error) {
 	aggr := types.StageAggregated{}
-	query := "SELECT sa.id, sa.display_text, sa.story_id, sa.storyteller_id, sa.encoding_key, sy.title, sy.announcement, sy.notes, sy.writer_id, u.userid, sc.channel, sc.active FROM stage AS sa JOIN story AS sy ON sa.story_id = sy.id JOIN users AS u ON sa.storyteller_id = u.id LEFT JOIN stage_channel AS sc ON sc.stage_id = sa.id WHERE sa.id = $1 AND WHERE sa.finished = false"
+	query := "SELECT sa.id, sa.display_text, sa.story_id, sa.storyteller_id, sa.encoding_key, sy.title, sy.announcement, sy.notes, sy.writer_id, u.userid, sc.channel, sc.active FROM stage AS sa JOIN story AS sy ON sa.story_id = sy.id JOIN users AS u ON sa.storyteller_id = u.id LEFT JOIN stage_channel AS sc ON sc.stage_id = sa.id WHERE sa.id = $1 AND sa.finished = false"
 	rows, err := db.Conn.QueryContext(ctx, query, id)
 	if err != nil {
 		db.Logger.Error("query on stage failed", "error", err.Error())
