@@ -10,7 +10,7 @@ on:
 jobs:
   # https://github.com/golangci/golangci-lint-action 
   test:
-    name: lint-unit-test
+    name: on-push-tests
     runs-on: ubuntu-latest
     # Service containers to run with `container-job`
     services:

@@ -92,6 +92,6 @@ type DBClient interface {
 	CreateAutoPlayChannelTx(ctx context.Context, channelID, userID string, autoPlayID int) (int, error)
 	RegisterActivitiesAutoPlay(ctx context.Context, autoPlayID, encounterID int, actions types.Actions) error
 	UpdateProcessedAutoPlay(ctx context.Context, id int, processed bool, actions types.Actions) error
-	UpdateAutoPlayState(ctx context.Context, autoPlayID int, encounterID int) error
+	UpdateAutoPlayState(ctx context.Context, autoPlayChannel string, encounterID int) error
 	CloseAutoPlayChannel(ctx context.Context, channelID string, autoPlayID int) error
 }

@@ -110,7 +110,7 @@ func (a *WorkerAPI) parseAutoPlayCommand(cmd types.AutoPlayActivities) error {
 		}
 
 		// register encounter used
-		err = a.db.UpdateAutoPlayState(a.ctx, cmd.AutoPlayID, cmd.EncounterID)
+		err = a.db.UpdateAutoPlayState(a.ctx, cmd.Actions["channel"], cmd.EncounterID)
 		if err != nil {
 			a.logger.Error("error updating auto play state", "error", err.Error())
 			return err
@@ -128,7 +128,7 @@ func (a *WorkerAPI) parseAutoPlayCommand(cmd types.AutoPlayActivities) error {
 		}
 
 		// register encounter used
-		err = a.db.UpdateAutoPlayState(a.ctx, cmd.AutoPlayID, cmd.EncounterID)
+		err = a.db.UpdateAutoPlayState(a.ctx, cmd.Actions["channel"], cmd.EncounterID)
 		if err != nil {
 			a.logger.Error("error updating auto play state", "error", err.Error())
 			return err

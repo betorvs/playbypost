@@ -199,6 +199,42 @@ entity "stage_channel" as e20 {
   *stage_id : number <<FK>>
 }
 
+entity "auto_play" as e21 {
+  *id : number <<generated>>
+  --
+  *story_id: number <<FK>>
+}
+
+entity "auto_play_next_encounter" as e22 {
+  *id : number <<generated>>
+  -- 
+  *auto_play_id: number <<FK>>
+  *current_encounter_id: number <<FK>>
+  *next_encounter_id: number <<FK>>
+}
+entity "auto_play_encounter_activities" as e23 {
+  *id : number <<generated>>
+  --
+  *auto_play_id: number <<FK>>
+  *encounter_id: number <<FK>>
+}
+entity "auto_play_channel" as e24 {
+  *id : number <<generated>>
+  -- 
+  *auto_play_id: number <<FK>>
+}
+entity "auto_play_group" as e25 {
+  *id : number <<generated>>
+  -- 
+  *auto_play_channel_id: number <<FK>>
+}
+entity "auto_play_state" as e26 {
+  *id : number <<generated>>
+  -- 
+  *auto_play_channel_id: number <<FK>>
+  *encounter_id: number <<FK>>
+}
+
 e01 ||..|{ e02
 e01 ||..|{ e04
 e01 ||..|{ e05
@@ -240,6 +276,13 @@ e18 ||..|| e11
 e18 ||..|{ e19
 
 e10 ||..|| e20
+
+e21 ||..|| e02
+e22 ||..|{ e05
+e23 ||..|| e05
+e24 ||..|| e21
+e25 ||..|| e24
+e26 ||..|| e24
 
 @enduml
 ```

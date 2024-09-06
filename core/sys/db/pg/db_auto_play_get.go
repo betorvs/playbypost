@@ -96,7 +96,13 @@ func (db *DBX) GetNextEncounterByStoryID(ctx context.Context, storyID int) (type
 func (db *DBX) GetAutoPlayOptionsByChannelID(ctx context.Context, channelID, userID string) (types.AutoPlayOptions, error) {
 	var autoPlay types.AutoPlayOptions
 
-	query := "SELECT ap.id, ap.display_text, ap.story_id, ap.solo, ap.encoding_key, ac.id AS auto_play_channel_id, ac.channel AS channel_id, apg.id, apg.user_id, apne.id, apne.auto_play_id, apne.display_text, apne.current_encounter_id, apne.next_encounter_id FROM auto_play_channel AS ac JOIN auto_play AS ap ON ap.id = ac.auto_play_id JOIN auto_play_state AS aps ON aps.auto_play_id = ap.id JOIN auto_play_group AS apg ON apg.auto_play_id = ap.id JOIN auto_play_next_encounter AS apne ON apne.auto_play_id = ap.id WHERE ac.active = 'true' AND apg.active = 'true' AND aps.active = 'true' AND apne.current_encounter_id = aps.encounter_id AND ac.channel = $1"
+	query := `SELECT ap.id, ap.display_text, ap.story_id, ap.solo, ap.encoding_key, ac.id AS auto_play_channel_id, ac.channel AS channel_id, apg.id, apg.user_id, apne.id, apne.auto_play_id, apne.display_text, apne.current_encounter_id, apne.next_encounter_id 
+	FROM auto_play_channel AS ac 
+	JOIN auto_play AS ap ON ap.id = ac.auto_play_id 
+	JOIN auto_play_state AS aps ON aps.auto_play_channel_id = ac.id 
+	JOIN auto_play_group AS apg ON apg.auto_play_channel_id = ac.id 
+	JOIN auto_play_next_encounter AS apne ON apne.auto_play_id = ap.id 
+	WHERE ac.active = 'true' AND apg.active = 'true' AND aps.active = 'true' AND apne.current_encounter_id = aps.encounter_id AND ac.channel = $1`
 	rows, err := db.Conn.QueryContext(ctx, query, channelID)
 	if err != nil {
 		db.Logger.Error("query on auto_play_channel by channel_id failed", "error", err.Error())
