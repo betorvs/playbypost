@@ -25,8 +25,8 @@ type WorkerAPI struct {
 	client         *cli.Cli
 	rpg            *rpg.RPGSystem
 	autoPlay       *rpg.RPGSystem
-	AutoPlaySync   *sync.Mutex
-	StageSync      *sync.Mutex
+	autoPlaySync   *sync.Mutex
+	stageSync      *sync.Mutex
 }
 
 func NewWorkerAPI(ctx context.Context, dice rpg.Roll, db db.DBClient, l *slog.Logger, client *cli.Cli, rpgSystem *rpg.RPGSystem, auto *rpg.RPGSystem) *WorkerAPI {
@@ -38,14 +38,14 @@ func NewWorkerAPI(ctx context.Context, dice rpg.Roll, db db.DBClient, l *slog.Lo
 		client:       client,
 		rpg:          rpgSystem,
 		autoPlay:     auto,
-		AutoPlaySync: &sync.Mutex{},
-		StageSync:    &sync.Mutex{},
+		autoPlaySync: &sync.Mutex{},
+		stageSync:    &sync.Mutex{},
 	}
 }
 
 func (a *WorkerAPI) Execute() {
 	if a.StageActive {
-		a.StageSync.Lock()
+		a.stageSync.Lock()
 		a.logger.Info("starting scheduler worker api execution", "time", time.Now())
 		activities, err := a.db.GetStageEncounterActivities(a.ctx)
 		if err != nil {
@@ -64,10 +64,10 @@ func (a *WorkerAPI) Execute() {
 
 			}
 		}
-		a.StageSync.Unlock()
+		a.stageSync.Unlock()
 	}
 	if a.AutoPlayActive {
-		a.AutoPlaySync.Lock()
+		a.autoPlaySync.Lock()
 		a.logger.Info("starting scheduler auto play worker api execution", "time", time.Now())
 		activities, err := a.db.GetAutoPlayActivities(a.ctx)
 		if err != nil {
@@ -86,6 +86,6 @@ func (a *WorkerAPI) Execute() {
 
 			}
 		}
-		a.AutoPlaySync.Unlock()
+		a.autoPlaySync.Unlock()
 	}
 }
