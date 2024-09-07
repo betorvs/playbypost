@@ -1,7 +1,7 @@
 package types
 
 const (
-	ObjectiveDefault  = "free_will"
+	ObjectiveDefault  = "no_action"
 	ObjectiveDiceRoll = "dice_roll"
 	ObjectiveTaskOkay = "task_okay"
 	ObjectiveVictory  = "victory"
@@ -22,4 +22,8 @@ type Objective struct {
 	ID     int    `json:"id"`
 	Kind   string `json:"kind"`
 	Values []int  `json:"values"`
+}
+
+func Objectives() []string {
+	return []string{ObjectiveDefault, ObjectiveDiceRoll, ObjectiveTaskOkay, ObjectiveVictory}
 }

@@ -38,13 +38,7 @@ func (c *Cli) CreateAutoPlay(text string, storyID int, solo bool) ([]byte, error
 	return res, err
 }
 
-func (c *Cli) AddNextEncounter(autoPlayID, encounterID, nextEncounterID int, text string) ([]byte, error) {
-	a := types.AutoPlayNext{
-		AutoPlayID:      autoPlayID,
-		EncounterID:     encounterID,
-		NextEncounterID: nextEncounterID,
-		Text:            text,
-	}
+func (c *Cli) AddNextEncounter(a types.AutoPlayNext) ([]byte, error) {
 	body, err := json.Marshal(a)
 	if err != nil {
 		return []byte{}, err

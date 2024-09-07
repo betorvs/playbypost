@@ -38,5 +38,6 @@ var (
 	chatChannelID      string // cmd: chat
 	chatUserName       string // cmd: chat
 	random             bool   // cmd: db
-
+	objectiveKind      string // cmd: auto-play
+	objectiveValues    []int  // cmd: auto-play
 )

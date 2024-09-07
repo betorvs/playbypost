@@ -106,6 +106,7 @@ func (a MainApi) AddAutoPlayNext(w http.ResponseWriter, r *http.Request) {
 		obj.Objective.Kind = types.ObjectiveDefault
 		obj.Objective.Values = []int{0}
 	}
+	a.logger.Info("add auto play next", "obj", obj)
 	err = a.db.AddAutoPlayNext(a.ctx, obj)
 	if err != nil {
 		a.s.ErrJSON(w, http.StatusBadRequest, "error adding next encounter to encounter on database")

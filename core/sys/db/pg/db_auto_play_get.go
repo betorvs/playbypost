@@ -2,9 +2,11 @@ package pg
 
 import (
 	"context"
+	"database/sql"
 
 	"github.com/betorvs/playbypost/core/sys/web/types"
 	"github.com/betorvs/playbypost/core/utils"
+	"github.com/lib/pq"
 )
 
 func (db *DBX) GetAutoPlay(ctx context.Context) ([]types.AutoPlay, error) {
@@ -96,12 +98,17 @@ func (db *DBX) GetNextEncounterByStoryID(ctx context.Context, storyID int) (type
 func (db *DBX) GetAutoPlayOptionsByChannelID(ctx context.Context, channelID, userID string) (types.AutoPlayOptions, error) {
 	var autoPlay types.AutoPlayOptions
 
-	query := `SELECT ap.id, ap.display_text, ap.story_id, ap.solo, ap.encoding_key, ac.id AS auto_play_channel_id, ac.channel AS channel_id, apg.id, apg.user_id, apne.id, apne.auto_play_id, apne.display_text, apne.current_encounter_id, apne.next_encounter_id 
+	query := `SELECT ap.id, ap.display_text, ap.story_id, ap.solo, ap.encoding_key, 
+	ac.id AS auto_play_channel_id, ac.channel AS channel_id, 
+	apg.id, apg.user_id, apne.id, 
+	apne.auto_play_id, apne.display_text, apne.current_encounter_id, apne.next_encounter_id,
+	apno.kind, apno.values 
 	FROM auto_play_channel AS ac 
 	JOIN auto_play AS ap ON ap.id = ac.auto_play_id 
 	JOIN auto_play_state AS aps ON aps.auto_play_channel_id = ac.id 
 	JOIN auto_play_group AS apg ON apg.auto_play_channel_id = ac.id 
 	JOIN auto_play_next_encounter AS apne ON apne.auto_play_id = ap.id 
+	JOIN auto_play_next_objectives AS apno ON apno.auto_play_next_id = apne.id
 	WHERE ac.active = 'true' AND apg.active = 'true' AND aps.active = 'true' AND apne.current_encounter_id = aps.encounter_id AND ac.channel = $1`
 	rows, err := db.Conn.QueryContext(ctx, query, channelID)
 	if err != nil {
@@ -112,8 +119,16 @@ func (db *DBX) GetAutoPlayOptionsByChannelID(ctx context.Context, channelID, use
 	for rows.Next() {
 		var group types.AutoPlayGroup
 		var next types.AutoPlayNext
-		if err := rows.Scan(&autoPlay.AutoPlay.ID, &autoPlay.AutoPlay.Text, &autoPlay.AutoPlay.StoryID, &autoPlay.AutoPlay.Solo, &autoPlay.EncodingKey, &autoPlay.AutoPlayChannelID, &autoPlay.ChannelID, &group.ID, &group.UserID, &next.ID, &next.AutoPlayID, &next.Text, &next.EncounterID, &next.NextEncounterID); err != nil {
+		var values []sql.NullInt64
+		if err := rows.Scan(&autoPlay.AutoPlay.ID, &autoPlay.AutoPlay.Text, &autoPlay.AutoPlay.StoryID, &autoPlay.AutoPlay.Solo, &autoPlay.EncodingKey, &autoPlay.AutoPlayChannelID, &autoPlay.ChannelID, &group.ID, &group.UserID, &next.ID, &next.AutoPlayID, &next.Text, &next.EncounterID, &next.NextEncounterID, &next.Objective.Kind, pq.Array(&values)); err != nil {
 			db.Logger.Error("scan error on auto_play_channel by channel_id ", "error", err.Error())
+		}
+		if len(values) > 0 {
+			for _, v := range values {
+				if v.Valid {
+					next.Objective.Values = append(next.Objective.Values, int(v.Int64))
+				}
+			}
 		}
 		if group.UserID == userID {
 			autoPlay.Group = append(autoPlay.Group, group)

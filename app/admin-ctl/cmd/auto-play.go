@@ -5,7 +5,9 @@ package cmd
 
 import (
 	"encoding/json"
+	"fmt"
 	"os"
+	"slices"
 
 	"github.com/betorvs/playbypost/core/sys/web/types"
 	"github.com/spf13/cobra"
@@ -39,7 +41,19 @@ var autoPlayCmd = &cobra.Command{
 			app.Logger.Info(msg.Msg, "text", displayText)
 
 		case "next":
-			body, err := app.Web.AddNextEncounter(autoPlayID, encounterID, nextEncounterID, displayText)
+			next := types.AutoPlayNext{
+				AutoPlayID:      autoPlayID,
+				EncounterID:     encounterID,
+				NextEncounterID: nextEncounterID,
+				Text:            displayText,
+			}
+			if objectiveKind != "" && slices.Contains(types.Objectives(), objectiveKind) {
+				next.Objective.Kind = objectiveKind
+				if len(objectiveValues) > 0 {
+					next.Objective.Values = objectiveValues
+				}
+			}
+			body, err := app.Web.AddNextEncounter(next)
 			if err != nil {
 				app.Logger.Error("autoPlay next error", "error", err.Error())
 				os.Exit(1)
@@ -67,7 +81,19 @@ var autoPlayCmd = &cobra.Command{
 				app.Logger.Error("next encounter not found", "title", nextEncounterTitle)
 				os.Exit(1)
 			}
-			body, err := app.Web.AddNextEncounter(autoPlayID, encounterID, nextEncounterID, displayText)
+			next := types.AutoPlayNext{
+				AutoPlayID:      autoPlayID,
+				EncounterID:     encounterID,
+				NextEncounterID: nextEncounterID,
+				Text:            displayText,
+			}
+			if objectiveKind != "" && slices.Contains(types.Objectives(), objectiveKind) {
+				next.Objective.Kind = objectiveKind
+				if len(objectiveValues) > 0 {
+					next.Objective.Values = objectiveValues
+				}
+			}
+			body, err := app.Web.AddNextEncounter(next)
 			if err != nil {
 				app.Logger.Error("autoPlay next by title error", "error", err.Error())
 				os.Exit(1)
@@ -94,5 +120,6 @@ func init() {
 	autoPlayCmd.Flags().IntVar(&nextEncounterID, "next-encounter-id", 0, "next encounter id")
 	autoPlayCmd.Flags().StringVar(&nextEncounterTitle, "next-encounter", "", "next encounter name")
 	autoPlayCmd.Flags().StringVar(&encounterTitle, "encounter", "", "next encounter title")
-
+	autoPlayCmd.Flags().StringVar(&objectiveKind, "objective-kind", "", fmt.Sprintf("objective kind: %v", types.Objectives()))
+	autoPlayCmd.Flags().IntSliceVar(&objectiveValues, "objective-values", []int{}, "objective values")
 }

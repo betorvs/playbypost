@@ -410,14 +410,18 @@ func (a *app) middlewareInteractive(evt *socketmode.Event, client *socketmode.Cl
 	}
 
 	a.logger.Info("value received", "option", option)
-	//
+	// check if command or solo
+	startOpt := "cmd"
+	if strings.Contains(option, "solo") {
+		startOpt = "choice"
+	}
 	var userid, text, channel, display string
 	splitted := strings.Split(option, ";")
 	a.logger.Info("splitted", "values", splitted, "len", len(splitted))
 	if len(splitted) == 5 {
 		channel = splitted[1]
 		userid = splitted[2]
-		text = fmt.Sprintf("cmd;%s;%s", splitted[3], splitted[4])
+		text = fmt.Sprintf("%s;%s;%s", startOpt, splitted[3], splitted[4])
 		display = splitted[3]
 	}
 	a.logger.Info("values", "userid", userid, "text", text, "channel", channel)

@@ -56,7 +56,7 @@ func (a MainApi) ExecuteCommand(w http.ResponseWriter, r *http.Request) {
 
 		composed := types.Composed{Msg: "Solo next options"}
 		if len(opt.NextEncounters) > 0 {
-			opts := parser.ParserAutoPlaysNext(opt.NextEncounters)
+			opts, _ := parser.ParserAutoPlaysNext(opt.NextEncounters)
 			a.logger.Info("auto play found", "opts", opts)
 			composed.Opts = opts
 		}
@@ -179,6 +179,16 @@ func (a MainApi) ExecuteCommand(w http.ResponseWriter, r *http.Request) {
 
 		case strings.HasPrefix(cmd.Act, parser.NextSolo):
 			// {ID:8 Act:next-solo-for-A-go-enc-2 Text:choice;next-solo-for-A-go-enc-2:8;1 NF:1}"
+			actions["auto_play_id"] = strconv.Itoa(cmd.NF)
+			actions["encounter_id"] = strconv.Itoa(cmd.ID)
+			err = a.db.RegisterActivitiesAutoPlay(a.ctx, cmd.NF, cmd.ID, actions)
+			if err != nil {
+				a.s.ErrJSON(w, http.StatusBadRequest, "register activities auto play")
+				return
+			}
+
+		case strings.HasPrefix(cmd.Act, parser.DiceRollSolo):
+			//
 			actions["auto_play_id"] = strconv.Itoa(cmd.NF)
 			actions["encounter_id"] = strconv.Itoa(cmd.ID)
 			err = a.db.RegisterActivitiesAutoPlay(a.ctx, cmd.NF, cmd.ID, actions)
