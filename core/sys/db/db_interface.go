@@ -41,7 +41,7 @@ type DBClient interface {
 	GetStageEncounterActivitiesByEncounterID(ctx context.Context, id int) ([]types.StageEncounterActivities, error)
 	GetStageEncounterActivities(ctx context.Context) ([]types.StageEncounterActivities, error)
 	GetStageTaskFromRunningTaskID(ctx context.Context, taskID int) (types.Task, error)
-	GetCreatureFromParticipantsList(ctx context.Context, players []types.GenericIDName, npcs []types.GenericIDName, rpgSystem *rpg.RPGSystem) (map[int]*rules.Creature, map[int]*rules.Creature, error)
+	GetCreatureFromParticipantsList(ctx context.Context, players []types.Options, npcs []types.Options, rpgSystem *rpg.RPGSystem) (map[int]*rules.Creature, map[int]*rules.Creature, error)
 	GetNextEncounterByEncounterID(ctx context.Context, id int) (types.NextEncounter, error)
 	CreateStageTx(ctx context.Context, text, userid string, storyID int) (int, error)
 	AddChannelToStage(ctx context.Context, channel string, id int) (int, error)

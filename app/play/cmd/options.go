@@ -36,9 +36,9 @@ var optionsCmd = &cobra.Command{
 			os.Exit(1)
 		}
 		app.Logger.Info("post command works", "answer", msg.Msg)
-		if len(msg.Opt) > 0 {
-			app.Logger.Info("Options", "options", msg.Opt)
-			for _, v := range msg.Opt {
+		if len(msg.Opts) > 0 {
+			app.Logger.Info("Options", "options", msg.Opts)
+			for _, v := range msg.Opts {
 				fmt.Printf("Call: play exec '%s;%d'\n", v.Name, v.ID)
 			}
 		} else {

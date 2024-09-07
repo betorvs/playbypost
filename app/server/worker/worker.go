@@ -241,6 +241,7 @@ func (a *WorkerAPI) parseCommand(cmd types.StageEncounterActivities) error {
 			a.logger.Error("error getting next encounter by encounter id", "error", err.Error())
 			return err
 		}
+		// TODO: check future args column
 		if nextEncounter.NextEncounterID != 0 {
 			// change next encounter to started
 			err := a.db.UpdatePhase(a.ctx, nextEncounter.NextEncounterID, int(types.Started))

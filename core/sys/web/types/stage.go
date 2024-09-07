@@ -36,17 +36,12 @@ type EncounterAssociation struct {
 type StageEncounter struct {
 	Encounter
 	Phase         int
-	Text          string          `json:"text"`
-	StorytellerID int             `json:"storyteller_id,omitempty"`
-	InitiativeID  int             `json:"initiative_id"`
-	PC            []GenericIDName `json:"pc"`
-	NPC           []GenericIDName `json:"npc"`
-	Options       []GenericIDName `json:"options"`
-}
-
-type GenericIDName struct {
-	ID   int    `json:"id"`   // id is id from database: players and non_players tables
-	Name string `json:"name"` // any kind of string identifier
+	Text          string    `json:"text"`
+	StorytellerID int       `json:"storyteller_id,omitempty"`
+	InitiativeID  int       `json:"initiative_id"`
+	PC            []Options `json:"pc"`
+	NPC           []Options `json:"npc"`
+	Options       []Options `json:"options"`
 }
 
 type Participants struct {

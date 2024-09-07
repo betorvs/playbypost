@@ -81,7 +81,7 @@ func (db *DBX) GetNextEncounterByStoryID(ctx context.Context, storyID int) (type
 	}
 	defer rowsEncounter.Close()
 	for rowsEncounter.Next() {
-		var generic types.GenericIDName
+		var generic types.Options
 		if err := rowsEncounter.Scan(&generic.ID, &generic.Name); err != nil {
 			db.Logger.Error("scan error on encounters by story_id ", "error", err.Error())
 		}

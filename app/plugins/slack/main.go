@@ -230,7 +230,7 @@ func (a *app) middlewareSlashCommand(evt *socketmode.Event, client *socketmode.C
 			textPickItem = fmt.Sprintf("%s Pick an item", msg.Msg)
 		}
 		if len(msg.Opts) > 0 {
-			a.logger.Info(fmt.Sprintf("options: %v", msg.Opt))
+			a.logger.Info(fmt.Sprintf("options: %v", msg.Opts))
 			options := []*slack.OptionBlockObject{}
 			for _, v := range msg.Opts {
 				options = append(options, &slack.OptionBlockObject{
@@ -282,7 +282,7 @@ func (a *app) middlewareSlashCommand(evt *socketmode.Event, client *socketmode.C
 			textPickItem = fmt.Sprintf("%s Pick an item", msg.Msg)
 		}
 		if len(msg.Opts) > 0 {
-			a.logger.Info(fmt.Sprintf("options: %v", msg.Opt))
+			a.logger.Info(fmt.Sprintf("options: %v", msg.Opts))
 			options := []*slack.OptionBlockObject{}
 			for _, v := range msg.Opts {
 				options = append(options, &slack.OptionBlockObject{
@@ -334,7 +334,7 @@ func (a *app) middlewareSlashCommand(evt *socketmode.Event, client *socketmode.C
 			textPickItem = fmt.Sprintf("%s Pick an item", msg.Msg)
 		}
 		if len(msg.Opts) > 0 {
-			a.logger.Info(fmt.Sprintf("options: %v", msg.Opt))
+			a.logger.Info(fmt.Sprintf("options: %v", msg.Opts))
 			options := []*slack.OptionBlockObject{}
 			for _, v := range msg.Opts {
 				options = append(options, &slack.OptionBlockObject{

@@ -46,7 +46,7 @@ type AutoPlayNext struct {
 }
 
 type AutoPlayEncounterList struct {
-	EncounterList []GenericIDName             `json:"encounter_list"`
+	EncounterList []Options                   `json:"encounter_list"`
 	Link          []AutoPlayEncounterWithNext `json:"link"`
 }
 

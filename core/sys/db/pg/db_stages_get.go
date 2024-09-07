@@ -276,7 +276,7 @@ func (db *DBX) GetStageTaskFromRunningTaskID(ctx context.Context, taskID int) (t
 	return t, nil
 }
 
-func (db *DBX) GetCreatureFromParticipantsList(ctx context.Context, players []types.GenericIDName, npcs []types.GenericIDName, rpgSystem *rpg.RPGSystem) (map[int]*rules.Creature, map[int]*rules.Creature, error) {
+func (db *DBX) GetCreatureFromParticipantsList(ctx context.Context, players []types.Options, npcs []types.Options, rpgSystem *rpg.RPGSystem) (map[int]*rules.Creature, map[int]*rules.Creature, error) {
 	db.Logger.Info("GetCreatureFromParticipantsList", "players", players, "npcs", npcs)
 	// players
 	playersMap := map[int]*rules.Creature{}
@@ -361,8 +361,8 @@ func (db *DBX) GetNextEncounterByEncounterID(ctx context.Context, id int) (types
 }
 
 // stage_running_tasks
-func (db *DBX) getRunningTaskByEncounterID(ctx context.Context, id int) ([]types.GenericIDName, error) {
-	tasks := []types.GenericIDName{}
+func (db *DBX) getRunningTaskByEncounterID(ctx context.Context, id int) ([]types.Options, error) {
+	tasks := []types.Options{}
 	query := "select sa.display_text, sa.id from stage_running_tasks AS sa WHERE sa.stage_encounters_id = $1"
 	rows, err := db.Conn.QueryContext(ctx, query, id)
 	if err != nil {
@@ -371,7 +371,7 @@ func (db *DBX) getRunningTaskByEncounterID(ctx context.Context, id int) ([]types
 	}
 	defer rows.Close()
 	for rows.Next() {
-		var s types.GenericIDName
+		var s types.Options
 		if err := rows.Scan(&s.Name, &s.ID); err != nil {
 			db.Logger.Error("scan error on stage_running_tasks by encounter_id ", "error", err.Error())
 		}
@@ -440,9 +440,9 @@ func (db *DBX) getStageEncounterByEncounterID(ctx context.Context, id int, phase
 	return enc, nil
 }
 
-func (db *DBX) getParticipantsByStageEncounterID(ctx context.Context, id int) ([]types.GenericIDName, []types.GenericIDName, error) {
-	players := []types.GenericIDName{}
-	npcs := []types.GenericIDName{}
+func (db *DBX) getParticipantsByStageEncounterID(ctx context.Context, id int) ([]types.Options, []types.Options, error) {
+	players := []types.Options{}
+	npcs := []types.Options{}
 	query := "select sp.players_id, pl.character_name, pl.destroyed, snp.non_players_id, npc.npc_name, npc.destroyed from stage_encounters AS se LEFT JOIN stage_encounters_participants_players AS sp ON sp.stage_encounters_id = se.id LEFT JOIN players AS pl ON pl.id = sp.players_id LEFT JOIN stage_encounters_participants_non_players AS snp ON snp.stage_encounters_id = se.id LEFT JOIN non_players AS npc ON npc.id = snp.non_players_id WHERE se.ID = $1"
 	rows, err := db.Conn.QueryContext(ctx, query, id)
 	if err != nil {
@@ -450,8 +450,8 @@ func (db *DBX) getParticipantsByStageEncounterID(ctx context.Context, id int) ([
 		return players, npcs, err
 	}
 	defer rows.Close()
-	var p types.GenericIDName
-	var n types.GenericIDName
+	var p types.Options
+	var n types.Options
 	for rows.Next() {
 		var pcID, npcID sql.NullInt64
 		var pcName, npcName sql.NullString

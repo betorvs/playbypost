@@ -45,7 +45,7 @@ func (a MainApi) ExecuteCommand(w http.ResponseWriter, r *http.Request) {
 		return
 
 	case strings.HasPrefix(text, "solo-next"):
-		// start solo mode: requires channel id and user id
+		// solo next mode: requires channel id and user id
 		opt, err := a.getAutoPlayOptByChannelID(headerStoryChannel, headerUserID)
 		if err != nil {
 			a.logger.Error("no auto play found", "error", err.Error())
