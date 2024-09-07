@@ -224,12 +224,24 @@ func TestIntegration(t *testing.T) {
 			if k == fmt.Sprintf("%s-%s", "first encounter on story 2", random) {
 				// encounter 2 and 3
 				titleNext := fmt.Sprintf("%s-%s", "2 encounter on story 2", random)
-				_, err9 := h.AddNextEncounter(autoPlay1.ID, v.ID, autoPlayEncounters[titleNext].ID, "If you want A")
+				next := types.AutoPlayNext{
+					AutoPlayID:      autoPlay1.ID,
+					EncounterID:     v.ID,
+					NextEncounterID: autoPlayEncounters[titleNext].ID,
+					Text:            "If you want A",
+				}
+				_, err9 := h.AddNextEncounter(next)
 				if err9 != nil {
 					t.Error("error adding next encounter")
 				}
 				titleNext2 := fmt.Sprintf("%s-%s", "3 encounter on story 2", random)
-				_, err10 := h.AddNextEncounter(autoPlay1.ID, v.ID, autoPlayEncounters[titleNext2].ID, "If you want B")
+				next2 := types.AutoPlayNext{
+					AutoPlayID:      autoPlay1.ID,
+					EncounterID:     v.ID,
+					NextEncounterID: autoPlayEncounters[titleNext2].ID,
+					Text:            "If you want B",
+				}
+				_, err10 := h.AddNextEncounter(next2)
 				if err10 != nil {
 					t.Error("error adding next encounter")
 				}
@@ -237,7 +249,13 @@ func TestIntegration(t *testing.T) {
 			if k == fmt.Sprintf("%s-%s", "2 encounter on story 2", random) {
 				// encouter 4
 				titleNext := fmt.Sprintf("%s-%s", "4 encounter on story 2", random)
-				_, err11 := h.AddNextEncounter(autoPlay1.ID, v.ID, autoPlayEncounters[titleNext].ID, "moving forward with A")
+				next := types.AutoPlayNext{
+					AutoPlayID:      autoPlay1.ID,
+					EncounterID:     v.ID,
+					NextEncounterID: autoPlayEncounters[titleNext].ID,
+					Text:            "moving forward with A",
+				}
+				_, err11 := h.AddNextEncounter(next)
 				if err11 != nil {
 					t.Error("error adding next encounter")
 				}
@@ -245,7 +263,13 @@ func TestIntegration(t *testing.T) {
 			if k == fmt.Sprintf("%s-%s", "3 encounter on story 2", random) {
 				// encounter 5
 				titleNext := fmt.Sprintf("%s-%s", "bad end encounter on story 2", random)
-				_, err12 := h.AddNextEncounter(autoPlay1.ID, v.ID, autoPlayEncounters[titleNext].ID, "moving forward with B")
+				next := types.AutoPlayNext{
+					AutoPlayID:      autoPlay1.ID,
+					EncounterID:     v.ID,
+					NextEncounterID: autoPlayEncounters[titleNext].ID,
+					Text:            "moving forward with B",
+				}
+				_, err12 := h.AddNextEncounter(next)
 				if err12 != nil {
 					t.Error("error adding next encounter")
 				}
@@ -253,7 +277,13 @@ func TestIntegration(t *testing.T) {
 			if k == fmt.Sprintf("%s-%s", "4 encounter on story 2", random) {
 				// encounter 6
 				titleNext := fmt.Sprintf("%s-%s", "last encounter on story 2", random)
-				_, err13 := h.AddNextEncounter(autoPlay1.ID, v.ID, autoPlayEncounters[titleNext].ID, "go to end notes")
+				next := types.AutoPlayNext{
+					AutoPlayID:      autoPlay1.ID,
+					EncounterID:     v.ID,
+					NextEncounterID: autoPlayEncounters[titleNext].ID,
+					Text:            "go to end notes",
+				}
+				_, err13 := h.AddNextEncounter(next)
 				if err13 != nil {
 					t.Error("error adding next encounter")
 				}
