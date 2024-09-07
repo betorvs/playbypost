@@ -10,10 +10,11 @@ const (
 )
 
 type Event struct {
-	Channel string `json:"channel"`
-	UserID  string `json:"user_id"`
-	Message string `json:"message"`
-	Kind    string `json:"kind"`
+	Channel  string `json:"channel"`
+	UserID   string `json:"user_id"`
+	Message  string `json:"message"`
+	ImageURL string `json:"image_url"`
+	Kind     string `json:"kind"`
 }
 
 type Options struct {

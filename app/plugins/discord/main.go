@@ -511,6 +511,9 @@ func (a *app) events(w http.ResponseWriter, r *http.Request) {
 			attachment.Title = fmt.Sprintf("%s End", emoji)
 		}
 	}
+	if obj.ImageURL != "" {
+		attachment.Image = &discordgo.MessageEmbedImage{URL: obj.ImageURL}
+	}
 	res, err := a.session.ChannelMessageSendEmbed(obj.Channel, &attachment)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)

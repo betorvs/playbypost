@@ -498,6 +498,9 @@ func (a *app) events(w http.ResponseWriter, r *http.Request) {
 			attachment.Text = fmt.Sprintf("%s %s", emoji, obj.Message)
 		}
 	}
+	if obj.ImageURL != "" {
+		attachment.ImageURL = obj.ImageURL
+	}
 	switch {
 	case strings.ToLower(obj.UserID) == "all":
 		// send message to all in channel
