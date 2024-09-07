@@ -1,5 +1,12 @@
 package types
 
+const (
+	ObjectiveDefault  = "free_will"
+	ObjectiveDiceRoll = "dice_roll"
+	ObjectiveTaskOkay = "task_okay"
+	ObjectiveVictory  = "victory"
+)
+
 type Encounter struct {
 	ID             int    `json:"id,omitempty"`
 	Title          string `json:"title"`
@@ -9,4 +16,10 @@ type Encounter struct {
 	WriterID       int    `json:"writer_id"`
 	FirstEncounter bool   `json:"first_encounter"`
 	LastEncounter  bool   `json:"last_encounter"`
+}
+
+type Objective struct {
+	ID     int    `json:"id"`
+	Kind   string `json:"kind"`
+	Values []int  `json:"values"`
 }

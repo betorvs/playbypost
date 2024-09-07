@@ -235,6 +235,18 @@ entity "auto_play_state" as e26 {
   *encounter_id: number <<FK>>
 }
 
+entity "stage_next_objectives" as e27 {
+  *id: number <<generated>>
+  --
+  stage_next_id: number <<FK>>
+}
+
+entity "auto_play_next_objectives" as e28 {
+  *id: number <<generated>>
+  --
+  auto_play_next_id: number <<FK>>
+}
+
 e01 ||..|{ e02
 e01 ||..|{ e04
 e01 ||..|{ e05
@@ -283,6 +295,9 @@ e23 ||..|| e05
 e24 ||..|| e21
 e25 ||..|| e24
 e26 ||..|| e24
+
+e27 ||..|| e13
+e28 ||..|| e22
 
 @enduml
 ```

@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	"github.com/betorvs/playbypost/core/sys/web/types"
+	"github.com/lib/pq"
 )
 
 func (db *DBX) CreateStageTx(ctx context.Context, text, userid string, storyID int) (int, error) {
@@ -204,8 +205,8 @@ func (db *DBX) AddParticipants(ctx context.Context, encounterID int, npc bool, p
 }
 
 // stage_next_encounter
-func (db *DBX) AddNextEncounter(ctx context.Context, text string, stageID, encounterID, nextEncounterID int) error {
-	query := "INSERT INTO stage_next_encounter (display_text, stage_id, current_encounter_id, next_encounter_id) VALUES ($1, $2, $3, $4)"
+func (db *DBX) AddNextEncounter(ctx context.Context, next types.NextEncounter) error {
+
 	tx, err := db.Conn.BeginTx(ctx, nil)
 	if err != nil {
 		return err
@@ -217,18 +218,40 @@ func (db *DBX) AddNextEncounter(ctx context.Context, text string, stageID, encou
 			err = fmt.Errorf("rolling back transaction: %w", err)
 		}
 	}()
-
-	_, err = tx.ExecContext(ctx, query, text, stageID, encounterID, nextEncounterID)
+	query := "INSERT INTO stage_next_encounter (display_text, stage_id, current_encounter_id, next_encounter_id) VALUES ($1, $2, $3, $4) RETURNING id"
+	stmt, err := db.Conn.PrepareContext(ctx, query)
+	if err != nil {
+		db.Logger.Error("prepare insert into stage_next_encounter failed", "error", err.Error())
+		return err
+	}
+	defer stmt.Close()
+	var nextEncounterIDDB int
+	err = tx.StmtContext(ctx, stmt).QueryRow(next.Text, next.StageID, next.EncounterID, next.NextEncounterID).Scan(&nextEncounterIDDB)
 	if err != nil {
 		db.Logger.Error("error on insert into stage_next_encounter", "error", err.Error())
 		return err
 	}
-
+	db.Logger.Info("adding stage objectives", "nextEncounterIDDB", nextEncounterIDDB)
+	// insert into stage_next_objectives
+	queryObjectives := "INSERT INTO stage_next_objectives (stage_next_id, kind, values) VALUES ($1, $2, $3)"
+	stmtObjectives, err := db.Conn.PrepareContext(ctx, queryObjectives)
+	if err != nil {
+		db.Logger.Error("prepare insert into stage_next_objectives failed", "error", err.Error())
+		return err
+	}
+	defer stmtObjectives.Close()
+	var objectiveID int
+	err = tx.StmtContext(ctx, stmtObjectives).QueryRow(nextEncounterIDDB, next.Objective.Kind, pq.Array(next.Objective.Values)).Scan(&objectiveID)
+	if err != nil {
+		db.Logger.Error("error on insert into stage_next_objectives", "error", err.Error())
+		return err
+	}
 	// Commit the transaction.
 	if err = tx.Commit(); err != nil {
 		db.Logger.Error("error on commit stage_next_encounter", "error", err.Error())
 		return err
 	}
+	db.Logger.Info("stage next objective added", "id", objectiveID)
 	return nil
 }
 

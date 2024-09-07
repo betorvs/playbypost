@@ -38,11 +38,12 @@ func (a *AutoPlayGroup) Scan(value interface{}) error {
 }
 
 type AutoPlayNext struct {
-	ID              int    `json:"id"`
-	AutoPlayID      int    `json:"auto_play_id"`
-	EncounterID     int    `json:"encounter_id"`
-	NextEncounterID int    `json:"next_encounter_id"`
-	Text            string `json:"text"`
+	ID              int       `json:"id"`
+	AutoPlayID      int       `json:"auto_play_id"`
+	EncounterID     int       `json:"encounter_id"`
+	NextEncounterID int       `json:"next_encounter_id"`
+	Text            string    `json:"text"`
+	Objective       Objective `json:"objective"`
 }
 
 type AutoPlayEncounterList struct {

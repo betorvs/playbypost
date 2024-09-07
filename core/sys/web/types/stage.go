@@ -58,10 +58,11 @@ type RunningStage struct {
 }
 
 type NextEncounter struct {
-	StageID         int    `json:"stage_id"`
-	EncounterID     int    `json:"encounter_id"`
-	NextEncounterID int    `json:"next_encounter_id"`
-	Text            string `json:"text"`
+	StageID         int       `json:"stage_id"`
+	EncounterID     int       `json:"encounter_id"`
+	NextEncounterID int       `json:"next_encounter_id"`
+	Text            string    `json:"text"`
+	Objective       Objective `json:"objective"`
 }
 
 // RunningTask represents a task that is currently running.

@@ -108,6 +108,13 @@ CREATE TABLE stage_next_encounter (
   UNIQUE(display_text, current_encounter_id, next_encounter_id)
 );
 
+CREATE TABLE stage_next_objectives (
+  id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  stage_next_id int NOT NULL REFERENCES stage_next_encounter(id),
+  kind VARCHAR(50) NOT NULL,
+  values integer[]
+);
+
 CREATE TABLE stage_encounter_activities (
   id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   stage_id int NOT NULL REFERENCES stage(id),
@@ -185,6 +192,13 @@ CREATE TABLE auto_play_next_encounter (
   current_encounter_id int NOT NULL REFERENCES encounters(id),
   next_encounter_id int NOT NULL REFERENCES encounters(id),
   UNIQUE(display_text, current_encounter_id, next_encounter_id)
+);
+
+CREATE TABLE auto_play_next_objectives (
+  id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  auto_play_next_id int NOT NULL REFERENCES auto_play_next_encounter(id),
+  kind VARCHAR(50) NOT NULL,
+  values integer[]
 );
 
 CREATE TABLE auto_play_encounter_activities (

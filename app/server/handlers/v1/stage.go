@@ -280,7 +280,11 @@ func (a MainApi) AddNextEncounter(w http.ResponseWriter, r *http.Request) {
 		a.s.ErrJSON(w, http.StatusBadRequest, "next encounter id, encounter id and stage id cannot be empty")
 		return
 	}
-	err = a.db.AddNextEncounter(a.ctx, obj.Text, obj.StageID, obj.EncounterID, obj.NextEncounterID)
+	if obj.Objective.Kind == "" {
+		obj.Objective.Kind = types.ObjectiveDefault
+		obj.Objective.Values = []int{0}
+	}
+	err = a.db.AddNextEncounter(a.ctx, obj)
 	if err != nil {
 		a.s.ErrJSON(w, http.StatusBadRequest, "error adding next encounter to encounter on database")
 		return

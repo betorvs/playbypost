@@ -6,6 +6,7 @@ import (
 	"slices"
 
 	"github.com/betorvs/playbypost/core/sys/web/types"
+	"github.com/lib/pq"
 )
 
 // create auto play
@@ -59,7 +60,8 @@ func (db *DBX) CreateAutoPlayTx(ctx context.Context, text string, storyID int, s
 }
 
 // AddAutoPlayNextEncounter
-func (db *DBX) AddAutoPlayNext(ctx context.Context, text string, autoPlayID, encounterID, nextEncounterID int) error {
+// text string, autoPlayID, encounterID, nextEncounterID int,
+func (db *DBX) AddAutoPlayNext(ctx context.Context, next types.AutoPlayNext) error {
 
 	tx, err := db.Conn.BeginTx(ctx, nil)
 	if err != nil {
@@ -81,7 +83,7 @@ func (db *DBX) AddAutoPlayNext(ctx context.Context, text string, autoPlayID, enc
 	}
 	defer stmtEncounters.Close()
 	encountersID := []int{}
-	rows, err := tx.StmtContext(ctx, stmtEncounters).Query(autoPlayID)
+	rows, err := tx.StmtContext(ctx, stmtEncounters).Query(next.AutoPlayID)
 	if err != nil {
 		db.Logger.Error("query on encounters failed", "error", err.Error())
 		return err
@@ -99,25 +101,43 @@ func (db *DBX) AddAutoPlayNext(ctx context.Context, text string, autoPlayID, enc
 		db.Logger.Error("rows err on encounters", "error", err.Error())
 	}
 	// check if encounterID and nextEncounterID are in encountersID
-	if !slices.Contains(encountersID, encounterID) {
+	if !slices.Contains(encountersID, next.EncounterID) {
 		return fmt.Errorf("encounterID not found")
 	}
-	if !slices.Contains(encountersID, nextEncounterID) {
+	if !slices.Contains(encountersID, next.NextEncounterID) {
 		return fmt.Errorf("nextEncounterID not found")
 	}
 
-	query := "INSERT INTO auto_play_next_encounter (display_text, auto_play_id, current_encounter_id, next_encounter_id) VALUES ($1, $2, $3, $4)"
-	_, err = tx.ExecContext(ctx, query, text, autoPlayID, encounterID, nextEncounterID)
+	query := "INSERT INTO auto_play_next_encounter (display_text, auto_play_id, current_encounter_id, next_encounter_id) VALUES ($1, $2, $3, $4) RETURNING id"
+	stmt, err := db.Conn.PrepareContext(ctx, query)
+	if err != nil {
+		db.Logger.Error("tx prepare on auto_play_next_encounter failed", "error", err.Error())
+		return err
+	}
+	defer stmt.Close()
+	var nextEncounterIDDB int
+	err = tx.StmtContext(ctx, stmt).QueryRow(next.Text, next.AutoPlayID, next.EncounterID, next.NextEncounterID).Scan(&nextEncounterIDDB)
 	if err != nil {
 		db.Logger.Error("error on insert into auto_play_next_encounter", "error", err.Error())
 		return err
 	}
-
+	db.Logger.Info("adding auto play objectives", "nextEncounterIDDB", nextEncounterIDDB)
+	// insert into auto_play_next_objectives
+	query = "INSERT INTO auto_play_next_objectives (auto_play_next_id, kind, values) VALUES ($1, $2, $3)"
+	stmt, err = db.Conn.PrepareContext(ctx, query)
+	if err != nil {
+		db.Logger.Error("tx prepare on auto_play_next_objectives failed", "error", err.Error())
+		return err
+	}
+	defer stmt.Close()
+	var objectiveID int
+	err = tx.StmtContext(ctx, stmt).QueryRow(nextEncounterIDDB, next.Objective.Kind, pq.Array(next.Objective.Values)).Scan(&objectiveID)
 	// Commit the transaction.
 	if err = tx.Commit(); err != nil {
 		db.Logger.Error("error on commit auto_play_next_encounter", "error", err.Error())
 		return err
 	}
+	db.Logger.Info("auto play next objective added", "id", objectiveID)
 	return nil
 }
 
