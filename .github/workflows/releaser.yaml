@@ -31,8 +31,6 @@ jobs:
         uses: arduino/setup-task@v2 # v2.6.1
         with:
           version: 3.24.0
-      - name: Run Task tidy
-        run: task tidy
       - name: Run Task install ui deps
         run: task install_ui_deps
       - name: Run Task build_assets
