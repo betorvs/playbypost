@@ -1,0 +1,272 @@
+[
+    {
+        "name": "intelligence",
+        "display_name": "int",
+        "kind": "Ability",
+        "system": "D10HomeMade",
+        "base": "power",
+        "group": "mental"
+    },
+    {
+        "name": "wits",
+        "display_name": "wit",
+        "kind": "Ability",
+        "system": "D10HomeMade",
+        "base": "finesse",
+        "group": "mental"
+    },
+    {
+        "name": "resolve",
+        "display_name": "res",
+        "kind": "Ability",
+        "system": "D10HomeMade",
+        "base": "resistance",
+        "group": "mental"
+    },
+    {
+        "name": "strenght",
+        "display_name": "str",
+        "kind": "Ability",
+        "system": "D10HomeMade",
+        "base": "power",
+        "group": "physical"
+    },
+    {
+        "name": "dexterity",
+        "display_name": "dex",
+        "kind": "Ability",
+        "system": "D10HomeMade",
+        "base": "finesse",
+        "group": "physical"
+    },
+    {
+        "name": "stamina",
+        "display_name": "int",
+        "kind": "Ability",
+        "system": "D10HomeMade",
+        "base": "resistance",
+        "group": "physical"
+    },
+    {
+        "name": "presence",
+        "display_name": "pre",
+        "kind": "Ability",
+        "system": "D10HomeMade",
+        "base": "power",
+        "group": "social"
+    },
+    {
+        "name": "manipulation",
+        "display_name": "man",
+        "kind": "Ability",
+        "system": "D10HomeMade",
+        "base": "finesse",
+        "group": "social"
+    },
+    {
+        "name": "composture",
+        "display_name": "com",
+        "kind": "Ability",
+        "system": "D10HomeMade",
+        "base": "resistance",
+        "group": "social"
+    },
+    {
+        "name": "athletics",
+        "kind": "Skill",
+        "system": "D10HomeMade",
+        "base": "",
+        "group": "physical"
+    },
+    {
+        "name": "brawl",
+        "kind": "Skill",
+        "system": "D10HomeMade",
+        "base": "",
+        "tags": [
+            "combat", "auto-gen"
+        ],
+        "group": "physical"
+    },
+    {
+        "name": "drive",
+        "kind": "Skill",
+        "system": "D10HomeMade",
+        "base": "",
+        "tags": [
+            "auto-gen"
+        ],
+        "group": "physical"
+    },
+    {
+        "name": "firearms",
+        "kind": "Skill",
+        "system": "D10HomeMade",
+        "base": "",
+        "tags": [
+            "combat", "auto-gen"
+        ],
+        "group": "physical"
+    },
+    {
+        "name": "larceny",
+        "kind": "Skill",
+        "system": "D10HomeMade",
+        "base": "",
+        "group": "physical"
+    },
+    {
+        "name": "stealth",
+        "kind": "Skill",
+        "system": "D10HomeMade",
+        "base": "",
+        "group": "physical"
+    },
+    {
+        "name": "survival",
+        "kind": "Skill",
+        "system": "D10HomeMade",
+        "base": "",
+        "tags": [
+            "auto-gen"
+        ],
+        "group": "physical"
+    },
+    {
+        "name": "weaponry",
+        "kind": "Skill",
+        "system": "D10HomeMade",
+        "base": "",
+        "tags": [
+            "combat", "auto-gen"
+        ],
+        "group": "physical"
+    },
+    {
+        "name": "animal ken",
+        "kind": "Skill",
+        "system": "D10HomeMade",
+        "base": "",
+        "group": "social"
+    },
+    {
+        "name": "empathy",
+        "kind": "Skill",
+        "system": "D10HomeMade",
+        "base": "",
+        "tags": [
+            "auto-gen"
+        ],
+        "group": "social"
+    },
+    {
+        "name": "expression",
+        "kind": "Skill",
+        "system": "D10HomeMade",
+        "base": "",
+        "group": "social"
+    },
+    {
+        "name": "intimidation",
+        "kind": "Skill",
+        "system": "D10HomeMade",
+        "base": "",
+        "tags": [
+            "auto-gen"
+        ],
+        "group": "social"
+    },
+    {
+        "name": "persuasion",
+        "kind": "Skill",
+        "system": "D10HomeMade",
+        "base": "",
+        "group": "social"
+    },
+    {
+        "name": "socialize",
+        "kind": "Skill",
+        "system": "D10HomeMade",
+        "base": "",
+        "group": "social"
+    },
+    {
+        "name": "streetwise",
+        "kind": "Skill",
+        "system": "D10HomeMade",
+        "base": "",
+        "group": "social"
+    },
+    {
+        "name": "subterfuge",
+        "kind": "Skill",
+        "system": "D10HomeMade",
+        "base": "",
+        "tags": [
+            "auto-gen"
+        ],
+        "group": "social"
+    },
+    {
+        "name": "academics",
+        "kind": "Skill",
+        "system": "D10HomeMade",
+        "base": "",
+        "group": "mental"
+    },
+    {
+        "name": "crafts",
+        "kind": "Skill",
+        "system": "D10HomeMade",
+        "base": "",
+        "group": "mental"
+    },
+    {
+        "name": "computer",
+        "kind": "Skill",
+        "system": "D10HomeMade",
+        "base": "",
+        "tags": [
+            "auto-gen"
+        ],
+        "group": "mental"
+    },
+    {
+        "name": "investigation",
+        "kind": "Skill",
+        "system": "D10HomeMade",
+        "base": "",
+        "tags": [
+            "auto-gen"
+        ],
+        "group": "mental"
+    },
+    {
+        "name": "medicine",
+        "kind": "Skill",
+        "system": "D10HomeMade",
+        "base": "",
+        "group": "mental"
+    },
+    {
+        "name": "occult",
+        "kind": "Skill",
+        "system": "D10HomeMade",
+        "base": "",
+        "group": "mental"
+    },
+    {
+        "name": "politics",
+        "kind": "Skill",
+        "system": "D10HomeMade",
+        "base": "",
+        "group": "mental"
+    },
+    {
+        "name": "science",
+        "kind": "Skill",
+        "system": "D10HomeMade",
+        "base": "",
+        "group": "mental"
+    }
+]

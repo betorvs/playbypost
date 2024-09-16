@@ -1,0 +1,8 @@
+.DS_Store
+.env
+.env.task
+playbypost
+slack-plugin
+creds
+discord-plugin
+dist/

@@ -1,0 +1,74 @@
+name: on-push
+
+on:
+  push:
+    paths-ignore:
+      - "README.md"
+      - "docs/**"
+      - "library/**"
+
+jobs:
+  # https://github.com/golangci/golangci-lint-action 
+  test:
+    name: on-push-tests
+    runs-on: ubuntu-latest
+    # Service containers to run with `container-job`
+    services:
+      # Label used to access the service container
+      postgres:
+        # Docker Hub image
+        image: postgres
+        # Provide the password for postgres
+        env:
+          POSTGRES_PASSWORD: mypassword
+        # Set health checks to wait until postgres has started
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          # Maps tcp port 5432 on service container to the host
+          - 5432:5432
+    steps:
+      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332  # v4.1.7
+      - uses: actions/setup-go@0a12ed9d6a96ab950c8f026ed9f722fe0da7ef32  # v5.0.2
+        with:
+          go-version: '1.22'
+          cache: false
+      - uses: actions/setup-node@v4 # v2.4.0
+        with:
+          node-version: 20
+      - name: Install Task
+        uses: arduino/setup-task@v2 # v2.6.1
+        with:
+          version: 3.24.0
+      - name: Run Task tidy
+        run: task tidy
+      - name: Run Task install ui deps
+        run: task install_ui_deps
+      - name: Run Task build_assets
+        run: task build_assets
+      # https://github.com/golangci/golangci-lint-action/issues/953
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@a4f60bb28d35aeee14e6880718e0c85ff1882e64  # v6.0.1
+        with:
+          version: v1.54
+          args: --timeout=10m
+      - name: go test
+        run: task test
+      - name: build binaries
+        run: task build_local
+      - name: generates envs files
+        run: ./admin-ctl db seed
+      - name: Run migrations
+        run: task migrate_up
+      - name: Run playbypost
+        run: |
+            source .env
+            nohup ./playbypost -autoplay-worker -stage-worker > nohup.out 2> nohup.err < /dev/null &
+      - name: Run Mock events
+        run: |
+            nohup go run core/tests/mock/events/main.go > nohup2.out 2> nohup2.err < /dev/null &
+      - name: Run integration tests
+        run: task integration

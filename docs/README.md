@@ -2,4 +2,4 @@
 
 ## Diagrams
 
-Go to [diagrams](./diagrams/README.md)
+Go to [diagrams](./diagrams/README.md) 

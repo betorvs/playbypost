@@ -1,0 +1,354 @@
+[
+    {
+        "name": "strength", 
+        "display_name": "str",
+        "kind": "Ability",
+        "system": "d20-3.5",
+        "base": null,
+        "tags": [
+            "melee attack", "damage", "climb", "jump", "swim"
+        ],
+        "group": "physical",
+        "description": "https://www.dandwiki.com/wiki/SRD:Strength"
+    },
+    {
+        "name": "dexterity",
+        "display_name": "dex",
+        "kind": "Ability",
+        "system": "d20-3.5",
+        "base": null,
+        "tags": [
+            "ranged attack", "reflex", "Balance", "Escape Artist", "Hide", "Move Silently", "Open Lock", "Ride", "Sleight of Hand", "Tumble", "Use Rope"
+        ],
+        "group": "physical",
+        "description": "https://www.dandwiki.com/wiki/SRD:Dexterity"
+    },
+    {
+        "name": "constitution",
+        "display_name": "con",
+        "kind": "Ability",
+        "system": "d20-3.5",
+        "base": null,
+        "tags": [
+            "hit points", "fortitude", "concentration"
+        ],
+        "group": "physical",
+        "description": "https://www.dandwiki.com/wiki/SRD:Constitution"
+    },
+    {
+        "name": "intelligence",
+        "display_name": "int",
+        "kind": "Ability",
+        "system": "d20-3.5",
+        "base": null,
+        "tags": [
+            "Appraise", "Craft", "Decipher Script", "Disable Device", "Forgery", "Knowledge", "Search", "Spellcraft" 
+        ],
+        "group": "mental",
+        "description": "https://www.dandwiki.com/wiki/SRD:Intelligence"
+    },
+    {
+        "name": "wisdom",
+        "display_name": "wis",
+        "kind": "Ability",
+        "system": "d20-3.5",
+        "base": null,
+        "tags": [
+            "will", "Heal", "Listen", "Profession", "Sense Motive", "Spot", "Survival"
+        ],
+        "group": "mental",
+        "description": "https://www.dandwiki.com/wiki/SRD:Wisdom"
+    },
+    {
+        "name": "charisma",
+        "display_name": "cha",
+        "kind": "Ability",
+        "system": "d20-3.5",
+        "base": null,
+        "tags": [
+            "Bluff", "Diplomacy", "Disguise", "Gather Information", "Handle Animal", "Intimidate", "Perform", "Use Magic Device"
+        ],
+        "group": "social",
+        "description": "https://www.dandwiki.com/wiki/SRD:Charisma"
+    },
+    {
+        "name": "appraise",
+        "kind": "Skill",
+        "system": "d20-3.5",
+        "base": "intelligence",
+        "description": ""
+    },
+    {
+        "name": "autohypnosis",
+        "kind": "Skill",
+        "system": "d20-3.5",
+        "base": "wisdow",
+        "description": ""
+    },
+    {
+        "name": "balance",
+        "kind": "Skill",
+        "system": "d20-3.5",
+        "base": "dexterity",
+        "description": ""
+    },
+    {
+        "name": "bluff",
+        "kind": "Skill",
+        "system": "d20-3.5",
+        "base": "charisma",
+        "description": ""
+    },
+    {
+        "name": "climb",
+        "kind": "Skill",
+        "system": "d20-3.5",
+        "base": "strenght",
+        "description": ""
+    },
+    {
+        "name": "concentration",
+        "kind": "Skill",
+        "system": "d20-3.5",
+        "base": "constitution",
+        "description": ""
+    },
+    {
+        "name": "control shape",
+        "kind": "Skill",
+        "system": "d20-3.5",
+        "base": "wisdow",
+        "description": ""
+    },
+    {
+        "name": "craft",
+        "kind": "Skill",
+        "system": "d20-3.5",
+        "base": "intelligence",
+        "description": ""
+    },
+    {
+        "name": "decipher script",
+        "kind": "Skill",
+        "system": "d20-3.5",
+        "base": "intelligence",
+        "description": ""
+    },
+    {
+        "name": "diplomacy",
+        "kind": "Skill",
+        "system": "d20-3.5",
+        "base": "charisma",
+        "description": ""
+    },
+    {
+        "name": "disable device",
+        "kind": "Skill",
+        "system": "d20-3.5",
+        "base": "intelligence",
+        "description": ""
+    },
+    {
+        "name": "disguise",
+        "kind": "Skill",
+        "system": "d20-3.5",
+        "base": "charisma",
+        "description": ""
+    },
+    {
+        "name": "escape artist",
+        "kind": "Skill",
+        "system": "d20-3.5",
+        "base": "dexterity",
+        "description": ""
+    },
+    {
+        "name": "forgery",
+        "kind": "Skill",
+        "system": "d20-3.5",
+        "base": "intelligence",
+        "description": ""
+    },
+    {
+        "name": "gather information",
+        "kind": "Skill",
+        "system": "d20-3.5",
+        "base": "charisma",
+        "description": ""
+    },
+    {
+        "name": "handle animal",
+        "kind": "Skill",
+        "system": "d20-3.5",
+        "base": "charisma",
+        "description": ""
+    },
+    {
+        "name": "heal",
+        "kind": "Skill",
+        "system": "d20-3.5",
+        "base": "wisdow",
+        "description": ""
+    },
+    {
+        "name": "hide",
+        "kind": "Skill",
+        "system": "d20-3.5",
+        "base": "dexterity",
+        "description": ""
+    },
+    {
+        "name": "intimidate",
+        "kind": "Skill",
+        "system": "d20-3.5",
+        "base": "charisma",
+        "description": ""
+    },
+    {
+        "name": "jump",
+        "kind": "Skill",
+        "system": "d20-3.5",
+        "base": "strenght",
+        "description": ""
+    },
+    {
+        "name": "knowledge",
+        "kind": "Skill",
+        "system": "d20-3.5",
+        "base": "intelligence",
+        "description": ""
+    },
+    {
+        "name": "listen",
+        "kind": "Skill",
+        "system": "d20-3.5",
+        "base": "wisdow",
+        "description": ""
+    },
+    {
+        "name": "move silently",
+        "kind": "Skill",
+        "system": "d20-3.5",
+        "base": "dexterity",
+        "description": ""
+    },
+    {
+        "name": "open lock",
+        "kind": "Skill",
+        "system": "d20-3.5",
+        "base": "dexterity",
+        "description": ""
+    },
+    {
+        "name": "perform",
+        "kind": "Skill",
+        "system": "d20-3.5",
+        "base": "charisma",
+        "description": ""
+    },
+    {
+        "name": "psicraft",
+        "kind": "Skill",
+        "system": "d20-3.5",
+        "base": "intelligence",
+        "description": ""
+    },
+    {
+        "name": "profession",
+        "kind": "Skill",
+        "system": "d20-3.5",
+        "base": "wisdow",
+        "description": ""
+    },
+    {
+        "name": "ride",
+        "kind": "Skill",
+        "system": "d20-3.5",
+        "base": "dexterity",
+        "description": ""
+    },
+    {
+        "name": "search",
+        "kind": "Skill",
+        "system": "d20-3.5",
+        "base": "intelligence",
+        "description": ""
+    },
+    {
+        "name": "sense motive",
+        "kind": "Skill",
+        "system": "d20-3.5",
+        "base": "wisdow",
+        "description": ""
+    },
+    {
+        "name": "sleight of hand",
+        "kind": "Skill",
+        "system": "d20-3.5",
+        "base": "dexterity",
+        "description": ""
+    },
+    {
+        "name": "speak language",
+        "kind": "Skill",
+        "system": "d20-3.5",
+        "base": "",
+        "description": ""
+    },
+    {
+        "name": "spellcraft",
+        "kind": "Skill",
+        "system": "d20-3.5",
+        "base": "intelligence",
+        "description": ""
+    },
+    {
+        "name": "spot",
+        "kind": "Skill",
+        "system": "d20-3.5",
+        "base": "wisdow",
+        "description": ""
+    },
+    {
+        "name": "survival",
+        "kind": "Skill",
+        "system": "d20-3.5",
+        "base": "wisdow",
+        "description": ""
+    },
+    {
+        "name": "swim",
+        "kind": "Skill",
+        "system": "d20-3.5",
+        "base": "strenght",
+        "description": ""
+    },
+    {
+        "name": "tumble",
+        "kind": "Skill",
+        "system": "d20-3.5",
+        "base": "dexterity",
+        "description": ""
+    },
+    {
+        "name": "use magic device",
+        "kind": "Skill",
+        "system": "d20-3.5",
+        "base": "charisma",
+        "description": ""
+    },
+    {
+        "name": "use psionic device",
+        "kind": "Skill",
+        "system": "d20-3.5",
+        "base": "charisma",
+        "description": ""
+    },
+    {
+        "name": "use rope",
+        "kind": "Skill",
+        "system": "d20-3.5",
+        "base": "dexterity",
+        "description": ""
+    }
+]

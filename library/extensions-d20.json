@@ -1,0 +1,19 @@
+[
+    {
+        "name": "fighter",
+        "kind": "Class",
+        "system": "d20-3.5",
+        "description": "https://www.dandwiki.com/wiki/SRD:Fighter",
+        "base_attack": "good",
+        "fortitude": "good",
+        "reflex": "poor",
+        "will": "poor",
+        "dice": "d10",
+        "first_level_features": [
+            "proficiency_simple_weapon",
+            "proficiency_martial_weapon",
+            "proficiency_all_armors",
+            "proficiency_shield"
+        ]
+    }
+]

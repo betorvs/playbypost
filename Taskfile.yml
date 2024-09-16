@@ -1,0 +1,206 @@
+version: "3"
+
+env:
+  ENV: testing
+
+dotenv: [".env.task", "{{.ENV}}/.env.task", "{{.HOME}}/.env.task"]
+
+tasks:
+  greet:
+    cmds:
+      - echo "Using database $PGDATABASE and postgres $PGHOST"
+
+  tidy:
+    cmds:
+      - go get -u -v ./...
+      - go mod tidy
+
+  unit:
+    cmds: 
+      - go test -v ./... -tags unit
+
+  integration:
+    cmds: 
+      - go test -v ./... -tags integration
+
+  test:
+    cmds: 
+      - task: unit
+
+  lint:
+    cmds: 
+      - golangci-lint run
+
+  stop_postgres:
+    cmds:
+      - docker stop postgres
+
+  start_postgres:
+    cmds:
+      - docker start postgres
+
+  create_postgres:
+    cmds:
+      - docker run -p 5432:5432 --name postgres -e "POSTGRES_PASSWORD=$PGPASSWORD" -d postgres
+      - docker ps -a
+
+  migrate_up:
+    cmds:
+      - ./admin-ctl db ping
+      - ./admin-ctl db create
+      - ./admin-ctl db up
+
+  migrate_down:
+    cmds:
+      - ./admin-ctl db drop
+
+  build:
+    cmds:
+      - go build -ldflags "-X main.Version={{.GIT_COMMIT}}" -o playbypost app/server/main.go
+      - go build -ldflags "-X github.com/betorvs/playbypost/app/admin-ctl/cmd.Version={{.GIT_COMMIT}}" -o admin-ctl app/admin-ctl/main.go
+      - go build -ldflags "-X github.com/betorvs/playbypost/app/play/cmd.Version={{.GIT_COMMIT}}" -o play app/play/main.go
+      - go build -ldflags "-X main.Version={{.GIT_COMMIT}}" -o slack-plugin app/plugins/slack/main.go
+      - go build -ldflags "-X main.Version={{.GIT_COMMIT}}" -o discord-plugin app/plugins/discord/main.go
+    vars:
+      GIT_COMMIT:
+        sh: git log -n 1 --format=%h || echo "dev01"
+
+  build_local:
+    cmds:
+      - echo "Running version {{.VERSION}}"
+      - go build -ldflags "-X main.Version={{.VERSION}}" -o playbypost app/server/main.go
+      - go build -ldflags "-X github.com/betorvs/playbypost/app/admin-ctl/cmd.Version={{.VERSION}}" -o admin-ctl app/admin-ctl/main.go
+      - go build -ldflags "-X github.com/betorvs/playbypost/app/play/cmd.Version={{.VERSION}}" -o play app/play/main.go
+      - go build -ldflags "-X main.Version={{.VERSION}}" -o slack-plugin app/plugins/slack/main.go
+      - go build -ldflags "-X main.Version={{.VERSION}}" -o discord-plugin app/plugins/discord/main.go
+    vars:
+      VERSION:
+        sh: openssl rand -hex 4
+
+  install_ui_deps:
+    cmds:
+      - cd ui && npm install
+
+  build_assets:
+    cmds:
+      - cd ui && npm run build
+
+  dev:
+    cmds:
+      - tilt up
+
+  dev_remote:
+    cmds:
+      - tilt up --host $REMOTE_IP_ADDRESS
+    env:
+      REMOTE_IP_ADDRESS: "192.168.1.210"
+
+  dev_down:
+    cmds:
+      - tilt down
+
+  list_writers:
+    cmds:
+      - ./admin-ctl writer list --token {{.TOKEN}}
+    vars:
+      TOKEN:
+        sh: cat creds
+
+  list_stories:
+    cmds:
+      - ./admin-ctl stories list --token {{.TOKEN}}
+    vars:
+      TOKEN:
+        sh: cat creds
+
+  list_encounters:
+    cmds:
+      - ./admin-ctl encounter list --token {{.TOKEN}}
+    vars:
+      TOKEN:
+        sh: cat creds
+
+  load_writer:
+    cmds:
+      - for i in $(seq 1 2); do ./admin-ctl writer create -u roberto${i} --password r123qwe --token {{.TOKEN}}; done
+    vars:
+      TOKEN:
+        sh: cat creds
+
+  load_stories:
+    cmds:
+      - ./admin-ctl story create --token {{.TOKEN}} --writer-id 1 -t "heroes save the world" -n "test story 1" -a "years ago, a group of heroes will starting facing their biggest challenge..."
+      - ./admin-ctl story create --token {{.TOKEN}} --writer-id 2 -t "dangerous world" -n "second test story 2" -a "in a dangerous place, an ancient evil reborn..."
+      - ./admin-ctl story create --token {{.TOKEN}} --writer-id 2 -t "new solo adv" -n "new test solo" -a "its a solo adv test, lets fake." 
+    vars:
+      TOKEN:
+        sh: cat creds
+
+  load_encounters:
+    cmds:
+      - ./admin-ctl encounter create --story-id 1 --writer-id 1 --title "first encounter on story 1" --announcement "test enc 1 ready players" --notes "secret note from roberto1" --first-encounter --token {{.TOKEN}}
+      - for i in $(seq 2 5); do ./admin-ctl encounter create --story-id 1 --writer-id 1 --title "${i} encounter on story 1" --announcement "test ${i} ready players" --notes "secret note from roberto1" --token {{.TOKEN}} ; done
+      - ./admin-ctl encounter create --story-id 1 --writer-id 1 --title "last encounter on story 1" --announcement "test enc 6 finishing story" --notes "secret note from roberto1" --last-encounter --token {{.TOKEN}}
+      - ./admin-ctl encounter create --story-id 2 --writer-id 2 --title "first encounter on story 2" --announcement "AB, you find it. Choose A or B" --notes "secret note from roberto2" --first-encounter --token {{.TOKEN}}
+      - ./admin-ctl encounter create --story-id 2 --writer-id 2 --title "2 encounter on story 2" --announcement "A. Keep following it." --notes "secret note from roberto2" --token {{.TOKEN}}
+      - ./admin-ctl encounter create --story-id 2 --writer-id 2 --title "3 encounter on story 2" --announcement "B. Keep following it." --notes "secret note from roberto2" --token {{.TOKEN}}
+      - ./admin-ctl encounter create --story-id 2 --writer-id 2 --title "4 encounter on story 2" --announcement "After finding A, you got it. Go to end notes." --notes "secret note from roberto2" --token {{.TOKEN}}
+      - ./admin-ctl encounter create --story-id 2 --writer-id 2 --title "bad end encounter on story 2" --announcement "You have got into trouble and this is the end of it." --notes "secret note from roberto2" --last-encounter --token {{.TOKEN}}
+      - ./admin-ctl encounter create --story-id 2 --writer-id 2 --title "last encounter on story 2" --announcement "You discover it. Thank you, hero! We're proud of you!" --notes "secret note from roberto2" --last-encounter --token {{.TOKEN}}
+      - ./admin-ctl encounter create --story-id 3 --writer-id 2 --title "first encounter on story new solo" --announcement "bla, bla, bla. Roll a dice to go forward" --notes "secret note from roberto2" --first-encounter --token {{.TOKEN}}
+      - ./admin-ctl encounter create --story-id 3 --writer-id 2 --title "2 encounter on story 22" --announcement "you rolled 1, 3 or 5" --notes "secret note from roberto2" --last-encounter --token {{.TOKEN}}
+      - ./admin-ctl encounter create --story-id 3 --writer-id 2 --title "3 encounter on story 22" --announcement "you rolled 2,4 or 6" --notes "secret note from roberto2" --last-encounter --token {{.TOKEN}}
+    vars:
+      TOKEN:
+        sh: cat creds
+
+  load_auto_play:
+    cmds:
+      - ./admin-ctl auto-play create --story-id 2 --solo --text "solo-adventure-1" --token {{.TOKEN}}
+      - ./admin-ctl auto-play create --story-id 3 --solo --text "test-solo-adventure-new-2" --token {{.TOKEN}}
+    vars:
+      TOKEN:
+        sh: cat creds
+
+  load_next_encounters:
+    cmds:
+      - ./admin-ctl auto-play next-by-title --auto-play-id 1 --encounter "first encounter on story 2" --next-encounter "2 encounter on story 2" --text "If you want A" --token {{.TOKEN}}
+      - ./admin-ctl auto-play next-by-title --auto-play-id 1 --encounter "first encounter on story 2" --next-encounter "3 encounter on story 2" --text "If you want B" --token {{.TOKEN}}
+      - ./admin-ctl auto-play next-by-title --auto-play-id 1 --encounter "2 encounter on story 2" --next-encounter "4 encounter on story 2" --text "moving forward" --token {{.TOKEN}}
+      - ./admin-ctl auto-play next-by-title --auto-play-id 1 --encounter "3 encounter on story 2" --next-encounter "bad end encounter on story 2" --text "moving forward" --token {{.TOKEN}}
+      - ./admin-ctl auto-play next-by-title --auto-play-id 1 --encounter "4 encounter on story 2" --next-encounter "last encounter on story 2" --text "go to end notes" --token {{.TOKEN}}
+      - ./admin-ctl auto-play next-by-title --auto-play-id 2 --encounter "first encounter on story new solo" --next-encounter "2 encounter on story 22" --text "you rolled 1,3 or 5" --objective-kind "dice_roll" --objective-values "1,3,5" --token {{.TOKEN}}
+      - ./admin-ctl auto-play next-by-title --auto-play-id 2 --encounter "first encounter on story new solo" --next-encounter "3 encounter on story 22" --text "you rolled 2,4 or 6" --objective-kind "dice_roll" --objective-values "2,4,6" --token {{.TOKEN}}
+    vars:
+      TOKEN:
+        sh: cat creds
+
+  load_tasks:
+    cmds:
+      - ./admin-ctl task create --description "investigate crime scene" --ability wits --skill investigation --kind 2 --target 2 --token {{.TOKEN}}
+    vars:
+      TOKEN:
+        sh: cat creds
+
+  load_stage:
+    cmds:
+      - ./admin-ctl stage create-by-title --display-text "adv-hero-1" --story-title "heroes save the world" --user-id "U947BLKME" --token {{.TOKEN}}
+      - ./admin-ctl player add-player-stage-by-title --stage-title "adv-hero-1" --user-id "UMNL1CU1M" --token {{.TOKEN}}
+      - ./admin-ctl stage add-encounter --stage-title "adv-hero-1" --encounter-title "first encounter on story 1" --story-title "heroes save the world" --display-text "enc-1" --token {{.TOKEN}}
+      - ./admin-ctl stage add-encounter --stage-title "adv-hero-1" --encounter-title "2 encounter on story 1" --story-title "heroes save the world" --display-text "enc-2" --token {{.TOKEN}}
+      - ./admin-ctl stage add-encounter --stage-title "adv-hero-1" --encounter-title "3 encounter on story 1" --story-title "heroes save the world" --display-text "enc-3" --token {{.TOKEN}}
+      - ./admin-ctl stage add-encounter --stage-title "adv-hero-1" --encounter-title "4 encounter on story 1" --story-title "heroes save the world" --display-text "enc-4" --token {{.TOKEN}}
+      - ./admin-ctl stage add-encounter --stage-title "adv-hero-1" --encounter-title "5 encounter on story 1" --story-title "heroes save the world" --display-text "enc-5" --token {{.TOKEN}}
+      - ./admin-ctl stage add-encounter --stage-title "adv-hero-1" --encounter-title "last encounter on story 1" --story-title "heroes save the world" --display-text "enc-6" --token {{.TOKEN}}
+    vars:
+      TOKEN:
+        sh: cat creds
+
+  load:
+    cmds:
+      - task: load_writer
+      - task: load_stories
+      - task: load_encounters
+      - task: load_auto_play
+      - task: load_next_encounters
+      - task: load_tasks

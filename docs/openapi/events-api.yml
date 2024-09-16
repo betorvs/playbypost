@@ -1,0 +1,57 @@
+openapi: '3.0.3'
+info:
+  title: Events API
+  version: '1.0'
+servers:
+  - url: http://api.server.test/
+components:
+  schemas:
+    Msg:
+      type: object
+      properties:
+        msg:
+          type: string
+
+paths:
+  /api/v1/events:
+    post:
+      security:
+        - customHeaderAuth: 
+          - X-Access-Token
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - channel
+                - user_id
+              properties:
+                channel:
+                  type: string
+                user_id:
+                  type: string
+                message:
+                  type: string
+                kind:
+                  type: string
+      responses:
+        '202':
+          description: Accepted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Msg'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Msg'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Msg'
+            

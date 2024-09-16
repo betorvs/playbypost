@@ -1,0 +1,9 @@
+[
+    {
+        "name": "human",
+        "kind": "Race",
+        "system": "d20-3.5",
+        "size": "medium",
+        "description": "https://www.dandwiki.com/wiki/SRD:Humans_(Race)"
+    }
+]

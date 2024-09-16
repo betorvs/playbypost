@@ -1,10 +1,12 @@
+//go:build unit
+
 package types
 
 import "testing"
 
 func TestActions(t *testing.T) {
 	t.Log("Checking all actions in loop")
-	for i := DoAttack; i <= DoTotalDefense; i++ {
+	for i := DoSingleAttack; i <= DoTotalDefense; i++ {
 		res := i.String()
 		if res == "" && res != Unknown {
 			t.Errorf("\t Actions should not be empty %s", res)
