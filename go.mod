@@ -1,10 +1,12 @@
 module github.com/betorvs/playbypost
 
-go 1.22
+go 1.23.0
+
+toolchain go1.23.1
 
 require (
 	github.com/betorvs/dice v1.0.3
-	github.com/golang-migrate/migrate/v4 v4.17.1
+	github.com/golang-migrate/migrate/v4 v4.18.1
 	github.com/lib/pq v1.10.9
 	github.com/sagikazarmark/slog-shim v0.1.0
 	github.com/slack-go/slack v0.14.0
@@ -32,8 +34,7 @@ require (
 	github.com/subosito/gotenv v1.6.0 // indirect
 	go.uber.org/atomic v1.11.0 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
-	golang.org/x/exp v0.0.0-20240904232852-e7e105dedf7e
-	golang.org/x/net v0.26.0 // indirect
+	golang.org/x/exp v0.0.0-20240909161429-701f63a606c0
 	golang.org/x/sys v0.25.0 // indirect
 	golang.org/x/text v0.18.0 // indirect
 	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c // indirect

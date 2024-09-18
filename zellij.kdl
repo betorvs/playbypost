@@ -1,0 +1,23 @@
+layout {
+    pane split_direction="vertical" {
+        pane {
+            name "terminal"
+        }
+        pane split_direction="horizontal" {
+            pane {
+                name "watch"
+                command "task"
+                args "dev"
+            }
+            pane {
+                name "logs"
+                command "task"
+                args "logs"
+                start_suspended true
+            }
+        }
+    }
+    pane size=2 borderless=true {
+        plugin location="zellij:status-bar"
+    }
+}

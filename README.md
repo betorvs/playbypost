@@ -23,6 +23,13 @@
 
 ## development
 
+### Requirements
+
+- PostgreSQL (docker or local installation or remote service)
+- [Taskfile](https://taskfile.dev/)
+- [Tilt](tilt.dev)
+- [Zellij](https://zellij.dev/) (optional)
+
 ### Create both files with all environment variables
 ```bash
 .env
