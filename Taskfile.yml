@@ -98,6 +98,31 @@ tasks:
   dev_down:
     cmds:
       - tilt down
+  
+  logs:
+    cmds:
+      - tilt logs -f
+
+  reload:
+    cmds:
+      - tilt trigger playbypost-server
+      - tilt trigger discord-plugin
+
+  terminal:
+    cmds:
+      - zellij --session pbp --layout zellij.kdl 
+
+  terminal-list:
+    cmds:
+      - zellij list-sessions
+
+  terminal-attach:
+    cmds:
+      - zellij attach pbp
+
+  terminal-delete:
+    cmds:
+      - zellij delete-session pbp --force
 
   list_writers:
     cmds:
