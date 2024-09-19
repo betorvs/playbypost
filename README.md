@@ -25,9 +25,10 @@
 
 ### Requirements
 
+- Go > 1.23 and [golangci-lint](https://github.com/golangci/golangci-lint)
 - PostgreSQL (docker or local installation or remote service)
 - [Taskfile](https://taskfile.dev/)
-- [Tilt](tilt.dev)
+- [Tilt](tilt.dev) OR [watchexec](https://github.com/watchexec/watchexec)
 - [Zellij](https://zellij.dev/) (optional)
 
 ### Create both files with all environment variables
@@ -71,16 +72,20 @@ local_resource(
 ```
 
 ### Create playbypost database:
-```
-. .env
-./admin-ctl db create
-./admin-ctl db up
+```bash
+task build_all
 ```
 
-### Run tilt
+### Run tilt with task
 
 ```bash
-tilt dev
+task dev
+```
+
+### Run zellij with watchexec
+
+```bash
+task zterm
 ```
 
 ## References

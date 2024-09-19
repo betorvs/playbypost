@@ -7,54 +7,66 @@ dotenv: [".env.task", "{{.ENV}}/.env.task", "{{.HOME}}/.env.task"]
 
 tasks:
   greet:
+    desc: "Greet the user with database info"
     cmds:
-      - echo "Using database $PGDATABASE and postgres $PGHOST"
+      - echo "Hello. You are using database $PGDATABASE and postgres $PGHOST"
 
   tidy:
+    desc: "Run go update and mod tidy"
     cmds:
       - go get -u -v ./...
       - go mod tidy
 
   unit:
+    desc: "Run unit tests"
     cmds: 
       - go test -v ./... -tags unit
 
   integration:
+    desc: "Run integration tests"
     cmds: 
       - go test -v ./... -tags integration
 
   test:
+    desc: "Run unit tests"
     cmds: 
       - task: unit
 
   lint:
+    desc: "Run golangci-lint"
     cmds: 
       - golangci-lint run
 
   stop_postgres:
+    desc: "Stop a postgres container using docker"
     cmds:
       - docker stop postgres
 
   start_postgres:
+    desc: "Start a postgres container using docker"
     cmds:
       - docker start postgres
 
   create_postgres:
+    desc: "Create a postgres container using docker"
     cmds:
       - docker run -p 5432:5432 --name postgres -e "POSTGRES_PASSWORD=$PGPASSWORD" -d postgres
       - docker ps -a
 
   migrate_up:
+    desc: "Run migrations"
     cmds:
       - ./admin-ctl db ping
       - ./admin-ctl db create
       - ./admin-ctl db up
 
   migrate_down:
+    desc: "Drop the database"
     cmds:
       - ./admin-ctl db drop
 
   build:
+    desc: "Build all binaries using the git commit as version"
     cmds:
       - go build -ldflags "-X main.Version={{.GIT_COMMIT}}" -o playbypost app/server/main.go
       - go build -ldflags "-X github.com/betorvs/playbypost/app/admin-ctl/cmd.Version={{.GIT_COMMIT}}" -o admin-ctl app/admin-ctl/main.go
@@ -66,6 +78,7 @@ tasks:
         sh: git log -n 1 --format=%h || echo "dev01"
 
   build_local:
+    desc: "Build all binaries using a random version"
     cmds:
       - echo "Running version {{.VERSION}}"
       - go build -ldflags "-X main.Version={{.VERSION}}" -o playbypost app/server/main.go
@@ -78,53 +91,107 @@ tasks:
         sh: openssl rand -hex 4
 
   install_ui_deps:
+    desc: "Install UI dependencies"
     cmds:
       - cd ui && npm install
 
   build_assets:
+    desc: "Build UI assets"
     cmds:
       - cd ui && npm run build
 
+  build_all:
+    desc: "Build all: tidy, build_assets, build_local"
+    cmds:
+      - task: tidy
+      - task: build_assets
+      - task: build_local
+
+  build_watch:
+    desc: "Watch for changes and build"
+    cmds:
+      - watchexec -w app -w core -w ui/src -w .env.task -w go.mod -w go.sum -r "task build_all"
+
   dev:
+    desc: "Start all services with tiltdev"
     cmds:
       - tilt up
 
   dev_remote:
+    desc: "Start all services with tiltdev with remote address"
     cmds:
       - tilt up --host $REMOTE_IP_ADDRESS
     env:
       REMOTE_IP_ADDRESS: "192.168.1.210"
 
   dev_down:
+    desc: "Stop all services with tiltdev"
     cmds:
       - tilt down
   
   logs:
+    desc: "Show logs from playbypost server with tiltdev"
     cmds:
       - tilt logs -f
 
   reload:
+    desc: "Reload playbypost server and discord-plugin with tiltdev"
     cmds:
       - tilt trigger playbypost-server
       - tilt trigger discord-plugin
 
   terminal:
+    desc: "Open a terminal with zellij and Tiltdev"
     cmds:
-      - zellij --session pbp --layout zellij.kdl 
+      - zellij --session pbptilt --layout zellij.kdl 
 
   terminal-list:
+    desc: "List all zellij sessions"
     cmds:
       - zellij list-sessions
 
   terminal-attach:
+    desc: "Attach to a terminal session with tiltdev"
     cmds:
-      - zellij attach pbp
+      - zellij attach pbptilt
 
   terminal-delete:
+    desc: "Delete a terminal session with tiltdev"
     cmds:
-      - zellij delete-session pbp --force
+      - zellij delete-session pbptilt --force
+
+  zterm:
+    desc: "Open a terminal with zellij and watchexec"
+    cmds:
+      - zellij --session pbpwe --layout zellij-watchexec.kdl 
+  
+  zterm-delete:
+    desc: "Delete a terminal session with watchexec"
+    cmds:
+      - zellij delete-session pbpwe --force
+
+  zterm-attach:
+    desc: "Attach to a terminal session with watchexec"
+    cmds:
+      - zellij attach pbpwe
+
+  playbypost-run:
+    desc: "Run playbypost server with watchexec"
+    cmds:
+      - watchexec --watch-file playbypost --delay-run 5 -r "./playbypost -autoplay-worker -stage-worker"
+
+  discord-run:
+    desc: "Run discord plugin with watchexec"
+    cmds:
+      - watchexec --watch-file discord-plugin --delay-run 5 -r "./discord-plugin"
+
+  slack-run:
+    desc: "Run slack plugin with watchexec"
+    cmds:
+      - watchexec --watch-file slack-plugin --delay-run 5 -r "./slack-plugin"
 
   list_writers:
+    desc: "List all writers"
     cmds:
       - ./admin-ctl writer list --token {{.TOKEN}}
     vars:
@@ -132,6 +199,7 @@ tasks:
         sh: cat creds
 
   list_stories:
+    desc: "List all stories"
     cmds:
       - ./admin-ctl stories list --token {{.TOKEN}}
     vars:
@@ -139,6 +207,7 @@ tasks:
         sh: cat creds
 
   list_encounters:
+    desc: "List all encounters"
     cmds:
       - ./admin-ctl encounter list --token {{.TOKEN}}
     vars:
@@ -146,6 +215,7 @@ tasks:
         sh: cat creds
 
   load_writer:
+    desc: "Load writers"
     cmds:
       - for i in $(seq 1 2); do ./admin-ctl writer create -u roberto${i} --password r123qwe --token {{.TOKEN}}; done
     vars:
@@ -153,6 +223,7 @@ tasks:
         sh: cat creds
 
   load_stories:
+    desc: "Load stories"
     cmds:
       - ./admin-ctl story create --token {{.TOKEN}} --writer-id 1 -t "heroes save the world" -n "test story 1" -a "years ago, a group of heroes will starting facing their biggest challenge..."
       - ./admin-ctl story create --token {{.TOKEN}} --writer-id 2 -t "dangerous world" -n "second test story 2" -a "in a dangerous place, an ancient evil reborn..."
@@ -162,6 +233,7 @@ tasks:
         sh: cat creds
 
   load_encounters:
+    desc: "Load encounters"
     cmds:
       - ./admin-ctl encounter create --story-id 1 --writer-id 1 --title "first encounter on story 1" --announcement "test enc 1 ready players" --notes "secret note from roberto1" --first-encounter --token {{.TOKEN}}
       - for i in $(seq 2 5); do ./admin-ctl encounter create --story-id 1 --writer-id 1 --title "${i} encounter on story 1" --announcement "test ${i} ready players" --notes "secret note from roberto1" --token {{.TOKEN}} ; done
@@ -180,6 +252,7 @@ tasks:
         sh: cat creds
 
   load_auto_play:
+    desc: "Load auto play"
     cmds:
       - ./admin-ctl auto-play create --story-id 2 --solo --text "solo-adventure-1" --token {{.TOKEN}}
       - ./admin-ctl auto-play create --story-id 3 --solo --text "test-solo-adventure-new-2" --token {{.TOKEN}}
@@ -188,6 +261,7 @@ tasks:
         sh: cat creds
 
   load_next_encounters:
+    desc: "Load next encounters for auto play"
     cmds:
       - ./admin-ctl auto-play next-by-title --auto-play-id 1 --encounter "first encounter on story 2" --next-encounter "2 encounter on story 2" --text "If you want A" --token {{.TOKEN}}
       - ./admin-ctl auto-play next-by-title --auto-play-id 1 --encounter "first encounter on story 2" --next-encounter "3 encounter on story 2" --text "If you want B" --token {{.TOKEN}}
@@ -201,6 +275,7 @@ tasks:
         sh: cat creds
 
   load_tasks:
+    desc: "Load tasks"
     cmds:
       - ./admin-ctl task create --description "investigate crime scene" --ability wits --skill investigation --kind 2 --target 2 --token {{.TOKEN}}
     vars:
@@ -208,6 +283,7 @@ tasks:
         sh: cat creds
 
   load_stage:
+    desc: "Load stage"
     cmds:
       - ./admin-ctl stage create-by-title --display-text "adv-hero-1" --story-title "heroes save the world" --user-id "U947BLKME" --token {{.TOKEN}}
       - ./admin-ctl player add-player-stage-by-title --stage-title "adv-hero-1" --user-id "UMNL1CU1M" --token {{.TOKEN}}
@@ -222,6 +298,7 @@ tasks:
         sh: cat creds
 
   load:
+    desc: "Load all example data"
     cmds:
       - task: load_writer
       - task: load_stories

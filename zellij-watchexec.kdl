@@ -1,0 +1,29 @@
+layout {
+    pane split_direction="vertical" {
+        pane split_direction="horizontal" {
+            pane {
+                name "terminal"
+            }
+            pane {
+                name "build"
+                command "task"
+                args "build_watch"
+            }
+        }
+        pane split_direction="horizontal" {
+            pane {
+                name "playbypost-server"
+                command "task"
+                args "playbypost-run"
+            }
+            pane {
+                name "discord-plugin-server"
+                command "task"
+                args "discord-run"
+            }
+        }
+    }
+    pane size=2 borderless=true {
+        plugin location="zellij:status-bar"
+    }
+}
