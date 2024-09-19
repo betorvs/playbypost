@@ -37,7 +37,26 @@
 .env.task
 ```
 
-### Change Tiltfile
+### Create playbypost database:
+
+```bash
+task migrate_up
+```
+
+### test and generate all binaries
+
+```bash
+task test
+task build_all
+```
+
+### Run tilt with task
+
+```bash
+task dev
+```
+
+#### Change Tiltfile
 
 tiltfile for slack
 ```
@@ -69,17 +88,6 @@ local_resource(
   resource_deps=['playbypost-server'],
   deps=["./discord-plugin"]
 )
-```
-
-### Create playbypost database:
-```bash
-task build_all
-```
-
-### Run tilt with task
-
-```bash
-task dev
 ```
 
 ### Run zellij with watchexec
