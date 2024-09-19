@@ -72,3 +72,7 @@ jobs:
             nohup go run core/tests/mock/events/main.go > nohup2.out 2> nohup2.err < /dev/null &
       - name: Run integration tests
         run: task integration
+      - uses: actions/upload-artifact@v4
+        with:
+          name: log-files
+          path: nohup*
