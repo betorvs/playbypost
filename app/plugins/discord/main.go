@@ -233,7 +233,7 @@ func (a *app) interactionCommand(s *discordgo.Session, i *discordgo.InteractionC
 			case "options", "opt":
 				a.logger.Info("options")
 				// post command
-				msg, err := a.postCommand(userid, "opt", i.ChannelID)
+				msg, err := a.web.PostCommandComposed(userid, "opt", i.ChannelID)
 				if err != nil {
 					a.logger.Error("error posting to backend", "error", err.Error())
 				}
@@ -282,7 +282,7 @@ func (a *app) interactionCommand(s *discordgo.Session, i *discordgo.InteractionC
 			case "solo-start":
 				a.logger.Info("solo-start")
 				// post command
-				msg, err := a.postCommand(userid, "solo-start", i.ChannelID)
+				msg, err := a.web.PostCommandComposed(userid, "solo-start", i.ChannelID)
 				if err != nil {
 					a.logger.Error("error posting to backend", "error", err.Error())
 				}
@@ -332,7 +332,7 @@ func (a *app) interactionCommand(s *discordgo.Session, i *discordgo.InteractionC
 			case "solo-next":
 				a.logger.Info("solo-next")
 				// post command
-				msg, err := a.postCommand(userid, "solo-next", i.ChannelID)
+				msg, err := a.web.PostCommandComposed(userid, "solo-next", i.ChannelID)
 				if err != nil {
 					a.logger.Error("error posting to backend", "error", err.Error())
 				}
@@ -393,22 +393,20 @@ func (a *app) interactionCommand(s *discordgo.Session, i *discordgo.InteractionC
 		switch i.MessageComponentData().CustomID {
 		case "opt":
 			data := i.MessageComponentData()
-			var userid, text, channel, display string
-			splitted := strings.Split(data.Values[0], ";")
-			a.logger.Info("splitted", "values", splitted, "len", len(splitted))
-			if len(splitted) == 5 {
-				channel = splitted[1]
-				userid = splitted[2]
-				text = fmt.Sprintf("cmd;%s;%s", splitted[3], splitted[4])
-				display = splitted[3]
-			}
-			errorMessage := ""
-			msg, err := a.postCommand(userid, text, channel)
+			startOpt := "cmd"
+			var errorMessage, returnMessage string
+			channel, userid, text, display, err := cli.ParserValues(data.Values[0], startOpt)
 			if err != nil {
-				a.logger.Error("error posting to backend", "error", err.Error())
-				errorMessage = "error posting to backend, try again in a few minutes"
+				a.logger.Error("error parsing values", "error", err)
+				errorMessage = "error parsing values from backend"
+			} else {
+				msg, err := a.web.PostCommandComposed(userid, text, channel)
+				if err != nil {
+					a.logger.Error("error posting to backend", "error", err.Error())
+					errorMessage = "error posting to backend, try again in a few minutes"
+				}
+				returnMessage = msg.Msg
 			}
-			returnMessage := msg.Msg
 			if errorMessage != "" {
 				returnMessage = errorMessage
 			}
@@ -426,22 +424,20 @@ func (a *app) interactionCommand(s *discordgo.Session, i *discordgo.InteractionC
 
 		case "choice":
 			data := i.MessageComponentData()
-			var userid, text, channel, display string
-			splitted := strings.Split(data.Values[0], ";")
-			a.logger.Info("splitted", "values", splitted, "len", len(splitted))
-			if len(splitted) == 5 {
-				channel = splitted[1]
-				userid = splitted[2]
-				text = fmt.Sprintf("choice;%s;%s", splitted[3], splitted[4])
-				display = splitted[3]
-			}
-			errorMessage := ""
-			msg, err := a.postCommand(userid, text, channel)
+			startOpt := "choice"
+			var errorMessage, returnMessage string
+			channel, userid, text, display, err := cli.ParserValues(data.Values[0], startOpt)
 			if err != nil {
-				a.logger.Error("error posting to backend", "error", err.Error())
-				errorMessage = "error posting to backend, try again in a few minutes"
+				a.logger.Error("error parsing values", "error", err)
+				errorMessage = "error parsing values from backend"
+			} else {
+				msg, err := a.web.PostCommandComposed(userid, text, channel)
+				if err != nil {
+					a.logger.Error("error posting to backend", "error", err.Error())
+					errorMessage = "error posting to backend, try again in a few minutes"
+				}
+				returnMessage = msg.Msg
 			}
-			returnMessage := msg.Msg
 			if errorMessage != "" {
 				returnMessage = errorMessage
 			}
@@ -526,16 +522,16 @@ func (a *app) events(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprint(w, "{\"msg\":\"Accepted\"}")
 }
 
-func (a *app) postCommand(userid, text, channel string) (types.Composed, error) {
-	var msg types.Composed
-	body, err := a.web.PostCommand(userid, text, channel)
-	if err != nil {
-		a.logger.Error("post command", "error", err.Error())
-		return msg, err
-	}
-	err = json.Unmarshal(body, &msg)
-	if err != nil {
-		a.logger.Error("error decoding message from backend", "error", err.Error())
-	}
-	return msg, nil
-}
+// func (a *app) postCommand(userid, text, channel string) (types.Composed, error) {
+// 	var msg types.Composed
+// 	body, err := a.web.PostCommand(userid, text, channel)
+// 	if err != nil {
+// 		a.logger.Error("post command", "error", err.Error())
+// 		return msg, err
+// 	}
+// 	err = json.Unmarshal(body, &msg)
+// 	if err != nil {
+// 		a.logger.Error("error decoding message from backend", "error", err.Error())
+// 	}
+// 	return msg, nil
+// }

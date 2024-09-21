@@ -195,20 +195,6 @@ func (a *app) middlewareEventsAPI(evt *socketmode.Event, client *socketmode.Clie
 	a.logger.Info("end of function")
 }
 
-func (a *app) postCommand(userid, text, channel string) (types.Composed, error) {
-	var msg types.Composed
-	body, err := a.web.PostCommand(userid, text, channel)
-	if err != nil {
-		a.logger.Error("post command", "error", err.Error())
-		return msg, err
-	}
-	err = json.Unmarshal(body, &msg)
-	if err != nil {
-		a.logger.Error("error decoding message from backend", "error", err.Error())
-	}
-	return msg, nil
-}
-
 func (a *app) middlewareSlashCommand(evt *socketmode.Event, client *socketmode.Client) {
 	cmd, ok := evt.Data.(slack.SlashCommand)
 	if !ok {
@@ -220,7 +206,7 @@ func (a *app) middlewareSlashCommand(evt *socketmode.Event, client *socketmode.C
 	text := cmd.Text
 	switch text {
 	case "opt":
-		msg, err := a.postCommand(cmd.UserID, "opt", cmd.ChannelID)
+		msg, err := a.web.PostCommandComposed(cmd.UserID, "opt", cmd.ChannelID)
 		if err != nil {
 			a.logger.Error("error posting to backend", "error", err.Error())
 		}
@@ -272,7 +258,7 @@ func (a *app) middlewareSlashCommand(evt *socketmode.Event, client *socketmode.C
 
 	case "solo-start":
 		a.logger.Info("Solo game start")
-		msg, err := a.postCommand(cmd.UserID, "solo-start", cmd.ChannelID)
+		msg, err := a.web.PostCommandComposed(cmd.UserID, "solo-start", cmd.ChannelID)
 		if err != nil {
 			a.logger.Error("error posting to backend", "error", err.Error())
 		}
@@ -324,7 +310,7 @@ func (a *app) middlewareSlashCommand(evt *socketmode.Event, client *socketmode.C
 
 	case "solo-next":
 		a.logger.Info("Solo game next")
-		msg, err := a.postCommand(cmd.UserID, "solo-next", cmd.ChannelID)
+		msg, err := a.web.PostCommandComposed(cmd.UserID, "solo-next", cmd.ChannelID)
 		if err != nil {
 			a.logger.Error("error posting to backend", "error", err.Error())
 		}
@@ -399,42 +385,39 @@ func (a *app) middlewareInteractive(evt *socketmode.Event, client *socketmode.Cl
 		a.logger.Debug(fmt.Sprintf("Ignored %+v\n", evt))
 		return
 	}
-	option := ""
+	values := ""
 	for _, action := range interactiveEvent.ActionCallback.BlockActions {
 		a.logger.Debug(fmt.Sprintf("action: %+v\n", action))
 		if action.SelectedOption.Value != "" {
 			a.logger.Debug(fmt.Sprintln("value: ", action.SelectedOption.Value))
-			option = action.SelectedOption.Value
+			values = action.SelectedOption.Value
 			break
 		}
 	}
 
-	a.logger.Info("value received", "option", option)
+	a.logger.Info("value received", "values", values)
 	// check if command or solo
 	startOpt := "cmd"
-	if strings.Contains(option, "solo") {
+	if strings.Contains(values, "solo") {
 		startOpt = "choice"
 	}
-	var userid, text, channel, display string
-	splitted := strings.Split(option, ";")
-	a.logger.Info("splitted", "values", splitted, "len", len(splitted))
-	if len(splitted) == 5 {
-		channel = splitted[1]
-		userid = splitted[2]
-		text = fmt.Sprintf("%s;%s;%s", startOpt, splitted[3], splitted[4])
-		display = splitted[3]
-	}
-	a.logger.Info("values", "userid", userid, "text", text, "channel", channel)
-	errorMessage := ""
-	msg, err := a.postCommand(userid, text, channel)
+	var errorMessage, returnMessage string
+	channel, userid, text, display, err := cli.ParserValues(values, startOpt)
 	if err != nil {
-		a.logger.Error("error posting to backend", "error", err.Error())
-		errorMessage = "error posting to backend, try again in a few minutes"
+		a.logger.Error("error parsing values", "error", err.Error())
+		errorMessage = "error parsing values from backend"
+	} else {
+		msg, err := a.web.PostCommandComposed(userid, text, channel)
+		if err != nil {
+			a.logger.Error("error posting to backend", "error", err.Error())
+			errorMessage = "error posting to backend, try again in a few minutes"
+		}
+		returnMessage = msg.Msg
 	}
-	returnMessage := msg.Msg
 	if errorMessage != "" {
 		returnMessage = errorMessage
 	}
+	a.logger.Info("values", "userid", userid, "text", text, "channel", channel)
 	attachment := slack.Attachment{
 		Text: fmt.Sprintf("Selected: %s; and answer: %s", display, returnMessage),
 	}
