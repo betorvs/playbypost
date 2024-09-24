@@ -2,6 +2,12 @@
 
 [![on-push](https://github.com/betorvs/playbypost/actions/workflows/on-push.yaml/badge.svg)](https://github.com/betorvs/playbypost/actions/workflows/on-push.yaml)
 
+## Apps
+
+- playbypost: backend that requires PostgreSQL. Divided in two parts, server and worker. Server is a rest JSON api which interacts with plugins, and worker which process all requests hosted in database. Worker cannot run in parallel right now (flags: `-autoplay-worker` and `-stage-worker`). 
+- plugin: discord or slack, is a connector with a Chat application.
+- CLI: admin-ctl is used to make some administrative tasks and play is used to interact as a player or storyteller with backend. 
+
 ## Directories
 
 - cmd: command line tools to run it

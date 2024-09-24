@@ -3,7 +3,6 @@
 package integration
 
 import (
-	"encoding/json"
 	"fmt"
 	"testing"
 	"time"
@@ -292,20 +291,15 @@ func TestIntegration(t *testing.T) {
 		playerAutoPlay := fmt.Sprintf("player-auto-play-%s", random)
 		channelAutoPlay := fmt.Sprintf("channel-auto-play-%s", random)
 		// a.postCommand(userid, "solo-start", i.ChannelID)
-		soloStartBody, err14 := h.PostCommand(playerAutoPlay, "solo-start", channelAutoPlay)
+		msgSoloStart, err14 := h.PostCommandComposed(playerAutoPlay, "solo-start", channelAutoPlay)
 		if err14 != nil {
 			t.Error("error post solo-start command")
 		}
 		// parse solo-start response
-		var msgSoloStart types.Composed
-		err15 := json.Unmarshal(soloStartBody, &msgSoloStart)
-		if err15 != nil {
-			t.Error("error unmarshal solo-start response")
-		}
 		for _, m := range msgSoloStart.Opts {
 			if m.Name == autoPlay1.Text {
 				text := fmt.Sprintf("choice;%s;%d", m.Value, m.ID)
-				_, err16 := h.PostCommand(playerAutoPlay, text, channelAutoPlay)
+				_, err16 := h.PostCommandComposed(playerAutoPlay, text, channelAutoPlay)
 				if err16 != nil {
 					t.Error("error post cmd to command")
 				}
@@ -317,16 +311,11 @@ func TestIntegration(t *testing.T) {
 		sleep := 11
 		t.Logf("waiting %d seconds to process solo-start command", sleep)
 		time.Sleep(time.Duration(sleep) * time.Second)
-		soloNextBody, err16 := h.PostCommand(playerAutoPlay, "solo-next", channelAutoPlay)
+		msgSoloNext, err16 := h.PostCommandComposed(playerAutoPlay, "solo-next", channelAutoPlay)
 		if err16 != nil {
 			t.Error("error post solo-next command")
 		}
 		// parse solo-next response
-		var msgSoloNext types.Composed
-		err17 := json.Unmarshal(soloNextBody, &msgSoloNext)
-		if err17 != nil {
-			t.Error("error unmarshal solo-next response")
-		}
 		if len(msgSoloNext.Msg) == 0 {
 			t.Log("error solo-next response empty", "msg", msgSoloNext.Msg)
 			t.Error("error solo-next response empty")
@@ -443,14 +432,9 @@ func TestIntegration(t *testing.T) {
 		if err13 != nil {
 			t.Error("error starting stage")
 		}
-		storytellerBody, err14 := h.PostCommand(storyteller, "opt", channelStage)
+		storytellerMsg, err14 := h.PostCommandComposed(storyteller, "opt", channelStage)
 		if err14 != nil {
 			t.Error("error post opt command")
-		}
-		storytellerMsg := types.Composed{}
-		err15 := json.Unmarshal(storytellerBody, &storytellerMsg)
-		if err15 != nil {
-			t.Error("error unmarshal storyteller response")
 		}
 		if len(storytellerMsg.Opts) == 0 {
 			t.Error("error storyteller response empty")
@@ -458,7 +442,7 @@ func TestIntegration(t *testing.T) {
 		for _, m := range storytellerMsg.Opts {
 			if m.Name == encounter1Title {
 				text := fmt.Sprintf("cmd;%s;%d", m.Value, m.ID)
-				_, err16 := h.PostCommand(player, text, channelStage)
+				_, err16 := h.PostCommandComposed(player, text, channelStage)
 				if err16 != nil {
 					t.Error("error post storyteller cmd to command")
 				}
@@ -469,14 +453,9 @@ func TestIntegration(t *testing.T) {
 		sleep := 11
 		t.Logf("waiting %d seconds to process cmd command", sleep)
 		time.Sleep(time.Duration(sleep) * time.Second)
-		storytellerBody2, err17 := h.PostCommand(storyteller, "opt", channelStage)
+		storytellerMsg2, err17 := h.PostCommandComposed(storyteller, "opt", channelStage)
 		if err17 != nil {
 			t.Error("error post storyteller 2 opt command")
-		}
-		storytellerMsg2 := types.Composed{}
-		err18 := json.Unmarshal(storytellerBody2, &storytellerMsg2)
-		if err18 != nil {
-			t.Error("error unmarshal storyteller 2 response")
 		}
 		if len(storytellerMsg2.Opts) == 0 {
 			t.Error("error storyteller 2 response empty")

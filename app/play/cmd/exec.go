@@ -4,12 +4,9 @@ Copyright © 2024 Roberto Scudeller <beto.rvs@gmail.com>
 package cmd
 
 import (
-	"encoding/json"
-	"fmt"
 	"os"
 	"strings"
 
-	"github.com/betorvs/playbypost/core/sys/web/types"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -26,19 +23,16 @@ var execCmd = &cobra.Command{
 		userid := viper.GetString("user-id")
 		tmpText := strings.Join(args, " ")
 		var text string
-		if strings.Contains(tmpText, ";") {
-			text = fmt.Sprintf("cmd;%s", tmpText)
-		}
-		app.Logger.Info("text", "text", text)
-		body, err := app.Web.PostCommand(userid, text, channel)
-		if err != nil {
-			app.Logger.Error("post command failed", "error", err.Error(), "text", text)
+		if strings.HasPrefix(tmpText, "choice") || strings.HasPrefix(tmpText, "cmd") {
+			text = tmpText
+		} else {
+			app.Logger.Error("invalid command", "command", tmpText)
 			os.Exit(1)
 		}
-		var msg types.Msg
-		err = json.Unmarshal(body, &msg)
+		app.Logger.Info("text", "text", text)
+		msg, err := app.Web.PostCommandComposed(userid, text, channel)
 		if err != nil {
-			app.Logger.Error("json unmarsharl error", "error", err.Error())
+			app.Logger.Error("post command failed", "error", err.Error(), "text", text)
 			os.Exit(1)
 		}
 		app.Logger.Info("post command works", "answer", msg.Msg)
