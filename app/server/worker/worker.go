@@ -44,6 +44,13 @@ func NewWorkerAPI(ctx context.Context, dice rpg.Roll, db db.DBClient, l *slog.Lo
 }
 
 func (a *WorkerAPI) Execute() {
+	// check if plugin is active and accessible
+	err := a.client.Ping()
+	if err != nil {
+		a.logger.Error("error pinging plugin", "error", err.Error())
+		return
+	}
+
 	if a.StageActive {
 		a.stageSync.Lock()
 		a.logger.Info("starting scheduler worker api execution", "time", time.Now())

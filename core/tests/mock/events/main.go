@@ -34,6 +34,7 @@ func main() {
 		logger: logger,
 	}
 	mux.HandleFunc("POST /api/v1/event", a.events)
+	mux.HandleFunc("GET /api/v1/validate", a.validate)
 	if err := server.ListenAndServe(); !errors.Is(err, http.ErrServerClosed) {
 		logger.Error("listen and serve error", "error", err)
 		os.Exit(1)
@@ -63,4 +64,9 @@ func (a *app) events(w http.ResponseWriter, r *http.Request) {
 	a.logger.Info("event received", "event", obj)
 	w.WriteHeader(http.StatusAccepted)
 	fmt.Fprint(w, "{\"msg\":\"Accepted\"}")
+}
+
+func (a *app) validate(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusOK)
+	fmt.Fprint(w, "{\"msg\":\"authenticated\"}")
 }

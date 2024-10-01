@@ -70,6 +70,7 @@ func main() {
 	srv.Register("POST /login", app.Session.Signin)
 	srv.Register("POST /logoff", app.Session.Logout)
 	srv.Register("POST /refresh", app.Session.Refresh)
+	srv.Register("GET /api/v1/validate", app.Session.ValidateSession)
 
 	// writers
 	srv.Register("GET /api/v1/writer", app.GetWriters)
