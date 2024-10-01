@@ -186,3 +186,11 @@ func (a Session) Refresh(w http.ResponseWriter, r *http.Request) {
 	}
 	a.s.JSON(w, login)
 }
+
+func (a Session) ValidateSession(w http.ResponseWriter, r *http.Request) {
+	if a.CheckAuth(r) {
+		a.s.ErrJSON(w, http.StatusForbidden, "required authentication headers")
+		return
+	}
+	a.s.JSON(w, types.Msg{Msg: "authenticated"})
+}

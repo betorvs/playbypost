@@ -74,6 +74,14 @@ func main() {
 	}
 
 	mux.HandleFunc("POST /api/v1/event", a.events)
+	mux.HandleFunc("GET /api/v1/validate", a.validate)
+
+	err = a.web.Ping()
+	if err != nil {
+		logger.Error("error connecting with backend", "error", err.Error())
+		os.Exit(1)
+	}
+	logger.Info("connected to backend")
 
 	go func() {
 		if err := server.ListenAndServe(); !errors.Is(err, http.ErrServerClosed) {
@@ -509,4 +517,15 @@ func (a *app) events(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusAccepted)
 	fmt.Fprint(w, "{\"msg\":\"Accepted\"}")
+}
+
+func (a *app) validate(w http.ResponseWriter, r *http.Request) {
+	headerToken := r.Header.Get(types.HeaderToken)
+	if headerToken != a.admToken {
+		w.WriteHeader(http.StatusForbidden)
+		fmt.Fprint(w, "{\"msg\":\"unauthenticated\"}")
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+	fmt.Fprint(w, "{\"msg\":\"authenticated\"}")
 }

@@ -91,6 +91,14 @@ func main() {
 		admToken: adminToken,
 		guildID:  guildID,
 	}
+
+	err = a.web.Ping()
+	if err != nil {
+		logger.Error("error connecting with backend", "error", err.Error())
+		os.Exit(1)
+	}
+	logger.Info("connected to backend")
+
 	// bot handlers
 	discord.AddHandler(a.messageCreate)
 	discord.AddHandler(a.interactionCommand)
@@ -125,6 +133,7 @@ func main() {
 		fmt.Fprint(w, "{\"status\":\"OK\"}")
 	})
 	mux.HandleFunc("POST /api/v1/event", a.events)
+	mux.HandleFunc("GET /api/v1/validate", a.validate)
 
 	go func() {
 		if err := server.ListenAndServe(); !errors.Is(err, http.ErrServerClosed) {
@@ -522,16 +531,13 @@ func (a *app) events(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprint(w, "{\"msg\":\"Accepted\"}")
 }
 
-// func (a *app) postCommand(userid, text, channel string) (types.Composed, error) {
-// 	var msg types.Composed
-// 	body, err := a.web.PostCommand(userid, text, channel)
-// 	if err != nil {
-// 		a.logger.Error("post command", "error", err.Error())
-// 		return msg, err
-// 	}
-// 	err = json.Unmarshal(body, &msg)
-// 	if err != nil {
-// 		a.logger.Error("error decoding message from backend", "error", err.Error())
-// 	}
-// 	return msg, nil
-// }
+func (a *app) validate(w http.ResponseWriter, r *http.Request) {
+	headerToken := r.Header.Get(types.HeaderToken)
+	if headerToken != a.admToken {
+		w.WriteHeader(http.StatusForbidden)
+		fmt.Fprint(w, "{\"msg\":\"unauthenticated\"}")
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+	fmt.Fprint(w, "{\"msg\":\"authenticated\"}")
+}

@@ -190,6 +190,11 @@ tasks:
     cmds:
       - watchexec --watch-file slack-plugin --delay-run 5 -r "./slack-plugin"
 
+  mock-run:
+    desc: "Run mock server"
+    cmds:
+      - go run core/tests/mock/events/main.go
+
   list_writers:
     desc: "List all writers"
     cmds:
