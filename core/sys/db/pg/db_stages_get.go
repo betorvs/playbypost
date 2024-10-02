@@ -59,7 +59,7 @@ func (db *DBX) GetStageByStoryID(ctx context.Context, id int) ([]types.Stage, er
 
 func (db *DBX) GetStageByStageID(ctx context.Context, id int) (types.StageAggregated, error) {
 	aggr := types.StageAggregated{}
-	query := "SELECT sa.id, sa.display_text, sa.story_id, sa.storyteller_id, sa.encoding_key, sy.title, sy.announcement, sy.notes, sy.writer_id, u.userid, sc.channel, sc.active FROM stage AS sa JOIN story AS sy ON sa.story_id = sy.id JOIN users AS u ON sa.storyteller_id = u.id LEFT JOIN stage_channel AS sc ON sc.stage_id = sa.id WHERE sa.id = $1 AND sa.finished = false"
+	query := "SELECT sa.id, sa.display_text, sa.story_id, sa.storyteller_id, sa.encoding_key, sy.title, sy.announcement, sy.notes, sy.writer_id, u.userid, sc.channel, sc.active FROM stage AS sa JOIN story AS sy ON sa.story_id = sy.id JOIN users AS u ON sa.storyteller_id = u.id LEFT JOIN stage_channel AS sc ON sc.upstream_id = sa.id WHERE sa.id = $1 AND sa.finished = false"
 	rows, err := db.Conn.QueryContext(ctx, query, id)
 	if err != nil {
 		db.Logger.Error("query on stage failed", "error", err.Error())
@@ -131,7 +131,7 @@ func (db *DBX) GetRunningStageByChannelID(ctx context.Context, channelID, userID
 	db.Logger.Info("GetRunningStageByChannelID", "channelID", channelID, "userID", userID)
 	running := types.RunningStage{}
 	aggr := types.StageAggregated{}
-	query := "SELECT sa.id, sa.display_text, sa.story_id, sa.storyteller_id, sa.encoding_key, sy.title, sy.announcement, sy.notes, sy.writer_id, u.userid, sc.channel, sc.active FROM stage AS sa JOIN story AS sy ON sa.story_id = sy.id JOIN users AS u ON sa.storyteller_id = u.id LEFT JOIN stage_channel AS sc ON sc.stage_id = sa.id WHERE sc.channel = $1 AND sa.finished = false"
+	query := "SELECT sa.id, sa.display_text, sa.story_id, sa.storyteller_id, sa.encoding_key, sy.title, sy.announcement, sy.notes, sy.writer_id, u.userid, sc.channel, sc.active FROM stage AS sa JOIN story AS sy ON sa.story_id = sy.id JOIN users AS u ON sa.storyteller_id = u.id LEFT JOIN stage_channel AS sc ON sc.upstream_id = sa.id WHERE sc.channel = $1 AND sa.finished = false"
 	rows, err := db.Conn.QueryContext(ctx, query, channelID)
 	if err != nil {
 		db.Logger.Error("query on stage failed", "error", err.Error())
@@ -207,9 +207,9 @@ func (db *DBX) GetRunningStageByChannelID(ctx context.Context, channelID, userID
 }
 
 // stage_encounter_activities
-func (db *DBX) GetStageEncounterActivitiesByEncounterID(ctx context.Context, id int) ([]types.StageEncounterActivities, error) {
-	list := []types.StageEncounterActivities{}
-	query := "select sa.id, sa.actions, sa.stage_id, sa.encounter_id, sa.processed from stage_encounter_activities AS sa WHERE sa.encounter_id = $1 AND sa.finished = false"
+func (db *DBX) GetStageEncounterActivitiesByEncounterID(ctx context.Context, id int) ([]types.Activity, error) {
+	list := []types.Activity{}
+	query := "select sa.id, sa.actions, sa.upstream_id, sa.encounter_id, sa.processed from stage_encounter_activities AS sa WHERE sa.encounter_id = $1 AND sa.finished = false"
 	rows, err := db.Conn.QueryContext(ctx, query, id)
 	if err != nil {
 		db.Logger.Error("query on stage_encounter_activities by encounter_id failed", "error", err.Error())
@@ -217,8 +217,8 @@ func (db *DBX) GetStageEncounterActivitiesByEncounterID(ctx context.Context, id 
 	}
 	defer rows.Close()
 	for rows.Next() {
-		var s types.StageEncounterActivities
-		if err := rows.Scan(&s.ID, &s.Actions, &s.StageID, &s.EncounterID, &s.Processed); err != nil {
+		var s types.Activity
+		if err := rows.Scan(&s.ID, &s.Actions, &s.UpstreamID, &s.EncounterID, &s.Processed); err != nil {
 			db.Logger.Error("scan error on stage_encounter_activities by encounter_id ", "error", err.Error())
 		}
 		list = append(list, s)
@@ -231,9 +231,9 @@ func (db *DBX) GetStageEncounterActivitiesByEncounterID(ctx context.Context, id 
 }
 
 // stage_encounter_activities
-func (db *DBX) GetStageEncounterActivities(ctx context.Context) ([]types.StageEncounterActivities, error) {
-	list := []types.StageEncounterActivities{}
-	query := "select id, stage_id, encounter_id, actions, processed from stage_encounter_activities"
+func (db *DBX) GetStageEncounterActivities(ctx context.Context) ([]types.Activity, error) {
+	list := []types.Activity{}
+	query := "select id, upstream_id, encounter_id, actions, processed from stage_encounter_activities"
 	rows, err := db.Conn.QueryContext(ctx, query)
 	if err != nil {
 		db.Logger.Error("query on stage_encounter_activities failed", "error", err.Error())
@@ -241,8 +241,8 @@ func (db *DBX) GetStageEncounterActivities(ctx context.Context) ([]types.StageEn
 	}
 	defer rows.Close()
 	for rows.Next() {
-		var s types.StageEncounterActivities
-		if err := rows.Scan(&s.ID, &s.StageID, &s.EncounterID, &s.Actions, &s.Processed); err != nil {
+		var s types.Activity
+		if err := rows.Scan(&s.ID, &s.UpstreamID, &s.EncounterID, &s.Actions, &s.Processed); err != nil {
 			db.Logger.Error("scan error on stage_encounter_activities ", "error", err.Error())
 		}
 		list = append(list, s)
@@ -339,9 +339,9 @@ func (db *DBX) GetCreatureFromParticipantsList(ctx context.Context, players []ty
 }
 
 // stage_next_encounter
-func (db *DBX) GetNextEncounterByEncounterID(ctx context.Context, id int) (types.NextEncounter, error) {
-	ne := types.NextEncounter{}
-	query := "select display_text, stage_id, current_encounter_id, next_encounter_id FROM stage_next_encounter WHERE current_encounter_id = $1"
+func (db *DBX) GetNextEncounterByEncounterID(ctx context.Context, id int) (types.Next, error) {
+	ne := types.Next{}
+	query := "select display_text, upstream_id, current_encounter_id, next_encounter_id FROM stage_next_encounter WHERE current_encounter_id = $1"
 	rows, err := db.Conn.QueryContext(ctx, query, id)
 	if err != nil {
 		db.Logger.Error("query on stage_next_encounter by encounter_id failed", "error", err.Error())
@@ -349,7 +349,7 @@ func (db *DBX) GetNextEncounterByEncounterID(ctx context.Context, id int) (types
 	}
 	defer rows.Close()
 	for rows.Next() {
-		if err := rows.Scan(&ne.Text, &ne.StageID, &ne.EncounterID, &ne.NextEncounterID); err != nil {
+		if err := rows.Scan(&ne.Text, &ne.UpstreamID, &ne.EncounterID, &ne.NextEncounterID); err != nil {
 			db.Logger.Error("scan error on stage_next_encounter by encounter_id ", "error", err.Error())
 		}
 	}

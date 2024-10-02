@@ -41,8 +41,8 @@ var autoPlayCmd = &cobra.Command{
 			app.Logger.Info(msg.Msg, "text", displayText)
 
 		case "next":
-			next := types.AutoPlayNext{
-				AutoPlayID:      autoPlayID,
+			next := types.Next{
+				UpstreamID:      autoPlayID,
 				EncounterID:     encounterID,
 				NextEncounterID: nextEncounterID,
 				Text:            displayText,
@@ -81,8 +81,8 @@ var autoPlayCmd = &cobra.Command{
 				app.Logger.Error("next encounter not found", "title", nextEncounterTitle)
 				os.Exit(1)
 			}
-			next := types.AutoPlayNext{
-				AutoPlayID:      autoPlayID,
+			next := types.Next{
+				UpstreamID:      autoPlayID,
 				EncounterID:     encounterID,
 				NextEncounterID: nextEncounterID,
 				Text:            displayText,

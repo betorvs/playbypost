@@ -100,15 +100,15 @@ func (db *DBX) GetAutoPlayOptionsByChannelID(ctx context.Context, channelID, use
 
 	query := `SELECT ap.id, ap.display_text, ap.story_id, ap.solo, ap.encoding_key, 
 	ac.id AS auto_play_channel_id, ac.channel AS channel_id, 
-	apg.id, apg.user_id, apne.id, 
-	apne.auto_play_id, apne.display_text, apne.current_encounter_id, apne.next_encounter_id,
+	apg.id, apg.user_id, apg.last_update_at, apg.interactions, apne.id, 
+	apne.upstream_id, apne.display_text, apne.current_encounter_id, apne.next_encounter_id,
 	apno.kind, apno.values 
 	FROM auto_play_channel AS ac 
-	JOIN auto_play AS ap ON ap.id = ac.auto_play_id 
-	JOIN auto_play_state AS aps ON aps.auto_play_channel_id = ac.id 
-	JOIN auto_play_group AS apg ON apg.auto_play_channel_id = ac.id 
-	JOIN auto_play_next_encounter AS apne ON apne.auto_play_id = ap.id 
-	JOIN auto_play_next_objectives AS apno ON apno.auto_play_next_id = apne.id
+	JOIN auto_play AS ap ON ap.id = ac.upstream_id 
+	JOIN auto_play_state AS aps ON aps.upstream_id = ac.id 
+	JOIN auto_play_group AS apg ON apg.upstream_id = ac.id 
+	JOIN auto_play_next_encounter AS apne ON apne.upstream_id = ap.id 
+	JOIN auto_play_next_objectives AS apno ON apno.upstream_id = apne.id
 	WHERE ac.active = 'true' AND apg.active = 'true' AND aps.active = 'true' AND apne.current_encounter_id = aps.encounter_id AND ac.channel = $1`
 	rows, err := db.Conn.QueryContext(ctx, query, channelID)
 	if err != nil {
@@ -118,9 +118,9 @@ func (db *DBX) GetAutoPlayOptionsByChannelID(ctx context.Context, channelID, use
 	defer rows.Close()
 	for rows.Next() {
 		var group types.AutoPlayGroup
-		var next types.AutoPlayNext
+		var next types.Next
 		var values []sql.NullInt64
-		if err := rows.Scan(&autoPlay.AutoPlay.ID, &autoPlay.AutoPlay.Text, &autoPlay.AutoPlay.StoryID, &autoPlay.AutoPlay.Solo, &autoPlay.EncodingKey, &autoPlay.AutoPlayChannelID, &autoPlay.ChannelID, &group.ID, &group.UserID, &next.ID, &next.AutoPlayID, &next.Text, &next.EncounterID, &next.NextEncounterID, &next.Objective.Kind, pq.Array(&values)); err != nil {
+		if err := rows.Scan(&autoPlay.AutoPlay.ID, &autoPlay.AutoPlay.Text, &autoPlay.AutoPlay.StoryID, &autoPlay.AutoPlay.Solo, &autoPlay.EncodingKey, &autoPlay.AutoPlayChannelID, &autoPlay.ChannelID, &group.ID, &group.UserID, &group.LastUpdateAt, &group.Interactions, &next.ID, &next.UpstreamID, &next.Text, &next.EncounterID, &next.NextEncounterID, &next.Objective.Kind, pq.Array(&values)); err != nil {
 			db.Logger.Error("scan error on auto_play_channel by channel_id ", "error", err.Error())
 		}
 		if len(values) > 0 {
@@ -143,9 +143,9 @@ func (db *DBX) GetAutoPlayOptionsByChannelID(ctx context.Context, channelID, use
 	return autoPlay, nil
 }
 
-func (db *DBX) GetAutoPlayActivities(ctx context.Context) ([]types.AutoPlayActivities, error) {
-	var autoPlay []types.AutoPlayActivities
-	query := "select id, auto_play_id, encounter_id, actions, processed from auto_play_encounter_activities"
+func (db *DBX) GetAutoPlayActivities(ctx context.Context) ([]types.Activity, error) {
+	var autoPlay []types.Activity
+	query := "select id, upstream_id, encounter_id, actions, processed from auto_play_encounter_activities"
 	rows, err := db.Conn.QueryContext(ctx, query)
 	if err != nil {
 		db.Logger.Error("query on auto_play_encounter_activities failed", "error", err.Error())
@@ -153,8 +153,8 @@ func (db *DBX) GetAutoPlayActivities(ctx context.Context) ([]types.AutoPlayActiv
 	}
 	defer rows.Close()
 	for rows.Next() {
-		var auto types.AutoPlayActivities
-		if err := rows.Scan(&auto.ID, &auto.AutoPlayID, &auto.EncounterID, &auto.Actions, &auto.Processed); err != nil {
+		var auto types.Activity
+		if err := rows.Scan(&auto.ID, &auto.UpstreamID, &auto.EncounterID, &auto.Actions, &auto.Processed); err != nil {
 			db.Logger.Error("scan error on auto_play_encounter_activities ", "error", err.Error())
 		}
 		autoPlay = append(autoPlay, auto)

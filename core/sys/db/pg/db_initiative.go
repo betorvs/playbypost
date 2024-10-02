@@ -11,13 +11,13 @@ func (db *DBX) UpdateNextPlayer(ctx context.Context, id, nextPlayer int) error {
 	query := "Update initiative SET next_player = $1 WHERE id = $2 RETURNING id"
 	stmt, err := db.Conn.PrepareContext(ctx, query)
 	if err != nil {
-		fmt.Println(err)
+		db.Logger.Error("tx prepare on initiative failed", "error", err.Error())
 	}
 	defer stmt.Close()
 	var res int
 	err = stmt.QueryRow(nextPlayer, id).Scan(&res)
 	if err != nil {
-		fmt.Println(err)
+		db.Logger.Error("tx statement on initiative failed", "error", err.Error())
 	}
 	return nil
 }
@@ -137,13 +137,13 @@ func (db *DBX) DeactivateParticipant(ctx context.Context, id int, name string) (
 	query := "Update initiative_participants SET active = FALSE WHERE initiative_id = $1 AND participant_name = $2 RETURNING id"
 	stmt, err := db.Conn.PrepareContext(ctx, query)
 	if err != nil {
-		fmt.Println(err)
+		db.Logger.Error("tx prepare on initiative_participants failed", "error", err.Error())
 	}
 	defer stmt.Close()
 	var res int
 	err = stmt.QueryRow(id, name).Scan(&res)
 	if err != nil {
-		fmt.Println(err)
+		db.Logger.Error("tx statement on initiative_participants failed", "error", err.Error())
 	}
 	return res, nil
 }

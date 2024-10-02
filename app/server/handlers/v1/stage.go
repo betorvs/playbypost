@@ -270,13 +270,13 @@ func (a MainApi) AddParticipants(w http.ResponseWriter, r *http.Request) {
 
 // stage_next_encounter
 func (a MainApi) AddNextEncounter(w http.ResponseWriter, r *http.Request) {
-	obj := types.NextEncounter{}
+	obj := types.Next{}
 	err := json.NewDecoder(r.Body).Decode(&obj)
 	if err != nil {
 		a.s.ErrJSON(w, http.StatusBadRequest, "json decode error")
 		return
 	}
-	if obj.NextEncounterID == 0 || obj.EncounterID == 0 || obj.StageID == 0 {
+	if obj.NextEncounterID == 0 || obj.EncounterID == 0 || obj.UpstreamID == 0 {
 		a.s.ErrJSON(w, http.StatusBadRequest, "next encounter id, encounter id and stage id cannot be empty")
 		return
 	}

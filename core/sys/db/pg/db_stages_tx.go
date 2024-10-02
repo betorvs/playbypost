@@ -85,7 +85,7 @@ func (db *DBX) CreateStageTx(ctx context.Context, text, userid string, storyID i
 }
 
 func (db *DBX) AddChannelToStage(ctx context.Context, channel string, id int) (int, error) {
-	query := "INSERT INTO stage_channel(channel, stage_id, active) VALUES($1, $2, $3) RETURNING id"
+	query := "INSERT INTO stage_channel(channel, upstream_id, active) VALUES($1, $2, $3) RETURNING id"
 	stmt, err := db.Conn.PrepareContext(ctx, query)
 	if err != nil {
 		db.Logger.Error("prepare insert into stage_channel failed", "error", err.Error())
@@ -205,7 +205,7 @@ func (db *DBX) AddParticipants(ctx context.Context, encounterID int, npc bool, p
 }
 
 // stage_next_encounter
-func (db *DBX) AddNextEncounter(ctx context.Context, next types.NextEncounter) error {
+func (db *DBX) AddNextEncounter(ctx context.Context, next types.Next) error {
 
 	tx, err := db.Conn.BeginTx(ctx, nil)
 	if err != nil {
@@ -218,7 +218,7 @@ func (db *DBX) AddNextEncounter(ctx context.Context, next types.NextEncounter) e
 			err = fmt.Errorf("rolling back transaction: %w", err)
 		}
 	}()
-	query := "INSERT INTO stage_next_encounter (display_text, stage_id, current_encounter_id, next_encounter_id) VALUES ($1, $2, $3, $4) RETURNING id"
+	query := "INSERT INTO stage_next_encounter (display_text, upstream_id, current_encounter_id, next_encounter_id) VALUES ($1, $2, $3, $4) RETURNING id"
 	stmt, err := db.Conn.PrepareContext(ctx, query)
 	if err != nil {
 		db.Logger.Error("prepare insert into stage_next_encounter failed", "error", err.Error())
@@ -226,7 +226,7 @@ func (db *DBX) AddNextEncounter(ctx context.Context, next types.NextEncounter) e
 	}
 	defer stmt.Close()
 	var nextEncounterIDDB int
-	err = tx.StmtContext(ctx, stmt).QueryRow(next.Text, next.StageID, next.EncounterID, next.NextEncounterID).Scan(&nextEncounterIDDB)
+	err = tx.StmtContext(ctx, stmt).QueryRow(next.Text, next.UpstreamID, next.EncounterID, next.NextEncounterID).Scan(&nextEncounterIDDB)
 	if err != nil {
 		db.Logger.Error("error on insert into stage_next_encounter", "error", err.Error())
 		return err

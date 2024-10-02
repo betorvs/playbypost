@@ -10,9 +10,9 @@ import (
 	"golang.org/x/exp/slices"
 )
 
-func (a *WorkerAPI) parseAutoPlayCommand(cmd types.AutoPlayActivities) error {
+func (a *WorkerAPI) parseAutoPlayCommand(cmd types.Activity) error {
 	// Add your code here to handle the auto play command
-	announce, last, err := a.db.GetAnnounceByEncounterID(a.ctx, cmd.EncounterID, cmd.AutoPlayID)
+	announce, last, err := a.db.GetAnnounceByEncounterID(a.ctx, cmd.EncounterID, cmd.UpstreamID)
 	if err != nil {
 		a.logger.Error("error getting announce by encounter id", "error", err.Error())
 		return err
@@ -65,7 +65,7 @@ func (a *WorkerAPI) parseAutoPlayCommand(cmd types.AutoPlayActivities) error {
 				return err
 			}
 			// close channel
-			err = a.db.CloseAutoPlayChannel(a.ctx, cmd.Actions["channel"], cmd.AutoPlayID)
+			err = a.db.CloseAutoPlayChannel(a.ctx, cmd.Actions["channel"], cmd.UpstreamID)
 			if err != nil {
 				a.logger.Error("error closing auto play channel", "error", err.Error())
 				return err
@@ -112,10 +112,10 @@ func (a *WorkerAPI) parseAutoPlayCommand(cmd types.AutoPlayActivities) error {
 		if nextEncounterID != 0 {
 			// add to registry
 			cmd.Actions["text"] = fmt.Sprintf("%s;%s;%s", "choice", cmd.Actions["channel"], cmd.Actions["userid"])
-			cmd.Actions["auto_play_id"] = strconv.Itoa(cmd.AutoPlayID)
+			cmd.Actions["auto_play_id"] = strconv.Itoa(cmd.UpstreamID)
 			cmd.Actions["encounter_id"] = strconv.Itoa(nextEncounterID)
 			cmd.Actions["command"] = parser.NextSolo
-			err = a.db.RegisterActivitiesAutoPlay(a.ctx, cmd.AutoPlayID, nextEncounterID, cmd.Actions)
+			err = a.db.RegisterActivitiesAutoPlay(a.ctx, cmd.UpstreamID, nextEncounterID, cmd.Actions)
 			if err != nil {
 				a.logger.Error("error registering activities auto play", "error", err.Error())
 				return err

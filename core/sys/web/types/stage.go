@@ -57,14 +57,6 @@ type RunningStage struct {
 	Encounters []StageEncounter
 }
 
-type NextEncounter struct {
-	StageID         int       `json:"stage_id"`
-	EncounterID     int       `json:"encounter_id"`
-	NextEncounterID int       `json:"next_encounter_id"`
-	Text            string    `json:"text"`
-	Objective       Objective `json:"objective"`
-}
-
 // RunningTask represents a task that is currently running.
 type RunningTask struct {
 	StageID       int    `json:"stage_id"`
@@ -72,14 +64,6 @@ type RunningTask struct {
 	StorytellerID int    `json:"storyteller_id"`
 	EncounterID   int    `json:"encounter_id"`
 	Text          string `json:"text"`
-}
-
-type StageEncounterActivities struct {
-	ID          int     `json:"id"`
-	Actions     Actions `json:"actions"`
-	StageID     int     `json:"stage_id"`
-	EncounterID int     `json:"encounter_id"`
-	Processed   bool    `json:"processed"`
 }
 
 type Actions map[string]string

@@ -17,13 +17,3 @@ type Encounter struct {
 	FirstEncounter bool   `json:"first_encounter"`
 	LastEncounter  bool   `json:"last_encounter"`
 }
-
-type Objective struct {
-	ID     int    `json:"id"`
-	Kind   string `json:"kind"`
-	Values []int  `json:"values"`
-}
-
-func Objectives() []string {
-	return []string{ObjectiveDefault, ObjectiveDiceRoll, ObjectiveTaskOkay, ObjectiveVictory}
-}

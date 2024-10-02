@@ -2,6 +2,7 @@ package db
 
 import (
 	"context"
+	"time"
 
 	"github.com/betorvs/playbypost/core/initiative"
 	"github.com/betorvs/playbypost/core/rpg"
@@ -38,17 +39,17 @@ type DBClient interface {
 	GetStageEncounterByEncounterID(ctx context.Context, id int) (types.StageEncounter, error)
 	GetStageEncountersByStageID(ctx context.Context, id int) ([]types.StageEncounter, error)
 	GetRunningStageByChannelID(ctx context.Context, channelID, userID string, rpgSystem *rpg.RPGSystem) (types.RunningStage, error)
-	GetStageEncounterActivitiesByEncounterID(ctx context.Context, id int) ([]types.StageEncounterActivities, error)
-	GetStageEncounterActivities(ctx context.Context) ([]types.StageEncounterActivities, error)
+	GetStageEncounterActivitiesByEncounterID(ctx context.Context, id int) ([]types.Activity, error)
+	GetStageEncounterActivities(ctx context.Context) ([]types.Activity, error)
 	GetStageTaskFromRunningTaskID(ctx context.Context, taskID int) (types.Task, error)
 	GetCreatureFromParticipantsList(ctx context.Context, players []types.Options, npcs []types.Options, rpgSystem *rpg.RPGSystem) (map[int]*rules.Creature, map[int]*rules.Creature, error)
-	GetNextEncounterByEncounterID(ctx context.Context, id int) (types.NextEncounter, error)
+	GetNextEncounterByEncounterID(ctx context.Context, id int) (types.Next, error)
 	CreateStageTx(ctx context.Context, text, userid string, storyID int) (int, error)
 	AddChannelToStage(ctx context.Context, channel string, id int) (int, error)
 	AddEncounterToStage(ctx context.Context, text string, stage_id, storyteller_id, encounter_id int) (int, error)
 	UpdatePhase(ctx context.Context, id, phase int) error
 	AddParticipants(ctx context.Context, encounterID int, npc bool, players []int) error
-	AddNextEncounter(ctx context.Context, next types.NextEncounter) error
+	AddNextEncounter(ctx context.Context, next types.Next) error
 	AddRunningTask(ctx context.Context, text string, stageID, taskID, StorytellerID, encounterID int) error
 	AddEncounterActivities(ctx context.Context, text string, stageID, encounterID int) error
 	RegisterActivities(ctx context.Context, stageID, encounterID int, actions types.Actions) error
@@ -85,13 +86,14 @@ type DBClient interface {
 	GetAutoPlayByID(ctx context.Context, autoPlayID int) (types.AutoPlay, error)
 	GetNextEncounterByStoryID(ctx context.Context, storyID int) (types.AutoPlayEncounterList, error)
 	GetAutoPlayOptionsByChannelID(ctx context.Context, channelID, userID string) (types.AutoPlayOptions, error)
-	GetAutoPlayActivities(ctx context.Context) ([]types.AutoPlayActivities, error)
+	GetAutoPlayActivities(ctx context.Context) ([]types.Activity, error)
 	GetAnnounceByEncounterID(ctx context.Context, encounterID, autoPlayID int) (string, bool, error)
 	CreateAutoPlayTx(ctx context.Context, text string, storyID int, solo bool) (int, error)
-	AddAutoPlayNext(ctx context.Context, next types.AutoPlayNext) error
+	AddAutoPlayNext(ctx context.Context, next types.Next) error
 	CreateAutoPlayChannelTx(ctx context.Context, channelID, userID string, autoPlayID int) (int, error)
 	RegisterActivitiesAutoPlay(ctx context.Context, autoPlayID, encounterID int, actions types.Actions) error
 	UpdateProcessedAutoPlay(ctx context.Context, id int, processed bool, actions types.Actions) error
+	UpdateAutoPlayGroup(ctx context.Context, id, count int, date time.Time) error
 	UpdateAutoPlayState(ctx context.Context, autoPlayChannel string, encounterID int) error
 	CloseAutoPlayChannel(ctx context.Context, channelID string, autoPlayID int) error
 }
