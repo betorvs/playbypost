@@ -42,7 +42,7 @@ const AutoPlayNext = () => {
           "X-Access-Token": GetToken(),
         },
         body: JSON.stringify({
-          auto_play_id: Number(id),
+          upstream_id: Number(id),
           encounter_id: encounterID,
           next_encounter_id: nextEncounterID,
           text: text,

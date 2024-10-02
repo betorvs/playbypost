@@ -23,7 +23,7 @@ type GenericIDName = {
 // require a nexted map of the next encounters
 type NextEncounter = {
   id: number; 
-  auto_play_id: number;
+  upstream_id: number;
   encounter_id: number;
   next_encounter_id: number;
   text: string;

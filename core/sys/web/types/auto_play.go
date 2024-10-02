@@ -4,6 +4,7 @@ import (
 	"database/sql/driver"
 	"encoding/json"
 	"errors"
+	"time"
 )
 
 type AutoPlayStart struct {
@@ -20,8 +21,10 @@ type AutoPlay struct {
 }
 
 type AutoPlayGroup struct {
-	ID     int    `json:"id"`
-	UserID string `json:"user_id"`
+	ID           int       `json:"id"`
+	UserID       string    `json:"user_id"`
+	LastUpdateAt time.Time `json:"priority_timestamp"`
+	Interactions int       `json:"interactions"`
 }
 
 func (a AutoPlayGroup) Value() (driver.Value, error) {
@@ -35,15 +38,6 @@ func (a *AutoPlayGroup) Scan(value interface{}) error {
 	}
 
 	return json.Unmarshal(b, &a)
-}
-
-type AutoPlayNext struct {
-	ID              int       `json:"id"`
-	AutoPlayID      int       `json:"auto_play_id"`
-	EncounterID     int       `json:"encounter_id"`
-	NextEncounterID int       `json:"next_encounter_id"`
-	Text            string    `json:"text"`
-	Objective       Objective `json:"objective"`
 }
 
 type AutoPlayEncounterList struct {
@@ -62,13 +56,5 @@ type AutoPlayOptions struct {
 	AutoPlayChannelID int             `json:"auto_play_channel_id"`
 	ChannelID         string          `json:"channel_id"`
 	Group             []AutoPlayGroup `json:"group"`
-	NextEncounters    []AutoPlayNext  `json:"next_encounters"`
-}
-
-type AutoPlayActivities struct {
-	ID          int     `json:"id"`
-	Actions     Actions `json:"actions"`
-	AutoPlayID  int     `json:"auto_play_id"`
-	EncounterID int     `json:"encounter_id"`
-	Processed   bool    `json:"processed"`
+	NextEncounters    []Next          `json:"next_encounters"`
 }

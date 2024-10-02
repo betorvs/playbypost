@@ -1,6 +1,6 @@
 //go:build integration
 
-package integration
+package integration_test
 
 import (
 	"fmt"
@@ -14,12 +14,12 @@ import (
 
 var (
 	autoPlayEncounters = map[string][]string{
-		"first encounter on story 2":   []string{"AB, you find it. Choose A or B", "secret note from"},
-		"2 encounter on story 2":       []string{"A. Keep following it.", "secret note from"},
-		"3 encounter on story 2":       []string{"B. Keep following it.", "secret note from"},
-		"4 encounter on story 2":       []string{"After finding A, you got it. Go to end notes.", "secret note from"},
-		"bad end encounter on story 2": []string{"You have got into trouble and this is the end of it.", "secret note from"},
-		"last encounter on story 2":    []string{"You discover it. Thank you, hero! We're proud of you!", "secret note from"},
+		"first encounter on story 2":   {"AB, you find it. Choose A or B", "secret note from"},
+		"2 encounter on story 2":       {"A. Keep following it.", "secret note from"},
+		"3 encounter on story 2":       {"B. Keep following it.", "secret note from"},
+		"4 encounter on story 2":       {"After finding A, you got it. Go to end notes.", "secret note from"},
+		"bad end encounter on story 2": {"You have got into trouble and this is the end of it.", "secret note from"},
+		"last encounter on story 2":    {"You discover it. Thank you, hero! We're proud of you!", "secret note from"},
 	}
 )
 
@@ -223,8 +223,8 @@ func TestIntegration(t *testing.T) {
 			if k == fmt.Sprintf("%s-%s", "first encounter on story 2", random) {
 				// encounter 2 and 3
 				titleNext := fmt.Sprintf("%s-%s", "2 encounter on story 2", random)
-				next := types.AutoPlayNext{
-					AutoPlayID:      autoPlay1.ID,
+				next := types.Next{
+					UpstreamID:      autoPlay1.ID,
 					EncounterID:     v.ID,
 					NextEncounterID: autoPlayEncounters[titleNext].ID,
 					Text:            "If you want A",
@@ -234,8 +234,8 @@ func TestIntegration(t *testing.T) {
 					t.Error("error adding next encounter")
 				}
 				titleNext2 := fmt.Sprintf("%s-%s", "3 encounter on story 2", random)
-				next2 := types.AutoPlayNext{
-					AutoPlayID:      autoPlay1.ID,
+				next2 := types.Next{
+					UpstreamID:      autoPlay1.ID,
 					EncounterID:     v.ID,
 					NextEncounterID: autoPlayEncounters[titleNext2].ID,
 					Text:            "If you want B",
@@ -248,8 +248,8 @@ func TestIntegration(t *testing.T) {
 			if k == fmt.Sprintf("%s-%s", "2 encounter on story 2", random) {
 				// encouter 4
 				titleNext := fmt.Sprintf("%s-%s", "4 encounter on story 2", random)
-				next := types.AutoPlayNext{
-					AutoPlayID:      autoPlay1.ID,
+				next := types.Next{
+					UpstreamID:      autoPlay1.ID,
 					EncounterID:     v.ID,
 					NextEncounterID: autoPlayEncounters[titleNext].ID,
 					Text:            "moving forward with A",
@@ -262,8 +262,8 @@ func TestIntegration(t *testing.T) {
 			if k == fmt.Sprintf("%s-%s", "3 encounter on story 2", random) {
 				// encounter 5
 				titleNext := fmt.Sprintf("%s-%s", "bad end encounter on story 2", random)
-				next := types.AutoPlayNext{
-					AutoPlayID:      autoPlay1.ID,
+				next := types.Next{
+					UpstreamID:      autoPlay1.ID,
 					EncounterID:     v.ID,
 					NextEncounterID: autoPlayEncounters[titleNext].ID,
 					Text:            "moving forward with B",
@@ -276,8 +276,8 @@ func TestIntegration(t *testing.T) {
 			if k == fmt.Sprintf("%s-%s", "4 encounter on story 2", random) {
 				// encounter 6
 				titleNext := fmt.Sprintf("%s-%s", "last encounter on story 2", random)
-				next := types.AutoPlayNext{
-					AutoPlayID:      autoPlay1.ID,
+				next := types.Next{
+					UpstreamID:      autoPlay1.ID,
 					EncounterID:     v.ID,
 					NextEncounterID: autoPlayEncounters[titleNext].ID,
 					Text:            "go to end notes",

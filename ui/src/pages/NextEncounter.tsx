@@ -42,7 +42,7 @@ const NextEncounter = () => {
         "X-Access-Token": GetToken(),
       },
       body: JSON.stringify({
-        stage_id: Number(id),
+        upstream_id: Number(id),
         encounter_id: encounteridNumber,
         next_encounter_id: encounterID,
         text: text,

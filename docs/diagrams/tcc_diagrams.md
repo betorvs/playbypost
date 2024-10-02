@@ -148,7 +148,7 @@ entity "stage_running_tasks" as e12 {
 entity "stage_next_encounter" as e13 {
   *id : number <<generated>>
   --
-  *stage_id : number <<FK>>
+  *upstream_id : number <<FK>>
   *current_encounter_id : number <<FK>>
   *next_encounter_id : number <<FK>>
 }
@@ -156,7 +156,7 @@ entity "stage_next_encounter" as e13 {
 entity "stage_encounter_activities" as e14 {
   *id : number <<generated>>
   --
-  *stage_id : number <<FK>>
+  *upstream_id : number <<FK>>
   *encounters_id : number <<FK>>
 }
 
@@ -196,7 +196,7 @@ entity "initiative_participants" as e19 {
 entity "stage_channel" as e20 {
   *id : number <<generated>>
   --
-  *stage_id : number <<FK>>
+  *upstream_id : number <<FK>>
 }
 
 entity "auto_play" as e21 {
@@ -208,43 +208,43 @@ entity "auto_play" as e21 {
 entity "auto_play_next_encounter" as e22 {
   *id : number <<generated>>
   -- 
-  *auto_play_id: number <<FK>>
+  *upstream_id: number <<FK>>
   *current_encounter_id: number <<FK>>
   *next_encounter_id: number <<FK>>
 }
 entity "auto_play_encounter_activities" as e23 {
   *id : number <<generated>>
   --
-  *auto_play_id: number <<FK>>
+  *upstream_id: number <<FK>>
   *encounter_id: number <<FK>>
 }
 entity "auto_play_channel" as e24 {
   *id : number <<generated>>
   -- 
-  *auto_play_id: number <<FK>>
+  *upstream_id: number <<FK>>
 }
 entity "auto_play_group" as e25 {
   *id : number <<generated>>
   -- 
-  *auto_play_channel_id: number <<FK>>
+  *upstream_id: number <<FK>>
 }
 entity "auto_play_state" as e26 {
   *id : number <<generated>>
   -- 
-  *auto_play_channel_id: number <<FK>>
+  *upstream_id: number <<FK>>
   *encounter_id: number <<FK>>
 }
 
 entity "stage_next_objectives" as e27 {
   *id: number <<generated>>
   --
-  stage_next_id: number <<FK>>
+  upstream_id: number <<FK>>
 }
 
 entity "auto_play_next_objectives" as e28 {
   *id: number <<generated>>
   --
-  auto_play_next_id: number <<FK>>
+  upstream_id: number <<FK>>
 }
 
 e01 ||..|{ e02

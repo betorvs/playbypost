@@ -20,7 +20,7 @@ func ParserAutoPlaysSolo(autoPlays []types.AutoPlay) []types.Options {
 	return opts
 }
 
-func ParserAutoPlaysNext(autoPlays []types.AutoPlayNext) ([]types.Options, bool) {
+func ParserAutoPlaysNext(autoPlays []types.Next) ([]types.Options, bool) {
 	ok := false
 	opts := []types.Options{}
 	for _, v := range autoPlays {
@@ -28,11 +28,11 @@ func ParserAutoPlaysNext(autoPlays []types.AutoPlayNext) ([]types.Options, bool)
 		case types.ObjectiveDiceRoll:
 			if !ok {
 				// it should add only one dice roll option
-				opts = append(opts, types.Options{ID: v.AutoPlayID, Name: DiceRollSolo, Value: fmt.Sprintf("%s:%d", DiceRollSolo, v.EncounterID)})
+				opts = append(opts, types.Options{ID: v.UpstreamID, Name: DiceRollSolo, Value: fmt.Sprintf("%s:%d", DiceRollSolo, v.EncounterID)})
 				ok = true
 			}
 		case types.ObjectiveDefault:
-			opts = append(opts, types.Options{ID: v.AutoPlayID, Name: v.Text, Value: fmt.Sprintf("%s-%s:%d", NextSolo, v.Text, v.NextEncounterID)})
+			opts = append(opts, types.Options{ID: v.UpstreamID, Name: v.Text, Value: fmt.Sprintf("%s-%s:%d", NextSolo, v.Text, v.NextEncounterID)})
 		}
 
 	}

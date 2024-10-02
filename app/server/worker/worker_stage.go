@@ -12,7 +12,7 @@ import (
 	"github.com/betorvs/playbypost/core/utils"
 )
 
-func (a *WorkerAPI) parseCommand(cmd types.StageEncounterActivities) error {
+func (a *WorkerAPI) parseCommand(cmd types.Activity) error {
 	// call back to slack
 	enc, err := a.db.GetStageEncounterByEncounterID(a.ctx, cmd.EncounterID)
 	if err != nil {
