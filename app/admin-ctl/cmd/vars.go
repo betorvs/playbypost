@@ -1,5 +1,10 @@
 package cmd
 
+const (
+	formatJSON = "json"
+	formatLog  = "log"
+)
+
 var (
 	username           string // cmd: users
 	password           string // cmd: users
@@ -10,6 +15,7 @@ var (
 	writerID           int    // cmd: story
 	name               string // cmd: player
 	playerID           int    // cmd: player
+	playerUserID       string // cmd: player
 	storyID            int    // cmd: player, encounter, stage
 	stageTitle         string // cmd: player, stage
 	stageID            int    // cmd: player
@@ -40,4 +46,7 @@ var (
 	random             bool   // cmd: db
 	objectiveKind      string // cmd: auto-play
 	objectiveValues    []int  // cmd: auto-play
+	outputFormat       string // cmd: list all
+	objectKind         string // cmd: validator
+	objectID           int    // cmd: validator
 )

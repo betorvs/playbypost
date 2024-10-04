@@ -28,7 +28,15 @@ var storyCmd = &cobra.Command{
 				os.Exit(1)
 			}
 			for _, v := range u {
-				fmt.Printf("Story Title: %s, ID: %d, Master ID: %d, Announcement: \"%s\" \n", v.Title, v.ID, v.WriterID, v.Announcement)
+				switch outputFormat {
+				case formatJSON:
+					b, _ := json.Marshal(v)
+					fmt.Println(string(b))
+
+				case formatLog:
+					app.Logger.Info("Story", "id", v.ID, "title", v.Title, "writer_id", v.WriterID, "announcement", v.Announcement)
+
+				}
 			}
 
 		case "create":

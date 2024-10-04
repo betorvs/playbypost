@@ -28,7 +28,15 @@ var encounterCmd = &cobra.Command{
 				os.Exit(1)
 			}
 			for _, v := range l {
-				fmt.Printf("Encounter Title: %s, ID: %d, Notes: \"%s\", Announcement: \"%s\" \n", v.Title, v.ID, v.Notes, v.Announcement)
+				switch outputFormat {
+				case formatJSON:
+					b, _ := json.Marshal(v)
+					fmt.Println(string(b))
+
+				case formatLog:
+					app.Logger.Info("Encounter", "id", v.ID, "text", v.Title, "story_id", v.StoryID, "writer_id", v.WriterID)
+
+				}
 			}
 
 		case "get":

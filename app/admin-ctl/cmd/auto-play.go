@@ -26,6 +26,25 @@ var autoPlayCmd = &cobra.Command{
 	Args:   cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		switch args[0] {
+		case "list":
+			autoPlays, err := app.Web.GetAutoPlay()
+			if err != nil {
+				app.Logger.Error("autoPlay list error", "error", err.Error())
+				os.Exit(1)
+			}
+			for _, autoPlay := range autoPlays {
+				switch outputFormat {
+				case formatJSON:
+					b, _ := json.Marshal(autoPlay)
+					fmt.Println(string(b))
+
+				case formatLog:
+					app.Logger.Info("autoPlay", "id", autoPlay.ID, "text", autoPlay.Text, "story_id", autoPlay.StoryID, "solo", autoPlay.Solo)
+
+				}
+
+			}
+
 		case "create":
 			body, err := app.Web.CreateAutoPlay(displayText, storyID, solo)
 			if err != nil {

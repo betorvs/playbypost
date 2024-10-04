@@ -115,3 +115,22 @@ func (a MainApi) AddAutoPlayNext(w http.ResponseWriter, r *http.Request) {
 	msg := fmt.Sprintf("encounter id %v next encounter updated", obj.EncounterID)
 	a.s.JSON(w, types.Msg{Msg: msg})
 }
+
+func (a MainApi) GetAutoPlayNextEncounterByAutoPlayID(w http.ResponseWriter, r *http.Request) {
+	if a.Session.CheckAuth(r) {
+		a.s.ErrJSON(w, http.StatusForbidden, "required authentication headers")
+		return
+	}
+	idString := r.PathValue("id")
+	id, err := strconv.Atoi(idString)
+	if err != nil {
+		a.s.ErrJSON(w, http.StatusBadRequest, "id should be a integer")
+		return
+	}
+	obj, err := a.db.GetNextEncounterByAutoPlayID(a.ctx, id)
+	if err != nil {
+		a.s.ErrJSON(w, http.StatusBadRequest, "auto play database issue")
+		return
+	}
+	a.s.JSON(w, obj)
+}

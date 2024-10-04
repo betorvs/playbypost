@@ -25,7 +25,7 @@ tasks:
   integration:
     desc: "Run integration tests"
     cmds: 
-      - go test -v ./... -tags integration
+      - go test -v ./core/tests/integration/ -tags integration
 
   test:
     desc: "Run unit tests"
@@ -178,17 +178,17 @@ tasks:
   playbypost-run:
     desc: "Run playbypost server with watchexec"
     cmds:
-      - watchexec --watch-file playbypost --delay-run 5 -r "./playbypost -autoplay-worker -stage-worker"
+      - watchexec --watch-file playbypost --delay-run 1 -r "./playbypost -autoplay-worker -stage-worker"
 
   discord-run:
     desc: "Run discord plugin with watchexec"
     cmds:
-      - watchexec --watch-file discord-plugin --delay-run 5 -r "./discord-plugin"
+      - watchexec --watch-file discord-plugin --delay-run 1 -r "./discord-plugin"
 
   slack-run:
     desc: "Run slack plugin with watchexec"
     cmds:
-      - watchexec --watch-file slack-plugin --delay-run 5 -r "./slack-plugin"
+      - watchexec --watch-file slack-plugin --delay-run 1 -r "./slack-plugin"
 
   mock-run:
     desc: "Run mock server"
@@ -218,6 +218,22 @@ tasks:
     vars:
       TOKEN:
         sh: cat creds
+  
+  list_auto_play:
+    desc: "List all auto play"
+    cmds:
+      - ./admin-ctl auto-play list --token {{.TOKEN}}
+    vars:
+      TOKEN:
+        sh: cat creds
+
+  list_stages:
+    desc: "List all stages"
+    cmds:
+      - ./admin-ctl stage list --token {{.TOKEN}}
+    vars:
+      TOKEN:
+        sh: cat creds 
 
   load_writer:
     desc: "Load writers"
@@ -291,7 +307,7 @@ tasks:
     desc: "Load stage"
     cmds:
       - ./admin-ctl stage create-by-title --display-text "adv-hero-1" --story-title "heroes save the world" --user-id "U947BLKME" --token {{.TOKEN}}
-      - ./admin-ctl player add-player-stage-by-title --stage-title "adv-hero-1" --user-id "UMNL1CU1M" --token {{.TOKEN}}
+      - ./admin-ctl player add-player-stage-by-title --stage-title "adv-hero-1" --player-id "UMNL1CU1M" --token {{.TOKEN}}
       - ./admin-ctl stage add-encounter --stage-title "adv-hero-1" --encounter-title "first encounter on story 1" --story-title "heroes save the world" --display-text "enc-1" --token {{.TOKEN}}
       - ./admin-ctl stage add-encounter --stage-title "adv-hero-1" --encounter-title "2 encounter on story 1" --story-title "heroes save the world" --display-text "enc-2" --token {{.TOKEN}}
       - ./admin-ctl stage add-encounter --stage-title "adv-hero-1" --encounter-title "3 encounter on story 1" --story-title "heroes save the world" --display-text "enc-3" --token {{.TOKEN}}

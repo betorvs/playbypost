@@ -88,6 +88,7 @@ type DBClient interface {
 	GetAutoPlayOptionsByChannelID(ctx context.Context, channelID, userID string) (types.AutoPlayOptions, error)
 	GetAutoPlayActivities(ctx context.Context) ([]types.Activity, error)
 	GetAnnounceByEncounterID(ctx context.Context, encounterID, autoPlayID int) (string, bool, error)
+	GetNextEncounterByAutoPlayID(ctx context.Context, autoPlayID int) ([]types.Next, error)
 	CreateAutoPlayTx(ctx context.Context, text string, storyID int, solo bool) (int, error)
 	AddAutoPlayNext(ctx context.Context, next types.Next) error
 	CreateAutoPlayChannelTx(ctx context.Context, channelID, userID string, autoPlayID int) (int, error)

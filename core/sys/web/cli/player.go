@@ -12,7 +12,7 @@ const (
 	player string = "player"
 )
 
-func (c *Cli) GeneratePlayer(name, userID string, playerid, stageid int) ([]byte, error) {
+func (c *Cli) GeneratePlayer(name, userID string, playerid, stageid int) (types.Msg, error) {
 	u := types.GeneratePlayer{
 		Name:    name,
 		StageID: stageid,
@@ -25,10 +25,18 @@ func (c *Cli) GeneratePlayer(name, userID string, playerid, stageid int) ([]byte
 	}
 	body, err := json.Marshal(u)
 	if err != nil {
-		return []byte{}, err
+		return types.Msg{}, err
 	}
 	res, err := c.postGeneric(player, body)
-	return res, err
+	if err != nil {
+		return types.Msg{}, err
+	}
+	var msg types.Msg
+	err = json.Unmarshal(res, &msg)
+	if err != nil {
+		return types.Msg{}, err
+	}
+	return msg, nil
 }
 
 func (c *Cli) GetPlayersByStageID(id int) (map[int]rules.Creature, error) {

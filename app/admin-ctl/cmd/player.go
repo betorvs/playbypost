@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/betorvs/playbypost/core/sys/web/types"
 	"github.com/spf13/cobra"
 )
 
@@ -29,18 +28,21 @@ var playerCmd = &cobra.Command{
 
 		switch args[0] {
 		case "list":
-			// if stageID == 0 {
-			// 	app.Logger.Error("stage-id is required")
-			// 	os.Exit(2)
-			// }
 			u, err := app.Web.GetPlayers()
 			if err != nil {
 				app.Logger.Error("get players", "error", err.Error())
 				os.Exit(1)
 			}
-			for k, v := range u {
-				fmt.Printf("PlayerID %d: %+v \n", k, v)
-				fmt.Println("")
+			for _, v := range u {
+				switch outputFormat {
+				case formatJSON:
+					b, _ := json.Marshal(v)
+					fmt.Println(string(b))
+
+				case formatLog:
+					app.Logger.Info("Player", "id", v.ID, "name", v.Name, "user_id", v.PlayerID, "stage_id", v.StageID)
+
+				}
 			}
 		case "get":
 			if playerID == 0 {
@@ -52,7 +54,9 @@ var playerCmd = &cobra.Command{
 				app.Logger.Error("get player by id", "error", err.Error())
 				os.Exit(1)
 			}
-			fmt.Printf("Player: %+v \n", l)
+			b, _ := json.Marshal(l)
+			fmt.Println(string(b))
+
 		case "add-player-stage-by-title":
 			if stageTitle == "" {
 				app.Logger.Error("stage-title is required")
@@ -73,17 +77,12 @@ var playerCmd = &cobra.Command{
 				app.Logger.Error("stage not found", "stage-title", stageTitle)
 				os.Exit(1)
 			}
-			body, err := app.Web.GeneratePlayer(name, "", playerID, storyID)
+			msg, err := app.Web.GeneratePlayer(name, playerUserID, 0, stageID)
 			if err != nil {
-				app.Logger.Error("generate player error", "error", err.Error())
+				app.Logger.Error("generate player error", "error", err.Error(), "content", msg.Msg)
 				os.Exit(1)
 			}
-			var msg types.Msg
-			err = json.Unmarshal(body, &msg)
-			if err != nil {
-				app.Logger.Error("json unmarsharl error", "error", err.Error())
-				os.Exit(1)
-			}
+
 			app.Logger.Info(msg.Msg, "player", name)
 
 		case "generate":
@@ -91,15 +90,9 @@ var playerCmd = &cobra.Command{
 				app.Logger.Error("all parameters are required")
 				os.Exit(2)
 			}
-			body, err := app.Web.GeneratePlayer(name, "", playerID, storyID)
+			msg, err := app.Web.GeneratePlayer(name, playerUserID, 0, storyID)
 			if err != nil {
-				app.Logger.Error("generate player error", "error", err.Error())
-				os.Exit(1)
-			}
-			var msg types.Msg
-			err = json.Unmarshal(body, &msg)
-			if err != nil {
-				app.Logger.Error("json unmarsharl error", "error", err.Error())
+				app.Logger.Error("generate player error", "error", err.Error(), "content", msg.Msg)
 				os.Exit(1)
 			}
 			app.Logger.Info(msg.Msg, "player", name)
@@ -111,7 +104,7 @@ var playerCmd = &cobra.Command{
 
 func init() {
 	rootCmd.AddCommand(playerCmd)
-	playerCmd.Flags().IntVar(&playerID, "player-id", 0, "player id is equal user ID")
+	playerCmd.Flags().StringVar(&playerUserID, "player-id", "", "player id is equal user ID")
 	playerCmd.Flags().IntVar(&stageID, "stage-id", 0, "stage ID")
 	playerCmd.Flags().StringVar(&name, "name", "", "name of player, character's name")
 	playerCmd.Flags().StringVar(&stageTitle, "stage-title", "", "title of stage")
