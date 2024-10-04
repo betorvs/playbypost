@@ -5,6 +5,7 @@ package cmd
 
 import (
 	"encoding/json"
+	"fmt"
 	"os"
 
 	"github.com/betorvs/playbypost/core/sys/web/types"
@@ -43,7 +44,16 @@ var chatCmd = &cobra.Command{
 				os.Exit(1)
 			}
 			for _, v := range body {
-				app.Logger.Info("chat list", "username", v.Username, "userid", v.UserID, "channel", v.Channel)
+				switch outputFormat {
+				case formatJSON:
+					b, _ := json.Marshal(v)
+					fmt.Println(string(b))
+
+				case formatLog:
+					app.Logger.Info("chat list", "username", v.Username, "userid", v.UserID, "channel", v.Channel)
+
+				}
+
 			}
 
 		}

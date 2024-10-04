@@ -183,3 +183,38 @@ func (db *DBX) GetAnnounceByEncounterID(ctx context.Context, encounterID, autoPl
 	}
 	return text, last, nil
 }
+
+// func GetNextEncounterByAutoPlayID
+func (db *DBX) GetNextEncounterByAutoPlayID(ctx context.Context, autoPlayID int) ([]types.Next, error) {
+	var next []types.Next
+	query := "select a.id, a.upstream_id, a.current_encounter_id, a.next_encounter_id, a.display_text, apno.kind, apno.values from auto_play_next_encounter AS a JOIN auto_play_next_objectives AS apno ON apno.upstream_id = a.id WHERE a.upstream_id = $1"
+	rows, err := db.Conn.QueryContext(ctx, query, autoPlayID)
+	if err != nil {
+		db.Logger.Error("query on auto_play_next_encounter failed", "error", err.Error())
+		return next, err
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var n types.Next
+		var o types.Objective
+		var values []sql.NullInt64
+		if err := rows.Scan(&n.ID, &n.UpstreamID, &n.EncounterID, &n.NextEncounterID, &n.Text, &o.Kind, pq.Array(&values)); err != nil {
+			db.Logger.Error("scan error on auto_play_next_encounter ", "error", err.Error())
+		}
+		n.Objective = o
+		if len(values) > 0 {
+			for _, v := range values {
+				if v.Valid {
+					n.Objective.Values = append(n.Objective.Values, int(v.Int64))
+				}
+			}
+		}
+
+		next = append(next, n)
+	}
+	// Check for errors from iterating over rows.
+	if err := rows.Err(); err != nil {
+		db.Logger.Error("rows err on auto_play_next_encounter", "error", err.Error())
+	}
+	return next, nil
+}

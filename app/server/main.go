@@ -135,6 +135,16 @@ func main() {
 	srv.Register("GET /api/v1/autoplay/encounter/story/{id}", app.GetNextEncounterByStoryId)
 	srv.Register("POST /api/v1/autoplay", app.CreateAutoPlay)
 	srv.Register("POST /api/v1/autoplay/next", app.AddAutoPlayNext)
+	srv.Register("GET /api/v1/autoplay/next/{id}", app.GetAutoPlayNextEncounterByAutoPlayID)
+
+	// validator auto play and stage and story
+	srv.Register("GET /api/v1/validator/autoplay/{hashid}", app.GetValidateAutoPlay)
+	srv.Register("GET /api/v1/validator/stage/{hashid}", app.GetValidateStage)
+	srv.Register("GET /api/v1/validator/story/{hashid}", app.GetValidateStory)
+	srv.Register("PUT /api/v1/validator/autoplay/{id}", app.RequestToValidateAutoPlay)
+	srv.Register("PUT /api/v1/validator/stage/{id}", app.RequestToValidateStage)
+	srv.Register("PUT /api/v1/validator/story/{id}", app.RequestToValidateStory)
+	srv.Register("GET /api/v1/validator", app.GetAllValidations)
 	// options
 	srv.Register("OPTIONS /*", srv.Options)
 
@@ -163,6 +173,15 @@ func main() {
 
 	go func() {
 		jobScheduler.Start(ctxJob)
+	}()
+
+	jobSchedulerHourly := scheduler.NewJobScheduler(1 * time.Hour)
+	jobSchedulerHourly.JobQueue = app.Validator
+	ctxJobHourly, jobCancelHourly := context.WithCancel(ctx)
+	defer jobCancelHourly()
+
+	go func() {
+		jobSchedulerHourly.Start(ctxJobHourly)
 	}()
 
 	// starting a goroutine to server http requests

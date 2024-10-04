@@ -99,6 +99,6 @@ func (s *SvrWeb) Options(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Request-Method", "GET, POST, DELETE, PUT, OPTIONS")
 	w.WriteHeader(http.StatusOK)
 
-	message := "{\"msg\":\"OK\"}"
+	message := types.Msg{Msg: "OK"}
 	fmt.Fprint(w, message)
 }

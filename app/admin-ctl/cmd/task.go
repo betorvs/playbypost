@@ -29,7 +29,15 @@ var taskCmd = &cobra.Command{
 				os.Exit(1)
 			}
 			for _, v := range t {
-				fmt.Printf("Task Description: %s, ability: %s, skill: %s, kind: %v, target: %v \n", v.Description, v.Ability, v.Skill, v.Kind, v.Target)
+				switch outputFormat {
+				case formatJSON:
+					b, _ := json.Marshal(v)
+					fmt.Println(string(b))
+
+				case formatLog:
+					app.Logger.Info("Task", "id", v.ID, "description", v.Description, "ability", v.Ability, "skill", v.Skill, "kind", v.Kind, "target", v.Target)
+
+				}
 			}
 
 		case "create":

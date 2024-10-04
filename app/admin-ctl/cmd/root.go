@@ -47,7 +47,7 @@ func init() {
 	rootCmd.PersistentFlags().StringVar(&server, "server", "http://localhost:3000", "playbypost http server, default: ")
 	rootCmd.PersistentFlags().StringVar(&adminToken, "token", "", "admin token to access playbypost http server")
 	rootCmd.PersistentFlags().StringVar(&adminUser, "admin-user", "admin", "admin token to access playbypost http server")
-
+	rootCmd.PersistentFlags().StringVar(&outputFormat, "output", "log", "output format [json|log] log from logline")
 }
 
 func loadApp(cmd *cobra.Command, args []string) {

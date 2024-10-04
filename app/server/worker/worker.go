@@ -53,44 +53,52 @@ func (a *WorkerAPI) Execute() {
 
 	if a.StageActive {
 		a.stageSync.Lock()
-		a.logger.Info("starting scheduler worker api execution", "time", time.Now())
+		a.logger.Debug("starting scheduler worker api execution", "time", time.Now())
 		activities, err := a.db.GetStageEncounterActivities(a.ctx)
 		if err != nil {
 			a.logger.Error("error getting stage encounter activities", "error", err.Error())
 			return
 		}
-		for _, activity := range activities {
-			if !activity.Processed {
-				a.logger.Info("activity", "activity", activity)
-				// execute activity
-				err := a.parseCommand(activity)
-				if err != nil {
-					a.logger.Error("error parsing command", "error", err.Error())
-					continue
-				}
+		if len(activities) == 0 {
+			a.logger.Debug("no stage activities found", "time", time.Now())
+		} else {
+			for _, activity := range activities {
+				if !activity.Processed {
+					a.logger.Info("activity", "activity", activity)
+					// execute activity
+					err := a.parseCommand(activity)
+					if err != nil {
+						a.logger.Error("error parsing command", "error", err.Error())
+						continue
+					}
 
+				}
 			}
 		}
 		a.stageSync.Unlock()
 	}
 	if a.AutoPlayActive {
 		a.autoPlaySync.Lock()
-		a.logger.Info("starting scheduler auto play worker api execution", "time", time.Now())
+		a.logger.Debug("starting scheduler auto play worker api execution", "time", time.Now())
 		activities, err := a.db.GetAutoPlayActivities(a.ctx)
 		if err != nil {
 			a.logger.Error("error getting auto play activities", "error", err.Error())
 			return
 		}
-		for _, activity := range activities {
-			if !activity.Processed {
-				a.logger.Info("activity", "activity", activity)
-				// execute activity
-				err := a.parseAutoPlayCommand(activity)
-				if err != nil {
-					a.logger.Error("error parsing auto play command", "error", err.Error())
-					continue
-				}
+		if len(activities) == 0 {
+			a.logger.Debug("no auto play activities found", "time", time.Now())
+		} else {
+			for _, activity := range activities {
+				if !activity.Processed {
+					a.logger.Info("activity", "activity", activity)
+					// execute activity
+					err := a.parseAutoPlayCommand(activity)
+					if err != nil {
+						a.logger.Error("error parsing auto play command", "error", err.Error())
+						continue
+					}
 
+				}
 			}
 		}
 		a.autoPlaySync.Unlock()

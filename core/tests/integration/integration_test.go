@@ -2,11 +2,15 @@
 
 package integration_test
 
+//
+
 import (
+	"encoding/json"
 	"fmt"
 	"testing"
 	"time"
 
+	"github.com/betorvs/playbypost/app/server/handlers/v1/validator"
 	"github.com/betorvs/playbypost/core/sys/web/cli"
 	"github.com/betorvs/playbypost/core/sys/web/types"
 	"github.com/betorvs/playbypost/core/utils"
@@ -459,6 +463,75 @@ func TestIntegration(t *testing.T) {
 		}
 		if len(storytellerMsg2.Opts) == 0 {
 			t.Error("error storyteller 2 response empty")
+		}
+
+	}
+	{
+		t.Log("Test validator")
+		random := utils.RandomString(6)
+		writerUsername := fmt.Sprintf("writer-%s", random)
+		_, err2 := h.CreateWriter(writerUsername, "asdQWE123")
+		if err2 != nil {
+			t.Error("error creating writer")
+		}
+		writers, err3 := h.GetWriter()
+		if err3 != nil {
+			t.Error("error getting writers")
+		}
+		writerValidator := types.Writer{}
+		for _, w := range writers {
+			if w.Username == writerUsername {
+				writerValidator = w
+			}
+		}
+		if writerValidator.ID == 0 {
+			t.Error("error writerValidator not found")
+		}
+		storyEmptyTitle := fmt.Sprintf("story-empty-%s", random)
+		annouceEmpty := fmt.Sprintf("annouce-empty-%s", random)
+		noteEmpty := fmt.Sprintf("note-empty-%s", random)
+		_, err4 := h.CreateStory(storyEmptyTitle, annouceEmpty, noteEmpty, writerValidator.ID)
+		if err4 != nil {
+			t.Error("error creating empty story")
+		}
+		stories, err5 := h.GetStory()
+		if err5 != nil {
+			t.Error("error getting stories")
+		}
+		storyEmpty := types.Story{}
+		for _, s := range stories {
+			if s.Title == storyEmptyTitle {
+				storyEmpty = s
+			}
+		}
+		if storyEmpty.ID == 0 {
+			t.Error("error storyEmpty not found")
+		}
+		// call validator
+		_, err6 := h.ValidatorPut("story", storyEmpty.ID)
+		if err6 != nil {
+			t.Error("error calling validator")
+		}
+		body1, err7 := h.GetValidator()
+		if err7 != nil {
+			t.Error("error getting validator")
+		}
+		var obj1 map[string]validator.Request
+		err8 := json.Unmarshal(body1, &obj1)
+		if err8 != nil {
+			t.Error("error unmarshal validator")
+		}
+		for k, v := range obj1 {
+			if k == "story" {
+				if v.ID == storyEmpty.ID {
+					if v.Valid != false {
+						t.Error("error validator story ID")
+					}
+					if len(v.Analise.Results) == 0 {
+						t.Error("error validator story results")
+					}
+				}
+			}
 		}
 
 	}

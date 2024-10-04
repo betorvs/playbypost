@@ -31,7 +31,15 @@ var stageCmd = &cobra.Command{
 				os.Exit(1)
 			}
 			for _, v := range t {
-				fmt.Printf("Stage Text: %s, Story ID: %v, Storyteller ID: %v \n", v.Text, v.StoryID, v.StorytellerID)
+				switch outputFormat {
+				case formatJSON:
+					b, _ := json.Marshal(v)
+					fmt.Println(string(b))
+
+				case formatLog:
+					app.Logger.Info("Stage", "id", v.ID, "text", v.Text, "story_id", v.StoryID, "storyteller_id", v.StorytellerID)
+				}
+
 			}
 
 		case "create":

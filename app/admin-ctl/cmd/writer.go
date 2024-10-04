@@ -29,7 +29,15 @@ var writersCmd = &cobra.Command{
 				os.Exit(1)
 			}
 			for _, v := range u {
-				fmt.Printf("Username: %s , ID: %d \n", v.Username, v.ID)
+				switch outputFormat {
+				case formatJSON:
+					b, _ := json.Marshal(v)
+					fmt.Println(string(b))
+
+				case formatLog:
+					app.Logger.Info("Writer", "id", v.ID, "username", v.Username)
+
+				}
 			}
 
 		case "create":
