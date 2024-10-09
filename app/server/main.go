@@ -146,7 +146,7 @@ func main() {
 	srv.Register("PUT /api/v1/validator/story/{id}", app.RequestToValidateStory)
 	srv.Register("GET /api/v1/validator", app.GetAllValidations)
 	// options
-	srv.Register("OPTIONS /*", srv.Options)
+	srv.Register("OPTIONS /", srv.Options)
 
 	app.Session.AddAdminSession(adminUser, adminToken)
 	logger.Info("adding admin user one year token", "admin", adminUser, "token", adminToken)

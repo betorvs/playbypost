@@ -92,27 +92,24 @@ func (a MainApi) AddAutoPlayNext(w http.ResponseWriter, r *http.Request) {
 		a.s.ErrJSON(w, http.StatusForbidden, "required authentication headers")
 		return
 	}
-	obj := types.Next{}
+	obj := []types.Next{}
 	err := json.NewDecoder(r.Body).Decode(&obj)
 	if err != nil {
 		a.s.ErrJSON(w, http.StatusBadRequest, "json decode error")
 		return
 	}
-	if obj.NextEncounterID == 0 || obj.EncounterID == 0 || obj.UpstreamID == 0 {
-		a.s.ErrJSON(w, http.StatusBadRequest, "next encounter id, encounter id and auto play id cannot be empty")
+	valid, err := types.ValidateNextSlice(obj, types.UpstreamKindAutoPlay)
+	if err != nil {
+		a.s.ErrJSON(w, http.StatusBadRequest, err.Error())
 		return
 	}
-	if obj.Objective.Kind == "" {
-		obj.Objective.Kind = types.ObjectiveDefault
-		obj.Objective.Values = []int{0}
-	}
-	a.logger.Info("add auto play next", "obj", obj)
-	err = a.db.AddAutoPlayNext(a.ctx, obj)
+	a.logger.Info("add auto play next", "obj", valid)
+	err = a.db.AddAutoPlayNext(a.ctx, valid)
 	if err != nil {
 		a.s.ErrJSON(w, http.StatusBadRequest, "error adding next encounter to encounter on database")
 		return
 	}
-	msg := fmt.Sprintf("encounter id %v next encounter updated", obj.EncounterID)
+	msg := fmt.Sprintf("encounter id %v next encounter updated", valid[0].EncounterID)
 	a.s.JSON(w, types.Msg{Msg: msg})
 }
 

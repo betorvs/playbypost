@@ -39,7 +39,8 @@ func (c *Cli) CreateAutoPlay(text string, storyID int, solo bool) ([]byte, error
 }
 
 func (c *Cli) AddNextEncounter(a types.Next) ([]byte, error) {
-	body, err := json.Marshal(a)
+	sliceNext := []types.Next{a}
+	body, err := json.Marshal(sliceNext)
 	if err != nil {
 		return []byte{}, err
 	}
