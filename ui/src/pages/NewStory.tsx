@@ -36,7 +36,7 @@ const NewStory = () => {
         title: title,
         announcement: announce,
         notes: note,
-        storyteller_id: user_id,
+        writer_id: user_id,
       }),
     });
     if (response.ok) {

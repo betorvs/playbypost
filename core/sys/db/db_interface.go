@@ -49,7 +49,7 @@ type DBClient interface {
 	AddEncounterToStage(ctx context.Context, text string, stage_id, storyteller_id, encounter_id int) (int, error)
 	UpdatePhase(ctx context.Context, id, phase int) error
 	AddParticipants(ctx context.Context, encounterID int, npc bool, players []int) error
-	AddNextEncounter(ctx context.Context, next types.Next) error
+	AddNextEncounter(ctx context.Context, next []types.Next) error
 	AddRunningTask(ctx context.Context, text string, stageID, taskID, StorytellerID, encounterID int) error
 	AddEncounterActivities(ctx context.Context, text string, stageID, encounterID int) error
 	RegisterActivities(ctx context.Context, stageID, encounterID int, actions types.Actions) error
@@ -90,7 +90,7 @@ type DBClient interface {
 	GetAnnounceByEncounterID(ctx context.Context, encounterID, autoPlayID int) (string, bool, error)
 	GetNextEncounterByAutoPlayID(ctx context.Context, autoPlayID int) ([]types.Next, error)
 	CreateAutoPlayTx(ctx context.Context, text string, storyID int, solo bool) (int, error)
-	AddAutoPlayNext(ctx context.Context, next types.Next) error
+	AddAutoPlayNext(ctx context.Context, next []types.Next) error
 	CreateAutoPlayChannelTx(ctx context.Context, channelID, userID string, autoPlayID int) (int, error)
 	RegisterActivitiesAutoPlay(ctx context.Context, autoPlayID, encounterID int, actions types.Actions) error
 	UpdateProcessedAutoPlay(ctx context.Context, id int, processed bool, actions types.Actions) error

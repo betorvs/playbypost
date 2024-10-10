@@ -136,16 +136,18 @@ var (
 ]`)
 )
 
-func TestParserAutoPlayNextOK(t *testing.T) {
+func TestParserAutoPlayNext(t *testing.T) {
 	table := []struct {
 		name          string
 		data          []byte
 		first         int
 		totalPaths    int
 		lastEncounter []int
+		wantErr       bool
 	}{
-		{"simpleChoices", simpleChoices, 7, 2, []int{11, 12}},
-		{"withValues", withValues, 13, 2, []int{14, 15}},
+		{"simpleChoices", simpleChoices, 7, 2, []int{11, 12}, false},
+		{"withValues", withValues, 13, 2, []int{14, 15}, false},
+		{"withValuesBroken", withValuesBroken, 13, 2, []int{14, 15}, true},
 	}
 	for _, tt := range table {
 		t.Run(tt.name, func(t *testing.T) {
@@ -155,52 +157,17 @@ func TestParserAutoPlayNextOK(t *testing.T) {
 				t.Fatal(err)
 			}
 			result := parserAutoPlayNext(next, tt.first, tt.lastEncounter)
-			if result.TotalPaths != tt.totalPaths {
+			if (result.TotalPaths != tt.totalPaths) != tt.wantErr {
 				t.Errorf("expected %d paths, got %d paths", tt.totalPaths, result.TotalPaths)
 			}
-			if !result.LastEncounters {
+			if result.LastEncounters == tt.wantErr {
 				t.Errorf("expected %d last encounters, got %d from paths", len(tt.lastEncounter), result.TotalPaths)
 			}
-			if !result.LastEncountersUsed {
+			if result.LastEncountersUsed == tt.wantErr {
 				t.Errorf("expected last encounters %v, got %v", tt.lastEncounter, result.LastEncounterFound)
 			}
-			if !result.ObjectivesMatch {
+			if result.ObjectivesMatch == tt.wantErr {
 				t.Errorf("expected objectives does not match")
-			}
-		})
-	}
-
-}
-
-func TestParserAutoPlayNextShouldFail(t *testing.T) {
-	table := []struct {
-		name          string
-		data          []byte
-		first         int
-		totalPaths    int
-		lastEncounter []int
-	}{
-		{"withValuesBroken", withValuesBroken, 13, 2, []int{14, 15}},
-	}
-	for _, tt := range table {
-		t.Run(tt.name, func(t *testing.T) {
-			var next []types.Next
-			err := json.Unmarshal(tt.data, &next)
-			if err != nil {
-				t.Fatal(err)
-			}
-			result := parserAutoPlayNext(next, tt.first, tt.lastEncounter)
-			if result.TotalPaths == tt.totalPaths {
-				t.Errorf("should not match these %d with %d paths", tt.totalPaths, result.TotalPaths)
-			}
-			if result.LastEncounters {
-				t.Errorf("should be different %d last encounters, got %d from paths", len(tt.lastEncounter), result.TotalPaths)
-			}
-			if result.LastEncountersUsed {
-				t.Errorf("should be different last encounters %v, got %v", tt.lastEncounter, result.LastEncounterFound)
-			}
-			if result.ObjectivesMatch {
-				t.Errorf("expected objectives should not match")
 			}
 		})
 	}

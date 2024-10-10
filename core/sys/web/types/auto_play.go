@@ -58,3 +58,64 @@ type AutoPlayOptions struct {
 	Group             []AutoPlayGroup `json:"group"`
 	NextEncounters    []Next          `json:"next_encounters"`
 }
+
+func SplitDiceNextObjctive(loop, size int) []int {
+	switch size {
+	case 2:
+		switch loop {
+		case 0:
+			return []int{1, 3, 5}
+		case 1:
+			return []int{2, 4, 6}
+		}
+	case 3:
+		switch loop {
+		case 0:
+			return []int{1, 2}
+		case 1:
+			return []int{3, 4}
+		case 2:
+			return []int{5, 6}
+		}
+	case 4:
+		switch loop {
+		case 0:
+			return []int{1, 2}
+		case 1:
+			return []int{3, 4}
+		case 2:
+			return []int{5}
+		case 3:
+			return []int{6}
+		}
+	case 5:
+		switch loop {
+		case 0:
+			return []int{1, 2}
+		case 1:
+			return []int{3}
+		case 2:
+			return []int{4}
+		case 3:
+			return []int{5}
+		case 4:
+			return []int{6}
+		}
+	case 6:
+		switch loop {
+		case 0:
+			return []int{1}
+		case 1:
+			return []int{2}
+		case 2:
+			return []int{3}
+		case 3:
+			return []int{4}
+		case 4:
+			return []int{5}
+		case 5:
+			return []int{6}
+		}
+	}
+	return nil
+}

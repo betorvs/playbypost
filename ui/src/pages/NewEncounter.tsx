@@ -17,6 +17,7 @@ const NewEncounter = () => {
   const [announce, setAnnouncement] = useState("");
   const [note, setNotes] = useState("");
   const [firstEncounter, setFirstEncounter] = useState(false);
+  const [lastEncounter, setLastEncounter] = useState(false);
   const user_id = GetUserID();
 
   const safeID: string = id ?? "";
@@ -46,6 +47,7 @@ const NewEncounter = () => {
         story_id: Number(safeID),
         writer_id: user_id,
         first_encounter: firstEncounter,
+        last_encounter: lastEncounter,
       }),
     });
     if (response.ok) {
@@ -113,6 +115,18 @@ const NewEncounter = () => {
               />
             <Form.Text className="text-muted">
               If this is the first encounter of the story, mark this checkbox. Can be only one.
+            </Form.Text>
+          </Form.Group>
+          <Form.Group className="mb-3" controlId="formFirstEncounter">
+            <Form.Label>Last Encounter</Form.Label>
+            <Form.Check
+              type="checkbox"
+              label="This is the last encounter of the story" 
+              checked={lastEncounter}
+              onChange={(e) => setLastEncounter(e.target.checked)}
+              />
+            <Form.Text className="text-muted">
+              A story can have multiple last encounters. Mark this checkbox if this is one of them.
             </Form.Text>
           </Form.Group>
           <Button variant="primary" type="submit">

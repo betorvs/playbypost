@@ -270,26 +270,23 @@ func (a MainApi) AddParticipants(w http.ResponseWriter, r *http.Request) {
 
 // stage_next_encounter
 func (a MainApi) AddNextEncounter(w http.ResponseWriter, r *http.Request) {
-	obj := types.Next{}
+	obj := []types.Next{}
 	err := json.NewDecoder(r.Body).Decode(&obj)
 	if err != nil {
 		a.s.ErrJSON(w, http.StatusBadRequest, "json decode error")
 		return
 	}
-	if obj.NextEncounterID == 0 || obj.EncounterID == 0 || obj.UpstreamID == 0 {
-		a.s.ErrJSON(w, http.StatusBadRequest, "next encounter id, encounter id and stage id cannot be empty")
+	valid, err := types.ValidateNextSlice(obj, types.UpstreamKindStage)
+	if err != nil {
+		a.s.ErrJSON(w, http.StatusBadRequest, err.Error())
 		return
 	}
-	if obj.Objective.Kind == "" {
-		obj.Objective.Kind = types.ObjectiveDefault
-		obj.Objective.Values = []int{0}
-	}
-	err = a.db.AddNextEncounter(a.ctx, obj)
+	err = a.db.AddNextEncounter(a.ctx, valid)
 	if err != nil {
 		a.s.ErrJSON(w, http.StatusBadRequest, "error adding next encounter to encounter on database")
 		return
 	}
-	msg := fmt.Sprintf("encounter id %v next encounter updated", obj.EncounterID)
+	msg := fmt.Sprintf("encounter id %v next encounter updated", valid[0].EncounterID)
 	a.s.JSON(w, types.Msg{Msg: msg})
 }
 
