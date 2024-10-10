@@ -43,17 +43,17 @@ func ValidateNextSlice(s []Next, upstreamKind string) ([]Next, error) {
 		if obj.Objective.Kind != "" && !slices.Contains(Objectives(), obj.Objective.Kind) {
 			return s, fmt.Errorf("objective kind %v is not valid", obj.Objective.Kind)
 		}
-		if obj.Objective.Kind == "" {
+		if obj.Objective.Kind == "" && len(obj.Objective.Values) == 0 {
 			obj.Objective.Kind = ObjectiveDefault
 			obj.Objective.Values = []int{0}
 		}
 		if obj.Objective.Kind == ObjectiveDiceRoll && len(s) <= 1 {
-			return s, fmt.Errorf("objective dice roll should have at least 2 values")
+			return s, fmt.Errorf("objective dice roll should have at least 2 next encounters")
 		}
 		switch upstreamKind {
 		case "auto_play":
 			// check for "dice roll" objective and auto complete with possible values
-			if obj.Objective.Kind == ObjectiveDiceRoll && len(obj.Objective.Values) == 0 {
+			if obj.Objective.Kind == ObjectiveDiceRoll {
 				obj.Objective.Values = SplitDiceNextObjctive(k, len(s))
 			}
 			if obj.Objective.Kind == ObjectiveTaskOkay || obj.Objective.Kind == ObjectiveVictory {

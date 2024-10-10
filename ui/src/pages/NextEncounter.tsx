@@ -20,12 +20,20 @@ const NextEncounter = () => {
   const encounteridNumber: number = Number(safeID);
   const [encounters, setEncounters] = useState<Encounter[]>([]);
 
-  const [formData, setFormData] = useState<NextEncounterType[]>([{ upstream_id: Number(id), encounter_id: encounteridNumber, next_encounter_id: 0, text: '' }]);
+  const [formData, setFormData] = useState<NextEncounterType[]>([{ upstream_id: Number(id), encounter_id: encounteridNumber, next_encounter_id: 0, text: '', objective: { kind: '', values: [] } }]);
 
   const handleDropdownChange = (index: number, event: React.ChangeEvent<HTMLSelectElement>) => {
     setFormData((prevData) => {
       const newData = [...prevData];
       newData[index].next_encounter_id = Number(event.target.value);
+      return newData;
+    });
+  };
+
+  const handleDropdownObjectiveChange = (index: number, event: React.ChangeEvent<HTMLSelectElement>) => {
+    setFormData((prevData) => {
+      const newData = [...prevData];
+      newData[index].objective = { kind: event.target.value, values: [0] };
       return newData;
     });
   };
@@ -39,7 +47,7 @@ const NextEncounter = () => {
   };
 
   const addGroup = () => {
-    setFormData((prevData) => [...prevData, { upstream_id: Number(id), encounter_id: encounteridNumber, next_encounter_id: 0, text: '' }]);
+    setFormData((prevData) => [...prevData, { upstream_id: Number(id), encounter_id: encounteridNumber, next_encounter_id: 0, text: '', objective: { kind: '', values: [] } }]);
   };
 
   const removeGroup = (index: number) => {
@@ -113,6 +121,16 @@ const NextEncounter = () => {
                     It can be assigned multiple times, each of it will enable a option for player to choose his destiny. Keep option name different per encounter.
                   </Form.Text>
                 </Form.Group>
+                <Form.Group>
+                    <Form.Label>Automatic Option</Form.Label>
+                    <Form.Select name="objective" value={group.objective.kind} onChange={(e) => handleDropdownObjectiveChange(index, e)}>
+                      <option value="invalid">Select a Objective</option>
+                      <option value="no_action">Free Choice</option>
+                      <option value="dice_roll">Dice Roll</option>
+                      <option value="task_okay">Task Successfully</option>
+                      <option value="victory">Victory against enemies</option>
+                    </Form.Select>
+                  </Form.Group>
                 <Button variant="danger" onClick={() => removeGroup(index)}>Remove</Button>
               </div>
 

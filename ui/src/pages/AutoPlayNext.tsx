@@ -18,7 +18,7 @@ const AutoPlayNext = () => {
     const [encounters, setEncounters] = useState<Encounter[]>([]);
     const [encounterID, setEncounterID] = useState(0);
 
-    const [formData, setFormData] = useState<NextEncounterType[]>([{ upstream_id: Number(id), encounter_id: 0, next_encounter_id: 0, text: '' }]);
+    const [formData, setFormData] = useState<NextEncounterType[]>([{ upstream_id: Number(id), encounter_id: 0, next_encounter_id: 0, text: '', objective: { kind: '', values: [] } }]);
   
 
     const handleDropdownChange = (index: number, event: React.ChangeEvent<HTMLSelectElement>) => {
@@ -26,6 +26,14 @@ const AutoPlayNext = () => {
         const newData = [...prevData];
         newData[index].next_encounter_id = Number(event.target.value);
         newData[index].encounter_id = encounterID;
+        return newData;
+      });
+    };
+
+    const handleDropdownObjectiveChange = (index: number, event: React.ChangeEvent<HTMLSelectElement>) => {
+      setFormData((prevData) => {
+        const newData = [...prevData];
+        newData[index].objective = { kind: event.target.value, values: [0] };
         return newData;
       });
     };
@@ -40,7 +48,7 @@ const AutoPlayNext = () => {
     };
 
     const addGroup = () => {
-      setFormData((prevData) => [...prevData, { upstream_id: Number(id), encounter_id: encounterID, next_encounter_id: 0, text: '' }]);
+      setFormData((prevData) => [...prevData, { upstream_id: Number(id), encounter_id: encounterID, next_encounter_id: 0, text: '', objective: { kind: '', values: [] } }]);
     };
   
     const removeGroup = (index: number) => {
@@ -141,11 +149,19 @@ const AutoPlayNext = () => {
                       It can be assigned multiple times, each of it will enable a option for player to choose his destiny. Keep option name different per encounter.
                     </Form.Text>
                   </Form.Group>
+                  <Form.Group>
+                    <Form.Label>Automatic Option</Form.Label>
+                    <Form.Select name="objective" value={group.objective.kind} onChange={(e) => handleDropdownObjectiveChange(index, e)}>
+                      <option value="invalid">Select a Objective</option>
+                      <option value="no_action">Free Choice</option>
+                      <option value="dice_roll">Dice Roll</option>
+                    </Form.Select>
+                  </Form.Group>
                   <Button variant="danger" onClick={() => removeGroup(index)}>Remove</Button>
                 </div>
               ))}    
                   <Button variant="primary" onClick={addGroup}>Add More Encounters</Button>{" "}
-                  <Button variant="primary" type="submit">
+                  <Button variant="primary" type="submit" >
                   Submit
                   </Button>{" "}
                   <Button variant="secondary" onClick={() => cancelButton()}>
