@@ -176,16 +176,31 @@ tasks:
       - zellij attach pbpwe
 
   playbypost-run:
+    desc: "Run playbypost server"
+    cmds:
+      - ./playbypost -autoplay-worker -stage-worker
+
+  playbypost-we-run:
     desc: "Run playbypost server with watchexec"
     cmds:
       - watchexec --watch-file playbypost --delay-run 1 -r "./playbypost -autoplay-worker -stage-worker"
 
   discord-run:
+    desc: "Run discord plugin"
+    cmds:
+      - ./discord-plugin
+  
+  discord-we-run:
     desc: "Run discord plugin with watchexec"
     cmds:
       - watchexec --watch-file discord-plugin --delay-run 1 -r "./discord-plugin"
 
   slack-run:
+    desc: "Run slack plugin"
+    cmds:
+      - ./slack-plugin
+
+  slack-we-run:
     desc: "Run slack plugin with watchexec"
     cmds:
       - watchexec --watch-file slack-plugin --delay-run 1 -r "./slack-plugin"

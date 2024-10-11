@@ -1,15 +1,12 @@
 import { useParams } from "react-router-dom";
-// import EncounterCards from "../components/Cards/Encounter";
 import { useContext, useEffect, useState } from "react";
-// import Encounter from "../types/Encounter";
 import { AuthContext } from "../context/AuthContext";
 import Layout from "../components/Layout";
 import StageDetailHeader from "../components/StageDetailHeader";
 import Encounter from "../types/Encounter";
 import StageEncounterCards from "../components/Cards/StageEncounter";
 import { FetchStageEncountersByID } from "../functions/Stages";
-// import StoryDetailHeader from "../components/StoryDetailHeader";
-// import FetchEncounters from "../functions/Encounters";
+import { useTranslation } from "react-i18next";
 
 const StageDetail = () => {
   const { id, story } = useParams();
@@ -18,6 +15,8 @@ const StageDetail = () => {
   const safeID: string = id ?? "";
 
   const storySafeID: string = story ?? "";
+
+  const { t } = useTranslation(["home", "main"]);
 
   const [encounters, setEncounters] = useState<Encounter[]>([]);
 
@@ -36,7 +35,7 @@ const StageDetail = () => {
               <StageEncounterCards encounter={encounter} key={index} stageID={safeID} storyId={storySafeID} />
             ))
           ) : (
-            <p>no encounters for you</p>
+            <p>{t("stage.no-encounter", {ns: ['main', 'home']})}</p>
           )}
         </div>
       </div>

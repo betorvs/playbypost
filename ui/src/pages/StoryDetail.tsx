@@ -6,10 +6,12 @@ import { AuthContext } from "../context/AuthContext";
 import Layout from "../components/Layout";
 import StoryDetailHeader from "../components/StoryDetailHeader";
 import FetchEncounters from "../functions/Encounters";
+import { useTranslation } from "react-i18next";
 
 const StoryDetail = () => {
   const { id } = useParams();
   const { Logoff } = useContext(AuthContext);
+  const { t } = useTranslation(['home', 'main']);
 
   const safeID: string = id ?? "";
 
@@ -30,7 +32,7 @@ const StoryDetail = () => {
               <EncounterCards encounter={encounter} key={index} disable_footer={false} />
             ))
           ) : (
-            <p>no story for you</p>
+            <p>{t("story.error", {ns: ['main', 'home']})}</p>
           )}
         </div>
       </div>

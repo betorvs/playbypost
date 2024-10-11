@@ -9,6 +9,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import UseLocation from "../context/UseLocation";
 import Stage from "../types/Stage";
 import FetchStages from "../functions/Stages";
+import { useTranslation } from "react-i18next";
 
 const UserAsPlayer = () => {
   const { Logoff } = useContext(AuthContext);
@@ -16,6 +17,8 @@ const UserAsPlayer = () => {
   const [stages, setStages] = useState<Stage[]>([]);
   const [name, setName] = useState("");
   const [stageID, setStageID] = useState(0);
+  const { t } = useTranslation(['home', 'main']);
+
   useEffect(() => {
     FetchStages(setStages);
   }, []);
@@ -53,36 +56,36 @@ const UserAsPlayer = () => {
     <>
       <div className="container mt-3" key="1">
         <Layout Logoff={Logoff} />
-        <h2>Add as Player</h2>
-        <h3>It will create a Player from the Stage of your choice</h3>
+        <h2>{t("user.add-as-player", {ns: ['main', 'home']})}</h2>
+        <h3>{t("user.add-as-player-description", {ns: ['main', 'home']})}</h3>
         <hr />
       </div>
       <div className="container mt-3" key="2">
         <Form onSubmit={handleSubmit}>
           <Form.Group className="mb-3" controlId="formStage">
-            <Form.Label>Stage</Form.Label>
+            <Form.Label>{t("stage.this", {ns: ['main', 'home']})}</Form.Label>
             <Form.Select as="select"
               value={stageID}
               onChange={e => {
                 console.log("set e.target.value", e.target.value);
                 setStageID(Number(e.target.value));
               }}>
-                <option value="-1">Select one</option>
+                <option value="-1">{t("common.select-one", {ns: ['main', 'home']})}</option>
               {
                 stages != null ? (
                   stages.map((stage) => (
                     <option value={stage.id}>{stage.text}</option>
                   ))) : (
-                    <option>stages not found</option>
+                    <option>{t("stage.not-found", {ns: ['main', 'home']})}</option>
                   )
               }
             </Form.Select>
             <Form.Text className="text-muted">
-              Choose a Stage to create a Player
+              {t("user.add-as-player-text1", {ns: ['main', 'home']})}
             </Form.Text>
           </Form.Group>
           <Form.Group className="mb-3" controlId="formName">
-            <Form.Label>Name</Form.Label>
+            <Form.Label>{t("common.name", {ns: ['main', 'home']})}</Form.Label>
             <Form.Control
               type="text"
               placeholder="name"
@@ -90,14 +93,14 @@ const UserAsPlayer = () => {
               onChange={(e) => setName(e.target.value)}
             />
             <Form.Text className="text-muted">
-              Character's Name.
+            {t("user.character", {ns: ['main', 'home']})}
             </Form.Text>
           </Form.Group>
           <Button variant="primary" type="submit">
-            Submit
+            {t("common.submit", {ns: ['main', 'home']})}
           </Button>{" "}
           <Button variant="secondary" onClick={() => cancelButton()}>
-            Cancel
+            {t("common.cancel", {ns: ['main', 'home']})}
           </Button>{" "}
         </Form>
       </div>

@@ -9,6 +9,7 @@ import FetchTasks from "../functions/Tasks";
 import UseLocation from "../context/UseLocation";
 import GetUsername from "../context/GetUsername";
 import GetToken from "../context/GetToken";
+import { useTranslation } from "react-i18next";
 
 const TaskToEncounter = () => {
   const { Logoff } = useContext(AuthContext);
@@ -16,6 +17,7 @@ const TaskToEncounter = () => {
   const [tasks, setTask] = useState<Task[]>([]);
   const [taskID, setTaskID] = useState(0);
   const [text, setText] = useState("");
+  const { t } = useTranslation(['home', 'main']);
 
   const navigate = useNavigate();
 
@@ -58,30 +60,30 @@ const TaskToEncounter = () => {
       <>
         <div className="container mt-3" key="1">
             <Layout Logoff={Logoff} />
-            <h2>Add Task to Encounter</h2>
+            <h2>{t("task.add-to-encounter", {ns: ['main', 'home']})}</h2>
         </div>
         <div className="container mt-3" key="2">
             <Form onSubmit={handleSubmit}>
                 <Form.Group className="mb-3" controlId="formTaskEncounter">
-                    <Form.Label>Task</Form.Label>
+                    <Form.Label>{t("task.this", {ns: ['main', 'home']})}</Form.Label>
                     <Form.Select as="select"
                       value={taskID}
                       onChange={e => {
                         console.log("set e.target.value", e.target.value);
                         setTaskID(Number(e.target.value));
                       }}>
-                        <option value="-1">Select a Task</option>
+                        <option value="-1">{t("task.select-task", {ns: ['main', 'home']})}</option>
                       {
                         tasks != null ? (
                             tasks.map((task) => (
                             <option value={task.id}>{task.description}</option>
                           ))) : (
-                            <option>tasks not found</option>
+                            <option>{t("task.not-found", {ns: ['main', 'home']})}</option>
                           )
                       }
                     </Form.Select>
                     <Form.Text className="text-muted">
-                      Choose a Task to be used in the encounter
+                    {t("task.form-text-1", {ns: ['main', 'home']})}
                     </Form.Text>
                 </Form.Group>
                 <Form.Group className="mb-3" controlId="formName">
@@ -93,15 +95,15 @@ const TaskToEncounter = () => {
                       onChange={(e) => setText(e.target.value)}
                     />
                     <Form.Text className="text-muted">
-                    Text that will be diplaid to the players
+                    {t("task.form-text-2", {ns: ['main', 'home']})}
                     </Form.Text>
                 </Form.Group>
                 
                 <Button variant="primary" type="submit">
-                Submit
+                {t("comoon.submit", {ns: ['main', 'home']})}
                 </Button>{" "}
                 <Button variant="secondary" onClick={() => cancelButton()}>
-                Cancel
+                {t("comoon.cancel", {ns: ['main', 'home']})}
                 </Button>{" "}
             </Form>
         </div>

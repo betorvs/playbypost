@@ -2,9 +2,11 @@ import { useState, useEffect } from "react";
 import AutoPlay from "../types/AutoPlay";
 import FetchAutoPlay from "../functions/AutoPlay";
 import AutoPlayCards from "./Cards/AutoPlay";
+import { useTranslation } from "react-i18next";
 
 const AutoPlayList = () => {
   const [auto, setAutoPlay] = useState<AutoPlay[]>([]);
+  const { t } = useTranslation(['home', 'main']);
 
   useEffect(() => {
     FetchAutoPlay(setAutoPlay);
@@ -20,7 +22,7 @@ const AutoPlayList = () => {
           />
         ))
       ) : (
-        <p>no auto play stories for you</p>
+        <p>{t("auto-play.not-found", {ns: ['main', 'home']})}</p>
       )}
     </div>
   );
