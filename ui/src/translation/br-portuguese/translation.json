@@ -13,7 +13,9 @@
         "title": "Título",
         "title-not-found": "Título não encontrado",
         "announce": "Anúncio",
+        "announce-not-found": "Anúncio não encontrado",
         "notes": "Notas",
+        "notes-not-found": "Notas não encontradas",
         "writer": "Escritor",
         "select-one": "Selecione um",
         "name": "nome",
@@ -80,10 +82,12 @@
         "next": "Próximo Encontro",
         "select-encounter": "Selecione um Encontro",
         "not-found": "Encontro não encontrado",
+        "add-next-encounter": "Adicionar Próximo Encontro",
         "next-text1": "Escolha um encontro para ser usado",
         "next-text2": "Este pode ser adicionado multiplas vezes. Mantenha o nome diferente para cada uma destas.",
+        "next-text3": "Como este encontro será exposto para os jogadores. Cada nome tem que ser único.",
         "next-automatic": "Opção Automática",
-        "next-objective": "Selecione um objetivo",
+        "select-objective": "Selecione um objetivo",
         "select-objective-1": "Livre para escolher",
         "select-objective-2": "Rolar os dados",
         "select-objective-3": "Task completada com sucesso",
@@ -112,7 +116,8 @@
         "new-task-text1": "Pequena descrição da tarefa",
         "new-task-text2": "Que habilidade terá que ser usada",
         "new-task-text3": "Qual a perícia necessária",
-        "new-task-text4": "Qual o número alvo para o sucesso"
+        "new-task-text4": "Qual o número alvo para o sucesso",
+        "assign-task": "Atribuir Tarefa"
     },
     "user": {
         "user-list": "Lista de Usuários",
@@ -123,7 +128,8 @@
         "add-as-player": "Adicionar como Jogador",
         "add-as-player-description": "Adicionar este usuário como Jogador da história",
         "add-as-player-text1": "Escolha um stage para jogar",
-        "character": "Nome do personagem"
+        "character": "Nome do personagem",
+        "not-found": "Usuários não encontrados"
     },
     "stage": {
         "this": "Stage",
@@ -137,18 +143,23 @@
         "encounter-last-activities-not-found": "Atividades recentes não encontradas",
         "no-encounter": "Nenhum encontro encontrado",
         "back-button": "Voltar para Stage",
-        "add-next-encounter": "Adicionar próximo encontro",
-        "text": "Texto"
+        "text": "Texto",
+        "running-channel": "Rodando no Canal",
+        "close": "Fechar Stage"
     },
     "player": {
         "this": "Jogador",
         "not-found": "Jogador não encontrado",
         "npc": "Personagem Não Jogável",
+        "add-npc": "Adicionar NPCs",
+        "npc-name": "Nome do NPC",
+        "npc-name-text": "Nome usado pelos jogadores para interarir com este NPC",
         "npc-not-found": "NPCs não encontrados",
         "start-text1": "Escolha um canal para iniciar o Jogador",
         "start-text2": "Em Users, você selecionou este usando",
         "start-text3": "Depois de escolher um Jogador em Usuários, ele é criado automaticamente",
-        "list": "Lista de Jogadores"
+        "list": "Lista de Jogadores",
+        "add-player": "Adicionar Jogadores"
     },
     "auto-play": {
         "this": "Auto Play",

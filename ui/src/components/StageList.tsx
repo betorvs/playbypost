@@ -2,9 +2,11 @@ import { useState, useEffect } from "react";
 import StageCards from "./Cards/Stage";
 import FetchStages from "../functions/Stages";
 import Stage from "../types/Stage";
+import { useTranslation } from "react-i18next";
 
 const StageList = () => {
   const [stages, setStage] = useState<Stage[]>([]);
+  const { t } = useTranslation(['home', 'main']);
 
   useEffect(() => {
     FetchStages(setStage);
@@ -20,7 +22,7 @@ const StageList = () => {
           />
         ))
       ) : (
-        <p>no stages for you</p>
+        <p>{t("stage.not-found", {ns: ['main', 'home']})}</p>
       )}
     </div>
   );

@@ -8,12 +8,15 @@ import GetUsername from "../context/GetUsername";
 import GetToken from "../context/GetToken";
 import Players from "../types/Players";
 import FetchPlayers from "../functions/Players";
+import { useTranslation } from "react-i18next";
 
 const AddPlayerToStageEncounter = () => {
     const { Logoff } = useContext(AuthContext);
     const { id, story, encounterid } = useParams();
 
     const navigate = useNavigate();
+
+    const { t } = useTranslation(['home', 'main']);
 
     const safeID: string = id ?? "";
 
@@ -59,12 +62,12 @@ const AddPlayerToStageEncounter = () => {
         <>
         <div className="container mt-3" key="1">
             <Layout Logoff={Logoff} />
-            <h2>Add Player to Encounter</h2>
+            <h2>{t("player.add-player", {ns: ['main', 'home']})}</h2>
         </div>
         <div className="container mt-3" key="2">
             <Form onSubmit={handleSubmit}>
                 <Form.Group className="mb-3" controlId="formPlayers">
-                    <Form.Label>Players</Form.Label>
+                    <Form.Label>{t("player.this", {ns: ['main', 'home']})}</Form.Label>
                     {
                         players != null ? (
                             players.map((player) => (
@@ -84,10 +87,10 @@ const AddPlayerToStageEncounter = () => {
                     }
                 </Form.Group>
                 <Button variant="primary" type="submit">
-                Submit
+                  {t("common.submit", {ns: ['main', 'home']})}
                 </Button>{" "}
                 <Button variant="secondary" onClick={() => cancelButton()}>
-                Cancel
+                  {t("common.cancel", {ns: ['main', 'home']})}
                 </Button>{" "}
             </Form>
         </div>

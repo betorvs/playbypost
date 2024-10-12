@@ -61,11 +61,8 @@
         "detail": "Story Detail",
         "button": "New Story",
         "header-new": "Create a new story",
-        "form-title": "Title",
         "form-title-text": "A great history starts with a great title",
-        "form-announce": "Announcement",
         "form-announce-text": "It will be post to all players. Think about all senses and create a great description!",
-        "form-notes": "Notes",
         "form-notes-text": "It will be used only for you. Keep here good notes about what should happen."
     },
     "encounter": {
@@ -86,9 +83,17 @@
         "select-encounter": "Select an Encounter",
         "not-found": "Encounter not found",
         "add-next-encounter": "Add Next Encounter",
-        "next-text1": "Choose an Encounter to be used in the story",
+        "next-text1": "Choose an Encounter to be used",
         "next-text2": "It can be assigned multiple times, each of it will enable a option for player to choose his destiny. Keep name different per encounter.",
+        "next-text3": "It should be different. Each pair of Next Encounter with Optional Name should be unique.",
         "next-automatic": "Automatic option",
+        "select-objective": "Select an Objective",
+        "select-objective-1": "Free Choice",
+        "select-objective-2": "Dice Roll",
+        "select-objective-3": "Task Successfull",
+        "select-objective-4": "Victory against enemies",
+        "remove": "Remove",
+        "add-more": "Add More Encounters",
         "encounter-to-stage": "Add Encounter to Stage",
         "encounter-to-stage-description": "Publish this encounter to Stage",
         "encounter-to-stage-text1": "Choose a Stage to publish this encounter",
@@ -96,7 +101,7 @@
         "list": "Encounter List",
         "link": "Link to Encounter",
         "link-not-found": "Link to Encounter not found",
-        "manage": "Manage Encounter"
+        "manage-button": "Manage Encounter"
     },
     "task": {
         "this": "Task",
@@ -106,12 +111,13 @@
         "select-task": "Select a Task",
         "not-found": "Task not found",
         "form-text-1": "Choose a Task to be used in the encounter",
-        "form-text-2": "Text that will be diplaid to the players",
+        "form-text-2": "Text that will be displaid to the players",
         "new-task-header": "Create a new task",
         "new-task-text1": "short description about this task and how we should use it",
         "new-task-text2": "Which ability should roll for it",
         "new-task-text3": "Which skill should roll for it",
-        "new-task-text4": "What is the target number to success"
+        "new-task-text4": "What is the target number to success",
+        "assign-task": "Assign Task"
     }, 
     "user": {
         "user-list": "User List",
@@ -123,13 +129,7 @@
         "add-as-player-description": "It will create a Player from the Story of your choice",
         "add-as-player-text1": "Choose a stage to play",
         "character": "Character's Name",
-        "select-objective": "Select an Objective",
-        "select-objective-1": "Free Choice",
-        "select-objective-2": "Dice Roll",
-        "select-objective-3": "Task Successfull",
-        "select-objective-4": "Victory against enemies",
-        "remove": "Remove",
-        "add-more": "Add More Encounters"
+        "not-found": "Users not found"
     },
     "stage":{
         "this": "Stage",
@@ -143,17 +143,23 @@
         "encounter-last-activities-not-found": "Encounter Last Activities not found",
         "no-encounter": "No Encounters found",
         "back-button": "Back to Stage",
-        "text": "Text"
+        "text": "Text",
+        "running-channel": "Running on Channel",
+        "close": "Close Stage"
     },
     "player": {
         "this": "Player",
         "not-found": "Player not found",
         "npc": "Non Player Character",
         "npc-not-found": "NPCs not found",
+        "npc-name": "NPC's Name",
+        "npc-name-text": "Name used by players to interact with this NPC",
+        "add-npc": "Add NPC",
         "start-text1": "Choose a Channel to Start your Player",
         "start-text2": "In Users, you selected it using",
         "start-text3": "After choosing a Player from Users, it is created automatically",
-        "list": "Player List"
+        "list": "Player List",
+        "add-player": "Add Players"
     },
     "auto-play": {
         "this": "Auto Play",

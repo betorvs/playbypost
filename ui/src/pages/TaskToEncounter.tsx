@@ -100,10 +100,10 @@ const TaskToEncounter = () => {
                 </Form.Group>
                 
                 <Button variant="primary" type="submit">
-                {t("comoon.submit", {ns: ['main', 'home']})}
+                {t("common.submit", {ns: ['main', 'home']})}
                 </Button>{" "}
                 <Button variant="secondary" onClick={() => cancelButton()}>
-                {t("comoon.cancel", {ns: ['main', 'home']})}
+                {t("common.cancel", {ns: ['main', 'home']})}
                 </Button>{" "}
             </Form>
         </div>
