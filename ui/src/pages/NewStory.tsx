@@ -8,6 +8,7 @@ import GetUsername from "../context/GetUsername";
 import GetToken from "../context/GetToken";
 import { useNavigate } from "react-router-dom";
 import UseLocation from "../context/UseLocation";
+import { useTranslation } from "react-i18next";
 
 const NewStory = () => {
   const { Logoff } = useContext(AuthContext);
@@ -16,6 +17,7 @@ const NewStory = () => {
   const [note, setNotes] = useState("");
   const user_id = GetUserID();
   const navigate = useNavigate();
+  const { t } = useTranslation(['home', 'main']);
 
   const cancelButton = () => {
     navigate("/stories");
@@ -50,13 +52,13 @@ const NewStory = () => {
     <>
       <div className="container mt-3" key="1">
         <Layout Logoff={Logoff} />
-        <h2>Create a New Story</h2>
+        <h2>{t("story.header-new", {ns: ['main', 'home']})}</h2>
         <hr />
       </div>
       <div className="container mt-3" key="2">
         <Form onSubmit={handleSubmit}>
           <Form.Group className="mb-3" controlId="formTitle">
-            <Form.Label>Title</Form.Label>
+            <Form.Label>{t("common.title", {ns: ['main', 'home']})}</Form.Label>
             <Form.Control
               type="text"
               placeholder="title"
@@ -64,11 +66,11 @@ const NewStory = () => {
               onChange={(e) => setTitle(e.target.value)}
             />
             <Form.Text className="text-muted">
-              A great history starts with a great title
+            {t("story.form-title-text", {ns: ['main', 'home']})}
             </Form.Text>
           </Form.Group>
           <Form.Group className="mb-3" controlId="formAnnouncement">
-            <Form.Label>Announcement</Form.Label>
+            <Form.Label>{t("common.announce", {ns: ['main', 'home']})}</Form.Label>
             <Form.Control
               type="text"
               placeholder="annoucement"
@@ -76,12 +78,11 @@ const NewStory = () => {
               onChange={(e) => setAnnouncement(e.target.value)}
             />
             <Form.Text className="text-muted">
-              It will be post to all players. Think about all senses and create
-              a great description!
+            {t("story.form-announce-text", {ns: ['main', 'home']})}
             </Form.Text>
           </Form.Group>
           <Form.Group className="mb-3" controlId="formNotes">
-            <Form.Label>Notes</Form.Label>
+            <Form.Label>{t("common.notes", {ns: ['main', 'home']})}</Form.Label>
             <Form.Control
               type="text"
               placeholder="notes"
@@ -89,15 +90,14 @@ const NewStory = () => {
               onChange={(e) => setNotes(e.target.value)}
             />
             <Form.Text className="text-muted">
-              It will be used only for you. Keep here good notes about what
-              should happen.
+            {t("story.form-notes-text", {ns: ['main', 'home']})}
             </Form.Text>
           </Form.Group>
           <Button variant="primary" type="submit">
-            Submit
+          {t("common.submit", {ns: ['main','home']})}
           </Button>{" "}
           <Button variant="secondary" onClick={() => cancelButton()}>
-            Cancel
+          {t("common.cancel", {ns: ['main','home']})}
           </Button>{" "}
         </Form>
       </div>

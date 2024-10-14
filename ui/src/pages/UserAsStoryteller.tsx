@@ -10,6 +10,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import UseLocation from "../context/UseLocation";
 import Story from "../types/Story";
 import { FetchStoriesByUserID } from "../functions/Stories";
+import { useTranslation } from "react-i18next";
 
 const UserAsStoryteller = () => {
   const { Logoff } = useContext(AuthContext);
@@ -18,6 +19,8 @@ const UserAsStoryteller = () => {
   const [text, setText] = useState("");
   const [storyID, setStoryID] = useState(0);
   const user_id = GetUserID();
+  const { t } = useTranslation(['home', 'main']);
+
   useEffect(() => {
     FetchStoriesByUserID(user_id, setStory);
   }, []);
@@ -56,8 +59,8 @@ const UserAsStoryteller = () => {
     <>
       <div className="container mt-3" key="1">
         <Layout Logoff={Logoff} />
-        <h2>Add as Storyteller</h2>
-        <h3>It will create a Stage from the Story of your choice</h3>
+        <h2>{t("user.add-as-storyteller", {ns: ['main', 'home']})}</h2>
+        <h3>{t("user.add-as-storyteller-description", {ns: ['main', 'home']})}</h3>
         <hr />
       </div>
       <div className="container mt-3" key="2">
@@ -70,18 +73,18 @@ const UserAsStoryteller = () => {
                 console.log("e.target.value", e.target.value);
                 setStoryID(Number(e.target.value));
               }}>
-                <option value="-1">Select one</option>
+                <option value="-1">{t("common.select-one", {ns: ['main', 'home']})}</option>
               {
                 stories != null ? (
                   stories.map((story) => (
                     <option value={story.id}>{story.title}</option>
                   ))) : (
-                    <option>stories not found</option>
+                    <option>{t("story.error", {ns: ['main', 'home']})}</option>
                   )
               }
             </Form.Select>
             <Form.Text className="text-muted">
-              A great history starts with a great title
+            {t("user.add-as-storyteller-text1", {ns: ['main', 'home']})}
             </Form.Text>
           </Form.Group>
           <Form.Group className="mb-3" controlId="formText">
@@ -93,14 +96,14 @@ const UserAsStoryteller = () => {
               onChange={(e) => setText(e.target.value)}
             />
             <Form.Text className="text-muted">
-              Text to be used in Stage page about this story.
+            {t("user.add-as-storyteller-text2", {ns: ['main', 'home']})}
             </Form.Text>
           </Form.Group>
           <Button variant="primary" type="submit">
-            Submit
+            {t("common.submit", {ns: ['main', 'home']})}
           </Button>{" "}
           <Button variant="secondary" onClick={() => cancelButton()}>
-            Cancel
+            {t("common.cancel", {ns: ['main', 'home']})}
           </Button>{" "}
         </Form>
       </div>

@@ -1,7 +1,6 @@
-// import { useEffect, useState } from "react";
 import NavigateButton from "./Button/NavigateButton";
-// import { FetchStageEncounterByEncounterID } from "../functions/Stages";
 import Encounter from "../types/Encounter";
+import { useTranslation } from "react-i18next";
 
 interface props {
   id: string;
@@ -12,11 +11,7 @@ interface props {
 }
 
 const StageEncounterDetailHeader = ({ stageID, storyID, encounter, detail }: props) => {
-  // const [encounter, setEncounter] = useState<Encounter>();
-
-  // useEffect(() => {
-  //   FetchStageEncounterByEncounterID(id, setEncounter);
-  // }, []);
+  const { t } = useTranslation(['home', 'main']);
 
   return (
     <div
@@ -25,17 +20,17 @@ const StageEncounterDetailHeader = ({ stageID, storyID, encounter, detail }: pro
     >
       <div className="col-lg-6 px-0" key="1">
         <h1 className="display-4 fst-italic">
-          {encounter?.text || "encounter not found"}
+          {encounter?.text || t("encounter.not-found", {ns: ['main', 'home']})}
         </h1>
         <p className="lead my-3">
-          {encounter?.announcement || "Announcement not found"}
+          {encounter?.announcement || t("common.announce-not-found", {ns: ['main', 'home']})}
         </p>
-        <p className="lead mb-0">Notes: {encounter?.notes || "Notes not found"}</p>
+        <p className="lead mb-0">Notes: {encounter?.notes || t("common.notes-not-found", {ns: ['main', 'home']})}</p>
         <br />
         {/* <p className="lead mb-0">Running on channel: {encounter?.channel || "Stage not started yet"}</p> */}
         <br />
         <NavigateButton link={`/stages/${stageID}/story/${storyID}`} variant="secondary">
-          Back to Stage
+        {t("stage.back-button", {ns: ['main', 'home']})}
         </NavigateButton>{" "}
         {detail === true ? (
           <>
@@ -43,16 +38,16 @@ const StageEncounterDetailHeader = ({ stageID, storyID, encounter, detail }: pro
               Start this Stage
             </NavigateButton>{" "} */}
             <NavigateButton link={`/stages/${stageID}/story/${storyID}/encounter/${encounter?.id}/players`} variant="primary">
-              Add Players
+            {t("player.add-player", {ns: ['main', 'home']})}
             </NavigateButton>{" "}
             <NavigateButton link={`/stages/${stageID}/story/${storyID}/encounter/${encounter?.id}/task/${encounter?.storyteller_id}`} variant="primary">
-              Assign Task
+            {t("task.assign-task", {ns: ['main', 'home']})}
             </NavigateButton>{" "}
             <NavigateButton link={`/stages/${stageID}/story/${storyID}/encounter/${encounter?.id}/encounter`} variant="primary">
-              Next Encounter
+            {t("encounter.add-next-encounter", {ns: ['main', 'home']})}
             </NavigateButton>{" "}
             <NavigateButton link={`/stages/${stageID}/story/${storyID}/encounter/${encounter?.id}/npc/${encounter?.storyteller_id}`} variant="primary">
-              Add NPC
+            {t("player.add-npc", {ns: ['main', 'home']})}
             </NavigateButton>{" "}
           </>
         ) : (

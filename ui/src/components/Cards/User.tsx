@@ -1,11 +1,13 @@
 import UsersCard from "../../types/UserCard";
 import NavigateButton from "../Button/NavigateButton";
+import { useTranslation } from "react-i18next";
 
 interface props {
   user: UsersCard;
 }
 
 const UserCards = ({ user }: props) => {
+  const { t } = useTranslation(['home', 'main']);
   return (
     <>
       <div className="col-md-6">
@@ -15,14 +17,14 @@ const UserCards = ({ user }: props) => {
           </div>
           <ul className="list-group list-group-flush">
             <li className="list-group-item">UserID: {user.user_id}</li>
-            <li className="list-group-item">Channel: {user.channel}</li>
+            <li className="list-group-item">{t("common.channel", {ns: ['main', 'home']})}: {user.channel}</li>
           </ul>
           <div className="card-footer">
           <NavigateButton link={`/users/${user.user_id}`} variant="primary">
-            Add as Storyteller
+          {t("user.add-as-storyteller", {ns: ['main', 'home']})}
           </NavigateButton>{" "}
           <NavigateButton link={`/users/player/${user.user_id}`} variant="primary">
-            Add as Player
+          {t("user.add-as-player", {ns: ['main', 'home']})}
           </NavigateButton>{" "}
           </div>
         </div>

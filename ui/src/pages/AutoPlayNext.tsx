@@ -9,6 +9,7 @@ import GetToken from "../context/GetToken";
 import Layout from "../components/Layout";
 import { Button, Form } from "react-bootstrap";
 import NextEncounterType from "../types/Next";
+import { useTranslation } from "react-i18next";
 
 
 const AutoPlayNext = () => {
@@ -56,6 +57,8 @@ const AutoPlayNext = () => {
     };
 
     const navigate = useNavigate();
+
+    const { t } = useTranslation(["home", "main"]);
   
     useEffect(() => {
         FetchEncounters(safeID, setEncounters);
@@ -90,19 +93,19 @@ const AutoPlayNext = () => {
         <>
           <div className="container mt-3" key="1">
               <Layout Logoff={Logoff} />
-              <h2>Add Auto Play Next Encounter</h2>
+              <h2>{t("encounter.add-next-encounter", {ns: ['main', 'home']})}</h2>
           </div>
           <div className="container mt-3" key="2">
               <Form onSubmit={handleSubmit}>
               <Form.Group className="mb-3" controlId="formNextEncounter">
-                  <Form.Label>Encounter</Form.Label>
+                  <Form.Label>{t("encounter.this", {ns: ['main', 'home']})}</Form.Label>
                   <Form.Select as="select"
                     value={encounterID}
                     onChange={e => {
                       console.log("set e.target.value", e.target.value);
                       setEncounterID(Number(e.target.value));
                     }}>
-                      <option value="-1">Select a Encounter</option>
+                      <option value="-1">{t("encounter.select-encounter", {ns: ['main', 'home']})}</option>
                     {
                       encounters != null ? (
                           encounters.map((encounter: Encounter) => (
@@ -112,20 +115,20 @@ const AutoPlayNext = () => {
                             }
                             </option>
                         ))) : (
-                          <option>encounters not found</option>
+                          <option>{t("encounter.not-found", {ns: ['main', 'home']})}</option>
                         )
                     }
                   </Form.Select>
                   <Form.Text className="text-muted">
-                    Choose a Encounter to link to the next Encounter
+                  {t("encounter.next-text1", {ns: ['main', 'home']})}
                   </Form.Text>
               </Form.Group>
               {formData.map((group, index) => (
                 <div key={index}>
                   <Form.Group>
-                    <Form.Label>Next Encounter</Form.Label>
+                    <Form.Label>{t("encounter.next", {ns: ['main', 'home']})}</Form.Label>
                     <Form.Select name="next_encounter_id" value={group.next_encounter_id} onChange={(e) => handleDropdownChange(index, e)}>
-                      <option value="-1">Select a Encounter</option>
+                      <option value="-1">{t("encounter.select-encounter", {ns: ['main', 'home']})}</option>
                       {
                         encounters != null ? (
                           encounters.filter(encounter => encounter.id !== encounterID)
@@ -136,36 +139,36 @@ const AutoPlayNext = () => {
                               }
                               </option>
                           ))) : (
-                            <option>encounters not found</option>
+                            <option>{t("encounter.not-found", {ns: ['main', 'home']})}</option>
                           )
                       }
                     </Form.Select>
-                    <Form.Text className="text-muted">It should be different. Each pair of Next Encounter with Optional Name should be unique.</Form.Text>
+                    <Form.Text className="text-muted">{t("encounter.next-text3", {ns: ['main', 'home']})}</Form.Text>
                   </Form.Group>
                   <Form.Group>
-                    <Form.Label>Optional Name</Form.Label>
+                    <Form.Label>{t("common.name-optional", {ns: ['main', 'home']})}</Form.Label>
                     <Form.Control type="text" name="text" value={group.text} onChange={(e) => handleInputChange(index, e)} />
                     <Form.Text className="text-muted">
-                      It can be assigned multiple times, each of it will enable a option for player to choose his destiny. Keep option name different per encounter.
+                      {t("encounter.next-text2", {ns: ['main', 'home']})}
                     </Form.Text>
                   </Form.Group>
                   <Form.Group>
-                    <Form.Label>Automatic Option</Form.Label>
+                    <Form.Label>{t("encounter.next-automatic", {ns: ['main', 'home']})}</Form.Label>
                     <Form.Select name="objective" value={group.objective.kind} onChange={(e) => handleDropdownObjectiveChange(index, e)}>
-                      <option value="invalid">Select a Objective</option>
-                      <option value="no_action">Free Choice</option>
-                      <option value="dice_roll">Dice Roll</option>
+                      <option value="invalid">{t("encounter.select-objective", {ns: ['main', 'home']})}</option>
+                      <option value="no_action">{t("encounter.select-objective-1", {ns: ['main', 'home']})}</option>
+                      <option value="dice_roll">{t("encounter.select-objective-2", {ns: ['main', 'home']})}</option>
                     </Form.Select>
                   </Form.Group>
-                  <Button variant="danger" onClick={() => removeGroup(index)}>Remove</Button>
+                  <Button variant="danger" onClick={() => removeGroup(index)}>{t("encounter.remove", {ns: ['main', 'home']})}</Button>
                 </div>
               ))}    
-                  <Button variant="primary" onClick={addGroup}>Add More Encounters</Button>{" "}
+                  <Button variant="primary" onClick={addGroup}>{t("encounter.add-more", {ns: ['main', 'home']})}</Button>{" "}
                   <Button variant="primary" type="submit" >
-                  Submit
+                    {t("common.submit", {ns: ['main', 'home']})}
                   </Button>{" "}
                   <Button variant="secondary" onClick={() => cancelButton()}>
-                  Cancel
+                    {t("common.cancel", {ns: ['main', 'home']})}
                   </Button>{" "}
               </Form>
           </div>

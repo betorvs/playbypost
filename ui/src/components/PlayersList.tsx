@@ -2,6 +2,7 @@ import PlayerCards from "./Cards/Player";
 import { useEffect, useState } from "react";
 import Players from "../types/Players";
 import FetchPlayers from "../functions/Players";
+import { useTranslation } from "react-i18next";
 
 interface props {
   id: string;
@@ -9,6 +10,7 @@ interface props {
 
 const PlayersList = ({ id }: props) => {
   const [players, setPlayer] = useState<Players[]>();
+  const { t } = useTranslation(['home', 'main']);
 
   useEffect(() => {
     FetchPlayers(id, setPlayer);
@@ -22,7 +24,7 @@ const PlayersList = ({ id }: props) => {
             <PlayerCards player={player} key={index} />
           ))
         ) : (
-          <p>no players registered</p>
+          <p>{t("player.not-found", {ns: ['main', 'home']})}</p>
         )}
       </div>
     </>

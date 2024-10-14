@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import Story from "../types/Story";
 import NavigateButton from "./Button/NavigateButton";
 import FetchStory from "../functions/Stories";
+import { useTranslation } from "react-i18next";
 
 interface props {
   id: string;
@@ -10,6 +11,7 @@ interface props {
 
 const StoryDetailHeader = ({ id, detail }: props) => {
   const [story, setStory] = useState<Story>();
+  const { t } = useTranslation(['home', 'main']);
 
   useEffect(() => {
     FetchStory(id, setStory);
@@ -24,12 +26,12 @@ const StoryDetailHeader = ({ id, detail }: props) => {
           {story?.title || "story not found"}
         </h1>
         <p className="lead my-3">
-          {story?.announcement || "Announcement not found"}
+          {story?.announcement || t("common.announce-not-found", {ns: ['main', 'home']})}
         </p>
-        <p className="lead mb-0">{story?.notes || "Notes not found"}</p>
+        <p className="lead mb-0">{story?.notes || t("common.notes-not-found", {ns: ['main', 'home']})}</p>
         <br />
         <NavigateButton link="/stories" variant="secondary">
-          Back to Stories
+        {t("story.back-button", {ns: ['main', 'home']})}
         </NavigateButton>{" "}
         {detail === true ? (
           <>
@@ -37,13 +39,13 @@ const StoryDetailHeader = ({ id, detail }: props) => {
               link={`/stories/encounter/new/${id}`}
               variant="primary"
             >
-              New Encounter
+              {t("encounter.button", {ns: ['main', 'home']})}
             </NavigateButton>{" "}
           </>
         ) : (
           <>
             <NavigateButton variant="primary" link={`/stories/${id}`}>
-              Story Detail
+              {t("story.detail", {ns: ['main', 'home']})}
             </NavigateButton>{" "}
             <br />
           </>

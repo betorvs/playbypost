@@ -3,11 +3,11 @@ import { AuthContext } from "../context/AuthContext";
 import Layout from "../components/Layout";
 import { Form } from "react-bootstrap";
 import Button from "react-bootstrap/Button";
-// import GetUserID from "../context/GetUserID";
 import GetUsername from "../context/GetUsername";
 import GetToken from "../context/GetToken";
 import { useNavigate } from "react-router-dom";
 import UseLocation from "../context/UseLocation";
+import { useTranslation } from "react-i18next";
 
 const NewTask = () => {
   const { Logoff } = useContext(AuthContext);
@@ -15,8 +15,8 @@ const NewTask = () => {
   const [ability, setAbility] = useState("");
   const [skill, setSkill] = useState("");
   const [target, setTarget] = useState(0);
-  // const user_id = GetUserID();
   const navigate = useNavigate();
+  const { t } = useTranslation(["home", "main"]);
 
   const cancelButton = () => {
     navigate("/tasks");
@@ -51,13 +51,13 @@ const NewTask = () => {
     <>
       <div className="container mt-3" key="1">
         <Layout Logoff={Logoff} />
-        <h2>Create a New Task</h2>
+        <h2>{t("task.new-task-header", {ns: ['main', 'home']})}</h2>
         <hr />
       </div>
       <div className="container mt-3" key="2">
         <Form onSubmit={handleSubmit}>
           <Form.Group className="mb-3" controlId="formTitle">
-            <Form.Label>Description</Form.Label>
+            <Form.Label>{t("common.description", {ns: ['main', 'home']})}</Form.Label>
             <Form.Control
               type="text"
               placeholder="title"
@@ -65,11 +65,11 @@ const NewTask = () => {
               onChange={(e) => setDescription(e.target.value)}
             />
             <Form.Text className="text-muted">
-              short description about this task and how we should use it
+            {t("task.new-task-text1", {ns: ['main', 'home']})}
             </Form.Text>
           </Form.Group>
           <Form.Group className="mb-3" controlId="formAbility">
-            <Form.Label>Ability</Form.Label>
+            <Form.Label>{t("common.ability", {ns: ['main', 'home']})}</Form.Label>
             <Form.Control
               type="text"
               placeholder="ability"
@@ -77,11 +77,11 @@ const NewTask = () => {
               onChange={(e) => setAbility(e.target.value)}
             />
             <Form.Text className="text-muted">
-              Which ability should roll for it
+            {t("task.new-task-text2", {ns: ['main', 'home']})}
             </Form.Text>
           </Form.Group>
           <Form.Group className="mb-3" controlId="formSkill">
-            <Form.Label>Skill</Form.Label>
+            <Form.Label>{t("common.skill", {ns: ['main', 'home']})}</Form.Label>
             <Form.Control
               type="text"
               placeholder="skill"
@@ -89,11 +89,11 @@ const NewTask = () => {
               onChange={(e) => setSkill(e.target.value)}
             />
             <Form.Text className="text-muted">
-              Which skill should roll for it
+            {t("task.new-task-text3", {ns: ['main', 'home']})}
             </Form.Text>
           </Form.Group>
           <Form.Group className="mb-3" controlId="formTarget">
-            <Form.Label>Target</Form.Label>
+            <Form.Label>{t("common.target", {ns: ['main', 'home']})}</Form.Label>
             <Form.Control
               type="number"
               placeholder="target"
@@ -101,14 +101,14 @@ const NewTask = () => {
               onChange={(e) => setTarget(Number(e.target.value))}
             />
             <Form.Text className="text-muted">
-              What number this roll should achieve
+            {t("task.new-task-text4", {ns: ['main', 'home']})}
             </Form.Text>
           </Form.Group>
           <Button variant="primary" type="submit">
-            Submit
+          {t("common.submit", {ns: ['main', 'home']})}
           </Button>{" "}
           <Button variant="secondary" onClick={() => cancelButton()}>
-            Cancel
+          {t("common.cancel", {ns: ['main', 'home']})}
           </Button>{" "}
         </Form>
       </div>

@@ -6,7 +6,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import UseLocation from "../context/UseLocation";
 import GetUsername from "../context/GetUsername";
 import GetToken from "../context/GetToken";
-
+import { useTranslation } from "react-i18next";
 
 
 const AddNPCToStageEncounter = () => {
@@ -14,6 +14,8 @@ const AddNPCToStageEncounter = () => {
     const { id, story, encounterid, storyteller_id } = useParams();
 
     const navigate = useNavigate();
+
+    const { t } = useTranslation(['home', 'main']);
 
     const [name, setName] = useState("");
 
@@ -52,12 +54,12 @@ const AddNPCToStageEncounter = () => {
         <>
         <div className="container mt-3" key="1">
             <Layout Logoff={Logoff} />
-            <h2>Add NPC to Encounter</h2>
+            <h2>{t("player.add-npc", {ns: ['main', 'home']})}</h2>
         </div>
         <div className="container mt-3" key="2">
             <Form onSubmit={handleSubmit}>
                 <Form.Group className="mb-3" controlId="formNPC">
-                    <Form.Label>NPC Name</Form.Label>
+                    <Form.Label>{t("player.npc-name", {ns: ['main', 'home']})}</Form.Label>
                     <Form.Control
                       type="text"
                       placeholder="name"
@@ -65,14 +67,14 @@ const AddNPCToStageEncounter = () => {
                       onChange={(e) => setName(e.target.value)}
                     />
                     <Form.Text className="text-muted">
-                      Name of the NPC
+                    {t("player.npc-name-text", {ns: ['main', 'home']})}
                     </Form.Text>
                 </Form.Group>
                 <Button variant="primary" type="submit">
-                Submit
+                  {t("common.submit", {ns: ['main', 'home']})}
                 </Button>{" "}
                 <Button variant="secondary" onClick={() => cancelButton()}>
-                Cancel
+                  {t("common.cancel", {ns: ['main', 'home']})}
                 </Button>{" "}
             </Form>
         </div>

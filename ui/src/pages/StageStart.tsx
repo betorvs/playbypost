@@ -9,11 +9,13 @@ import GetToken from "../context/GetToken";
 import FetchChannel from "../functions/Channels";
 import { FetchStage } from "../functions/Stages";
 import StageAggregated from "../types/StageAggregated";
+import { useTranslation } from "react-i18next";
 
 const StageStart = () => {
   const { id } = useParams();
   const { Logoff } = useContext(AuthContext);
   const navigate = useNavigate();
+  const { t } = useTranslation(['home', 'main']);
 
   const safeID: string = id ?? "";
 
@@ -58,42 +60,42 @@ const StageStart = () => {
     <>
       <div className="container mt-3" key="1">
         <Layout Logoff={Logoff} />
-        <h2>Start Stage</h2>
+        <h2>{t("stage.start", {ns: ['main', 'home']})}</h2>
         <hr />
       </div>
       <div className="container mt-3" key="2">
         <Form onSubmit={handleSubmit}>
           <Form.Group className="mb-3" controlId="formStage">
-            <Form.Label>Stage</Form.Label>
+            <Form.Label>{t("stage.this", {ns: ['main', 'home']})}</Form.Label>
             <Form.Select as="select"
               value={channelID}
               onChange={e => {
                 console.log("set e.target.value", e.target.value);
                 setChannelID(e.target.value);
               }}>
-                <option value="-1">Select one</option>
+                <option value="-1">{t("common.select-one", {ns: ['main', 'home']})}</option>
               {
                 channel != null ? (
                   channel.map((channel) => (
                     <option value={channel}>{channel}</option>
                   ))) : (
-                    <option>channels not found</option>
+                    <option>{t("stage.channel-not-found", {ns: ['main', 'home']})}</option>
                   )
               }
             </Form.Select>
             <Form.Text className="text-muted">
-              Choose a Channel to Start your Stage
+              {t("stage.start-text1", {ns: ['main', 'home']})}
             </Form.Text>
           </Form.Group>
-          <h5>Storyteller ID: {stage?.stage.storyteller_id}</h5>
-          <h6>In Users, you selected it using "Add as Storyteller"</h6>
-          <h5>Stage ID: {safeID}</h5>
-          <h6>After choosinga Storyteller from Users, it is created automatically</h6>
+          <h5>{t("common.storyteller", {ns: ['main', 'home']})} ID: {stage?.stage.storyteller_id}</h5>
+          <h6>{t("stage.start-text2", {ns: ['main', 'home']})} "{t("user.add-as-storyteller", {ns: ['main', 'home']})}"</h6>
+          <h5>{t("stage.this", {ns: ['main', 'home']})} ID: {safeID}</h5>
+          <h6>{t("stage.start-text3", {ns: ['main', 'home']})}</h6>
           <Button variant="primary" type="submit">
-            Submit
+            {t("common.submit", {ns: ['main', 'home']})}
           </Button>{" "}
           <Button variant="secondary" onClick={() => cancelButton()}>
-            Cancel
+            {t("common.cancel", {ns: ['main', 'home']})}
           </Button>{" "}
         </Form>
       </div>

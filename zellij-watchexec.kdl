@@ -14,12 +14,12 @@ layout {
             pane {
                 name "playbypost-server"
                 command "task"
-                args "playbypost-run"
+                args "playbypost-we-run"
                 start_suspended true
                 close_on_exit true
             }
             pane {
-                name "plugin: task discord-run or task slack-run"
+                name "plugin: task discord-we-run or task slack-we-run"
             }
         }
     }

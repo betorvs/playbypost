@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import NavigateButton from "./Button/NavigateButton";
 import AutoPlay from "../types/AutoPlay";
 import { FetchAutoPlayByID } from "../functions/AutoPlay";
-
+import { useTranslation } from "react-i18next";
 
 interface props {
     id: string;
@@ -13,6 +13,7 @@ interface props {
 
 const AutoPlayDetailHeader = ({ id, storyID }: props) => {
   const [autoPlay, setAutoPLay] = useState<AutoPlay>();
+  const { t } = useTranslation(['home', 'main']);
 
   useEffect(() => {
     FetchAutoPlayByID(id, setAutoPLay);
@@ -24,29 +25,29 @@ const AutoPlayDetailHeader = ({ id, storyID }: props) => {
       >
         <div className="col-lg-6 px-0" key="1">
           <h1 className="display-4 fst-italic">
-            { autoPlay?.text || "Title not found"}
+            { autoPlay?.text || t("common.title-not-found", {ns: ['main', 'home']})}
           </h1>
           <p className="lead my-3">
-            ID: { autoPlay?.id || "AutoPlayID not found"} 
+            ID: { autoPlay?.id || t("auto-play.not-found", {ns: ['main', 'home']})} 
           </p>
-          <p className="lead mb-0">Story ID: { autoPlay?.story_id || "Story not found"}</p>
+          <p className="lead mb-0">{t("story.this", {ns: ['main', 'home']})} ID: { autoPlay?.story_id || t("story.not-found", {ns: ['main', 'home']})}</p>
           <br />
           <p className="lead mb-0">
           {
             autoPlay?.solo ? (
-              <p>This is a Solo Adventure</p>
+              <p>{t("auto-play.solo", {ns: ['main', 'home']})}</p>
             ) : (
-              <p>This is Didatic Adventure</p>
+              <p>{t("auto-play.didatic", {ns: ['main', 'home']})}</p>
             )
           }
           </p>
           <br />
          
           <NavigateButton link="/autoplay" variant="secondary">
-            Back to Auto Play
+            {t("auto-play.back-button", {ns: ['main', 'home']})}
           </NavigateButton>{" "}
           <NavigateButton link={`/autoplay/${id}/story/${storyID}/next`} variant="primary">
-            Add Next Encounter
+            {t("encounter.add-next-encounter", {ns: ['main', 'home']})}
           </NavigateButton>{" "}
           
         </div>

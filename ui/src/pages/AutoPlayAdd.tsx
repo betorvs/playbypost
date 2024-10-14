@@ -10,6 +10,7 @@ import UseLocation from "../context/UseLocation";
 import Story from "../types/Story";
 import GetUserID from "../context/GetUserID";
 import { FetchStoriesByUserID } from "../functions/Stories";
+import { useTranslation } from "react-i18next";
 
 const AutoPlayAdd = () => {
   const { Logoff } = useContext(AuthContext);
@@ -18,6 +19,8 @@ const AutoPlayAdd = () => {
   const [text, setText] = useState("");
   const [solo, setSolo] = useState(false);
   const user_id = GetUserID();
+  const { t } = useTranslation(["home", "main"]);
+
   useEffect(() => {
     FetchStoriesByUserID(user_id, setStory);
   }, []);
@@ -55,36 +58,36 @@ const AutoPlayAdd = () => {
     <>
       <div className="container mt-3" key="1">
         <Layout Logoff={Logoff} />
-        <h2>Make Story as Auto Play</h2>
-        <h3>It will allow you to organise encounters sequence and make it as Solo Adventure (or Didatic)</h3>
+        <h2>{t("auto-play.add-auto-play-header", {ns: ['main', 'home']})}</h2>
+        <h3>{t("auto-play.add-auto-play-description", {ns: ['main', 'home']})}</h3>
         <hr />
       </div>
       <div className="container mt-3" key="2">
         <Form onSubmit={handleSubmit}>
           <Form.Group className="mb-3" controlId="formStory">
-            <Form.Label>Story</Form.Label>
+            <Form.Label>{t("story.this", {ns: ['main', 'home']})}</Form.Label>
             <Form.Select as="select"
               value={storyID}
               onChange={e => {
                 console.log("e.target.value", e.target.value);
                 setStoryID(Number(e.target.value));
               }}>
-                <option value="-1">Select one</option>
+                <option value="-1">{t("common.select-one", {ns: ['main', 'home']})}</option>
               {
                 stories != null ? (
                   stories.map((story) => (
                     <option value={story.id}>{story.title}</option>
                   ))) : (
-                    <option>stories not found</option>
+                    <option>{t("story.not-found", {ns: ['main', 'home']})}</option>
                   )
               }
             </Form.Select>
             <Form.Text className="text-muted">
-              A great Solo Adventures starts with a great title
+            {t("auto-play.add-auto-play-text1", {ns: ['main', 'home']})}
             </Form.Text>
           </Form.Group>
           <Form.Group className="mb-3" controlId="formText">
-            <Form.Label>Text</Form.Label>
+            <Form.Label>{t("common.title", {ns: ['main', 'home']})}</Form.Label>
             <Form.Control
               type="text"
               placeholder="Solo Adventure Title"
@@ -92,7 +95,7 @@ const AutoPlayAdd = () => {
               onChange={(e) => setText(e.target.value)}
             />
             <Form.Text className="text-muted">
-              Text to be used in Auto Play options.
+            {t("auto-play.add-auto-play-text2", {ns: ['main', 'home']})}
             </Form.Text>
           </Form.Group>
           <Form.Group className="mb-3" controlId="formSolo">
@@ -102,14 +105,14 @@ const AutoPlayAdd = () => {
               onChange={(e) => setSolo(e.target.checked)}
             />
             <Form.Text className="text-muted">
-              Check if it is a Solo Adventure (or Didatic)
+            {t("auto-play.add-auto-play-text3", {ns: ['main', 'home']})}
             </Form.Text>
           </Form.Group>
           <Button variant="primary" type="submit">
-            Submit
+          {t("common.submit", {ns: ['main', 'home']})}
           </Button>{" "}
           <Button variant="secondary" onClick={() => cancelButton()}>
-            Cancel
+          {t("common.cancel", {ns: ['main', 'home']})}
           </Button>{" "}
         </Form>
       </div>

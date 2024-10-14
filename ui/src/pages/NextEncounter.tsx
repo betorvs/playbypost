@@ -10,11 +10,12 @@ import UseLocation from "../context/UseLocation";
 import GetUsername from "../context/GetUsername";
 import GetToken from "../context/GetToken";
 import NextEncounterType from "../types/Next";
-
+import { useTranslation } from "react-i18next";
 
 const NextEncounter = () => {
   const { Logoff } = useContext(AuthContext);
   const { id, story, encounterid } = useParams();
+  const { t } = useTranslation(['home', 'main']);
   const stageID: string = id ?? "";
   const safeID: string = encounterid ?? "";
   const encounteridNumber: number = Number(safeID);
@@ -89,56 +90,56 @@ const NextEncounter = () => {
       <>
         <div className="container mt-3" key="1">
             <Layout Logoff={Logoff} />
-            <h2>Add Next Encounter</h2>
-            <h4>Encounter  ID: {encounteridNumber}</h4>
+            <h2>{t("encounter.add-next-encounter", {ns: ['main', 'home']})}</h2>
+            <h4>{t("encounter.this", {ns: ['main', 'home']})} ID: {encounteridNumber}</h4>
         </div>
         <div className="container mt-3" key="2">
             <Form onSubmit={handleSubmit}>
             {formData.map((group, index) => (
               <div key={index}>
                 <Form.Group>
-                  <Form.Label>Next Encounter</Form.Label>
+                  <Form.Label>{t("encounter.next", {ns: ['main', 'home']})}</Form.Label>
                   <Form.Select name="next_encounter_id" value={group.next_encounter_id} onChange={(e) => handleDropdownChange(index, e)}>
-                    <option value="-1">Select a Encounter</option>
+                    <option value="-1">{t("stage.select-encounter", {ns: ['main', 'home']})}</option>
                         {
                           encounters != null ? (
                             encounters.filter(encounter => encounter.id !== encounteridNumber)
                               .map((encounter) => (
                                 <option value={encounter.id}>{encounter.title}</option>
                             ))) : (
-                              <option>encounters not found</option>
+                              <option>{t("encounter.not-found", {ns: ['main', 'home']})}</option>
                             )
                         }
                   </Form.Select>
                   <Form.Text className="text-muted">
-                    Choose the next Encounter
+                  {t("encounter.next-text1", {ns: ['main', 'home']})}
                   </Form.Text>
                 </Form.Group>
                 <Form.Group>
-                  <Form.Label>Optional Name</Form.Label>
+                  <Form.Label>{t("common.name-optional", {ns: ['main', 'home']})}</Form.Label>
                   <Form.Control type="text" name="text" value={group.text} onChange={(e) => handleInputChange(index, e)} />
                   <Form.Text className="text-muted">
-                    It can be assigned multiple times, each of it will enable a option for player to choose his destiny. Keep option name different per encounter.
+                  {t("encounter.next-text2", {ns: ['main', 'home']})}
                   </Form.Text>
                 </Form.Group>
                 <Form.Group>
-                    <Form.Label>Automatic Option</Form.Label>
+                    <Form.Label>{t("encounter.next-automatic", {ns: ['main', 'home']})}</Form.Label>
                     <Form.Select name="objective" value={group.objective.kind} onChange={(e) => handleDropdownObjectiveChange(index, e)}>
-                      <option value="invalid">Select a Objective</option>
-                      <option value="no_action">Free Choice</option>
-                      <option value="dice_roll">Dice Roll</option>
-                      <option value="task_okay">Task Successfully</option>
-                      <option value="victory">Victory against enemies</option>
+                      <option value="invalid">{t("encounter.next-objective", {ns: ['main', 'home']})}</option>
+                      <option value="no_action">{t("encounter.select-objective-1", {ns: ['main', 'home']})}</option>
+                      <option value="dice_roll">{t("encounter.select-objective-2", {ns: ['main', 'home']})}</option>
+                      <option value="task_okay">{t("encounter.select-objective-3", {ns: ['main', 'home']})}</option>
+                      <option value="victory">{t("encounter.select-objective-4", {ns: ['main', 'home']})}</option>
                     </Form.Select>
                   </Form.Group>
-                <Button variant="danger" onClick={() => removeGroup(index)}>Remove</Button>
+                <Button variant="danger" onClick={() => removeGroup(index)}>{t("encounter.remove", {ns: ['main', 'home']})}</Button>
               </div>
 
             ))}
-                <Button variant="primary" onClick={addGroup}>Add More Encounters</Button>{" "}
-                <Button variant="primary" type="submit">Submit</Button>{" "}
+                <Button variant="primary" onClick={addGroup}>{t("encounter.add-more", {ns: ['main', 'home']})}</Button>{" "}
+                <Button variant="primary" type="submit">{t("common.submit", {ns: ['main', 'home']})}</Button>{" "}
                 <Button variant="secondary" onClick={() => cancelButton()}>
-                Cancel
+                  {t("common.cancel", {ns: ['main', 'home']})}
                 </Button>{" "}
             </Form>
         </div>

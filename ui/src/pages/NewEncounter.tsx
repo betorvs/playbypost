@@ -8,6 +8,7 @@ import GetUsername from "../context/GetUsername";
 import GetToken from "../context/GetToken";
 import GetUserID from "../context/GetUserID";
 import UseLocation from "../context/UseLocation";
+import { useTranslation } from "react-i18next";
 
 const NewEncounter = () => {
   const { id } = useParams();
@@ -19,6 +20,7 @@ const NewEncounter = () => {
   const [firstEncounter, setFirstEncounter] = useState(false);
   const [lastEncounter, setLastEncounter] = useState(false);
   const user_id = GetUserID();
+  const { t } = useTranslation(['home', 'main']);
 
   const safeID: string = id ?? "";
 
@@ -62,13 +64,13 @@ const NewEncounter = () => {
     <>
       <div className="container mt-3" key="1">
         <Layout Logoff={Logoff} />
-        <h2>Create a New Encounter</h2>
+        <h2>{t("encounter.header", {ns: ['main', 'home']})}</h2>
         <hr />
       </div>
       <div className="container mt-3" key="2">
         <Form onSubmit={handleSubmit}>
           <Form.Group className="mb-3" controlId="formTitle">
-            <Form.Label>Title</Form.Label>
+            <Form.Label>{t("common.title", {ns: ['main', 'home']})}</Form.Label>
             <Form.Control
               type="text"
               placeholder="title"
@@ -76,11 +78,11 @@ const NewEncounter = () => {
               onChange={(e) => setTitle(e.target.value)}
             />
             <Form.Text className="text-muted">
-              A great encounter starts with a great title
+            {t("encounter.form-title-text", {ns: ['main', 'home']})}
             </Form.Text>
           </Form.Group>
           <Form.Group className="mb-3" controlId="formAnnouncement">
-            <Form.Label>Announcement</Form.Label>
+            <Form.Label>{t("common.announce", {ns: ['main', 'home']})}</Form.Label>
             <Form.Control
               type="text"
               placeholder="annoucement"
@@ -88,12 +90,11 @@ const NewEncounter = () => {
               onChange={(e) => setAnnouncement(e.target.value)}
             />
             <Form.Text className="text-muted">
-              It will be post to all players. Think about all senses and create
-              a great description!
+            {t("encounter.form-announce-text", {ns: ['main', 'home']})}
             </Form.Text>
           </Form.Group>
           <Form.Group className="mb-3" controlId="formNotes">
-            <Form.Label>Notes</Form.Label>
+            <Form.Label>{t("common.notes", {ns: ['main', 'home']})}</Form.Label>
             <Form.Control
               type="text"
               placeholder="notes"
@@ -101,39 +102,38 @@ const NewEncounter = () => {
               onChange={(e) => setNotes(e.target.value)}
             />
             <Form.Text className="text-muted">
-              It will be used only for you. Keep here good notes about what
-              should happen.
+            {t("encounter.form-notes-text", {ns: ['main', 'home']})}
             </Form.Text>
           </Form.Group>
           <Form.Group className="mb-3" controlId="formFirstEncounter">
-            <Form.Label>First Encounter</Form.Label>
+            <Form.Label>{t("encounter.first-encounter", {ns: ['main', 'home']})}</Form.Label>
             <Form.Check
               type="checkbox"
-              label="This is the first encounter of the story" 
+              label={t("encounter.first-encounter-label", {ns: ['main', 'home']})}
               checked={firstEncounter}
               onChange={(e) => setFirstEncounter(e.target.checked)}
               />
             <Form.Text className="text-muted">
-              If this is the first encounter of the story, mark this checkbox. Can be only one.
+            {t("encounter.first-encounter-description", {ns: ['main', 'home']})}
             </Form.Text>
           </Form.Group>
           <Form.Group className="mb-3" controlId="formFirstEncounter">
-            <Form.Label>Last Encounter</Form.Label>
+            <Form.Label>{t("encounter.last-encounter", {ns: ['main', 'home']})}</Form.Label>
             <Form.Check
               type="checkbox"
-              label="This is the last encounter of the story" 
+              label={t("encounter.last-encounter-label", {ns: ['main', 'home']})}
               checked={lastEncounter}
               onChange={(e) => setLastEncounter(e.target.checked)}
               />
             <Form.Text className="text-muted">
-              A story can have multiple last encounters. Mark this checkbox if this is one of them.
+            {t("encounter.last-encounter-description", {ns: ['main', 'home']})}
             </Form.Text>
           </Form.Group>
           <Button variant="primary" type="submit">
-            Submit
+          {t("common.submit", {ns: ['main', 'home']})}
           </Button>{" "}
           <Button variant="secondary" onClick={() => cancelButton()}>
-            Cancel
+          {t("common.cancel", {ns: ['main', 'home']})}
           </Button>{" "}
         </Form>
       </div>

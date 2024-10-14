@@ -10,6 +10,7 @@ import UseLocation from "../context/UseLocation";
 import Stage from "../types/Stage";
 import React from "react";
 import {FetchStageByStoryID} from "../functions/Stages";
+import { useTranslation } from "react-i18next";
 
 const EncounterToStage = () => {
   const { Logoff } = useContext(AuthContext);
@@ -17,6 +18,7 @@ const EncounterToStage = () => {
   const [stages, setStages] = useState<Stage[]>([]);
   const [text, setText] = useState("");
   const [stageID, setStageID] = useState(0);
+  const { t } = useTranslation(["home", "main"]);
 
   const safeID: string = story_id ?? "";
 
@@ -60,36 +62,36 @@ const EncounterToStage = () => {
     <>
       <div className="container mt-3" key="1">
         <Layout Logoff={Logoff} />
-        <h2>Add Encounter to Stage</h2>
-        <h3>Publish this encounter to Stage</h3>
+        <h2>{t("encounter.encounter-to-stage", {ns: ['main', 'home']})}</h2>
+        <h3>{t("encounter.encounter-to-stage-description", {ns: ['main', 'home']})}</h3>
         <hr />
       </div>
       <div className="container mt-3" key="2">
         <Form onSubmit={handleSubmit}>
           <Form.Group className="mb-3" controlId="formStage">
-            <Form.Label>Stage</Form.Label>
+            <Form.Label>{t("stage.this", {ns: ['main', 'home']})}</Form.Label>
             <Form.Select as="select"
               value={stageID}
               onChange={e => {
                 console.log("set e.target.value", e.target.value);
                 setStageID(Number(e.target.value));
               }}>
-                <option value="-1">Select one</option>
+                <option value="-1">{t("common.select-one", {ns: ['main', 'home']})}</option>
               {
                 stages != null ? (
                   stages.map((stage) => (
                     <option value={stage.id}>{stage.text}</option>
                   ))) : (
-                    <option>stages not found</option>
+                    <option>{t("stage.not-found", {ns: ['main', 'home']})}</option>
                   )
               }
             </Form.Select>
             <Form.Text className="text-muted">
-              Choose a Stage to create a Player
+            {t("encounter.encounter-to-stage-text1", {ns: ['main', 'home']})}
             </Form.Text>
           </Form.Group>
           <Form.Group className="mb-3" controlId="formName">
-            <Form.Label>Name</Form.Label>
+            <Form.Label>{t("common.name", {ns: ['main', 'home']})}</Form.Label>
             <Form.Control
               type="text"
               placeholder="name"
@@ -97,14 +99,14 @@ const EncounterToStage = () => {
               onChange={(e) => setText(e.target.value)}
             />
             <Form.Text className="text-muted">
-              Encounter's Name.
+            {t("encounter.name", {ns: ['main', 'home']})}
             </Form.Text>
           </Form.Group>
           <Button variant="primary" type="submit">
-            Submit
+            {t("common.submit", {ns: ['main', 'home']})}
           </Button>{" "}
           <Button variant="secondary" onClick={() => cancelButton()}>
-            Cancel
+            {t("common.cancel", {ns: ['main', 'home']})}
           </Button>{" "}
         </Form>
       </div>
