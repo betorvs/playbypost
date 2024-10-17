@@ -46,6 +46,9 @@ type AutoPlayEncounterList struct {
 }
 
 type AutoPlayEncounterWithNext struct {
+	ID            int    `json:"id"`
+	EncounterID   int    `json:"encounter_id"`
+	NextID        int    `json:"next_id"`
 	Encounter     string `json:"encounter"`
 	NextEncounter string `json:"next_encounter"`
 }

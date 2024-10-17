@@ -9,7 +9,7 @@ require (
 	github.com/golang-migrate/migrate/v4 v4.18.1
 	github.com/lib/pq v1.10.9
 	github.com/sagikazarmark/slog-shim v0.1.0
-	github.com/slack-go/slack v0.14.0
+	github.com/slack-go/slack v0.15.0
 	github.com/spf13/cobra v1.8.1
 	github.com/spf13/viper v1.19.0
 	golang.org/x/crypto v0.28.0

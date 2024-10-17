@@ -2,6 +2,8 @@ package validator
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
 	"log/slog"
 	"sync"
 	"time"
@@ -95,4 +97,32 @@ func (v *Validator) RemoveOldRequests() {
 func (v *Validator) Execute() {
 	v.logger.Info("starting validator worker api execution", "time", time.Now())
 	v.RemoveOldRequests()
+}
+
+func (v *Validator) Slice() []Request {
+	result := []Request{}
+	vReqK, _ := json.Marshal(v.Request)
+	fmt.Println("result map json", string(vReqK))
+	for k, value := range v.Request {
+		i, ok := containsResultIDKind(result, value)
+		if !ok {
+			result = append(result, value)
+			// result = slices.Replace(result, i, i, v)
+		} else {
+			fmt.Println("result", result[i], ok, v.Request[k])
+			if result[i].UpdatedAt.Before(v.Request[k].UpdatedAt) {
+				result[i] = value
+			}
+		}
+	}
+	return result
+}
+
+func containsResultIDKind(r []Request, value Request) (int, bool) {
+	for k, v := range r {
+		if v.ID == value.ID && v.Kind == value.Kind && v.Valid == value.Valid {
+			return k, true
+		}
+	}
+	return -1, false
 }

@@ -1,6 +1,8 @@
 import AutoPlay from "../../types/AutoPlay";
 import NavigateButton from "../Button/NavigateButton";
 import { useTranslation } from "react-i18next";
+import { ValidatorPut } from "../../functions/Validator";
+import { Button } from "react-bootstrap";
 
 interface Props {
     ID: number;
@@ -9,6 +11,10 @@ interface Props {
   
   const AutoPlayCards = ({ ID, autoPlay }: Props) => {
     const { t } = useTranslation(['home', 'main']);
+    const validatorPut = (id: number) => {
+      ValidatorPut(id, "autoplay");
+    };
+
     return (
       <div className="card" key={ID}>
         <div className="card-header">{t("auto-play.this", {ns: ['main', 'home']})} ID: {autoPlay.id}</div>
@@ -22,6 +28,9 @@ interface Props {
           <NavigateButton link={`/autoplay/${autoPlay.id}/story/${autoPlay.story_id}`} variant="primary">
             {t("common.details", {ns: ['main', 'home']})}
           </NavigateButton>{" "}
+          <Button variant="secondary" onClick={() => validatorPut(autoPlay.id)}>
+          {t("common.validator", {ns: ['main', 'home']})}
+          </Button>{" "}
         </div>
         <div className="card-footer text-body-secondary">
           {

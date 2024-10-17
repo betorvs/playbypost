@@ -37,7 +37,16 @@ var validatorCmd = &cobra.Command{
 
 			}
 		case "request", "req":
-			body, err := app.Web.ValidatorPut(objectKind, objectID)
+			obj := ""
+			switch objectKind {
+			case "auto-play", "autoplay":
+				obj = "autoplay"
+			case "stage":
+				obj = "stage"
+			default:
+				obj = "story"
+			}
+			body, err := app.Web.ValidatorPut(obj, objectID)
 			if err != nil {
 				app.Logger.Error("validator error", "error", err.Error())
 				return
@@ -48,7 +57,7 @@ var validatorCmd = &cobra.Command{
 				app.Logger.Error("json unmarsharl error", "error", err.Error())
 				return
 			}
-			app.Logger.Info("request", "kind", objectKind, "id", objectID, "status", msg.Msg)
+			app.Logger.Info("request", "kind", obj, "id", objectID, "status", msg.Msg)
 
 		}
 	},

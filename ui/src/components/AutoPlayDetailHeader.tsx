@@ -5,6 +5,8 @@ import NavigateButton from "./Button/NavigateButton";
 import AutoPlay from "../types/AutoPlay";
 import { FetchAutoPlayByID } from "../functions/AutoPlay";
 import { useTranslation } from "react-i18next";
+import Validator from "../types/validator";
+import { FetchValidatorByIDKind } from "../functions/Validator";
 
 interface props {
     id: string;
@@ -14,9 +16,12 @@ interface props {
 const AutoPlayDetailHeader = ({ id, storyID }: props) => {
   const [autoPlay, setAutoPLay] = useState<AutoPlay>();
   const { t } = useTranslation(['home', 'main']);
+  const [validator, setValidator] = useState<Validator>();
+  const kind = "autoplay";
 
   useEffect(() => {
     FetchAutoPlayByID(id, setAutoPLay);
+    FetchValidatorByIDKind(Number(id), kind, setValidator);
   }, []);
     return (
       <div
@@ -42,6 +47,21 @@ const AutoPlayDetailHeader = ({ id, storyID }: props) => {
           }
           </p>
           <br />
+          <p>
+            { 
+              validator != null ? (
+                validator.valid === true ? (
+                  <p>{t("common.validator", {ns: ['main', 'home']})}: {t("common.validator-okay", {ns: ['main', 'home']})}</p>
+                ) : (
+                  <p>{t("common.validator", {ns: ['main', 'home']})}: {validator?.analise?.results || t("common.validator-not-found", {ns: ['main', 'home']}) }</p>
+                )
+              ) : (
+                <p>{t("common.validator-not-found", {ns: ['main', 'home']})}</p>
+              )
+              
+            }
+          </p>
+          <br />
          
           <NavigateButton link="/autoplay" variant="secondary">
             {t("auto-play.back-button", {ns: ['main', 'home']})}
@@ -49,7 +69,7 @@ const AutoPlayDetailHeader = ({ id, storyID }: props) => {
           <NavigateButton link={`/autoplay/${id}/story/${storyID}/next`} variant="primary">
             {t("encounter.add-next-encounter", {ns: ['main', 'home']})}
           </NavigateButton>{" "}
-          
+
         </div>
       </div>
     );

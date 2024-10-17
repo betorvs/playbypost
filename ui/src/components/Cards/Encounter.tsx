@@ -13,7 +13,7 @@ const EncounterCards = ({ encounter, disable_footer }: props) => {
     <>
       <div className="col-md-6">
         <div className="card mb-4">
-          <div className="card-header">{t("encounter.this", {ns: ['main', 'home']})}: {encounter.title} </div>
+          <div className="card-header">{t("encounter.this", {ns: ['main', 'home']})}: {encounter.title} ({encounter.id})</div>
           <div className="card-body">
             <h6 className="card-title">{t("common.announce", {ns: ['main', 'home']})}</h6>
             <p className="card-text">{encounter.announcement}</p>

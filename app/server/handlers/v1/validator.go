@@ -15,8 +15,8 @@ func (a MainApi) GetAllValidations(w http.ResponseWriter, r *http.Request) {
 		a.s.ErrJSON(w, http.StatusForbidden, "required authentication headers")
 		return
 	}
-
-	a.s.JSON(w, a.Validator.Request)
+	// a.s.JSON(w, validatorRequestToSlice(a.Validator.Request))
+	a.s.JSON(w, a.Validator.Slice())
 }
 
 func (a MainApi) GetValidateAutoPlay(w http.ResponseWriter, r *http.Request) {
@@ -24,7 +24,23 @@ func (a MainApi) GetValidateAutoPlay(w http.ResponseWriter, r *http.Request) {
 		a.s.ErrJSON(w, http.StatusForbidden, "required authentication headers")
 		return
 	}
+	output := r.URL.Query().Get("output")
 	hashID := r.PathValue("hashid")
+	if output == "json" {
+		id, err := strconv.Atoi(hashID)
+		if err != nil {
+			a.s.ErrJSON(w, http.StatusBadRequest, "id should be a integer")
+			return
+		}
+		a.logger.Info("output json set and looking for id", "id", id)
+		slice := a.Validator.Slice()
+		for _, v := range slice {
+			if v.ID == id {
+				a.s.JSON(w, v)
+				return
+			}
+		}
+	}
 	msg := types.Composed{}
 	v, ok := a.Validator.Request[hashID]
 	if ok {
@@ -48,7 +64,23 @@ func (a MainApi) GetValidateStage(w http.ResponseWriter, r *http.Request) {
 		a.s.ErrJSON(w, http.StatusForbidden, "required authentication headers")
 		return
 	}
+	output := r.URL.Query().Get("output")
 	hashID := r.PathValue("hashid")
+	if output == "json" {
+		id, err := strconv.Atoi(hashID)
+		if err != nil {
+			a.s.ErrJSON(w, http.StatusBadRequest, "id should be a integer")
+			return
+		}
+		a.logger.Info("output json set and looking for id", "id", id)
+		slice := a.Validator.Slice()
+		for _, v := range slice {
+			if v.ID == id {
+				a.s.JSON(w, v)
+				return
+			}
+		}
+	}
 	msg := types.Composed{}
 	v, ok := a.Validator.Request[hashID]
 	if ok {
@@ -72,7 +104,23 @@ func (a MainApi) GetValidateStory(w http.ResponseWriter, r *http.Request) {
 		a.s.ErrJSON(w, http.StatusForbidden, "required authentication headers")
 		return
 	}
+	output := r.URL.Query().Get("output")
 	hashID := r.PathValue("hashid")
+	if output == "json" {
+		id, err := strconv.Atoi(hashID)
+		if err != nil {
+			a.s.ErrJSON(w, http.StatusBadRequest, "id should be a integer")
+			return
+		}
+		a.logger.Info("output json set and looking for id", "id", id)
+		slice := a.Validator.Slice()
+		for _, v := range slice {
+			if v.ID == id {
+				a.s.JSON(w, v)
+				return
+			}
+		}
+	}
 	msg := types.Composed{}
 	v, ok := a.Validator.Request[hashID]
 	if ok {

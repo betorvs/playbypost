@@ -64,7 +64,7 @@ func (s *SvrWeb) JSON(w http.ResponseWriter, v interface{}) {
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Access-Control-Allow-Origin", "*") //"Access-Control-Allow-Origin": "http://192.168.1.210:5173/",
 	w.Header().Set("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization, X-Username, X-Access-Token")
-	w.Header().Set("Access-Control-Request-Method", "GET, POST, DELETE, PUT, OPTIONS")
+	w.Header().Set("Access-Control-Request-Methods", "GET, POST, DELETE, PUT, OPTIONS")
 	_, err = w.Write(js)
 	if err != nil {
 		s.logger.Error("json write error", "error", err.Error())
@@ -84,7 +84,7 @@ func (s *SvrWeb) ErrJSON(w http.ResponseWriter, code int, msg string) {
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.Header().Set("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization, X-Username, X-Access-Token")
-	w.Header().Set("Access-Control-Request-Method", "GET, POST, DELETE, PUT, OPTIONS")
+	w.Header().Set("Access-Control-Request-Methods", "GET, POST, DELETE, PUT, OPTIONS")
 	w.WriteHeader(code)
 
 	// message := fmt.Sprintf("{\"msg\":\"%s\"}", msg)
@@ -97,7 +97,10 @@ func (s *SvrWeb) Options(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.Header().Set("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization, X-Username, X-Access-Token")
-	w.Header().Set("Access-Control-Request-Method", "GET, POST, DELETE, PUT, OPTIONS")
+	w.Header().Set("Access-Control-Request-Methods", "GET, POST, DELETE, PUT, OPTIONS")
+	if r.Header.Get("Access-Control-Request-Method") != "" {
+		w.Header().Set("Access-Control-Allow-Method", r.Header.Get("Access-Control-Request-Method"))
+	}
 	w.WriteHeader(http.StatusOK)
 
 	message := types.Msg{Msg: "OK"}

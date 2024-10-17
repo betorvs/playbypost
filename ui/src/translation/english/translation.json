@@ -26,7 +26,10 @@
         "skill": "Skill",
         "target": "Target",
         "other": "Other",
-        "channel": "Channel"
+        "channel": "Channel",
+        "validator": "Validator",
+        "validator-not-found": "Validator not executed yet",
+        "validator-okay": "No Errors"
     },
     "home": {
         "menu": "Home",

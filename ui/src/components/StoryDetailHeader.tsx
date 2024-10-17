@@ -3,6 +3,8 @@ import Story from "../types/Story";
 import NavigateButton from "./Button/NavigateButton";
 import FetchStory from "../functions/Stories";
 import { useTranslation } from "react-i18next";
+import { FetchValidatorByIDKind } from "../functions/Validator";
+import Validator from "../types/validator";
 
 interface props {
   id: string;
@@ -11,10 +13,13 @@ interface props {
 
 const StoryDetailHeader = ({ id, detail }: props) => {
   const [story, setStory] = useState<Story>();
+  const [validator, setValidator] = useState<Validator>();
   const { t } = useTranslation(['home', 'main']);
+  const kind = "story";
 
   useEffect(() => {
     FetchStory(id, setStory);
+    FetchValidatorByIDKind(Number(id), kind, setValidator);
   }, []);
   return (
     <div
@@ -29,6 +34,21 @@ const StoryDetailHeader = ({ id, detail }: props) => {
           {story?.announcement || t("common.announce-not-found", {ns: ['main', 'home']})}
         </p>
         <p className="lead mb-0">{story?.notes || t("common.notes-not-found", {ns: ['main', 'home']})}</p>
+        <br />
+        
+          { 
+            validator != null ? (
+              validator.valid === true ? (
+                <p>{t("common.validator", {ns: ['main', 'home']})}: {t("common.validator-okay", {ns: ['main', 'home']})} </p>
+              ) : (
+                <p>{t("common.validator", {ns: ['main', 'home']})}: {validator?.analise?.results || t("common.validator-not-found", {ns: ['main', 'home']}) } </p>
+              )
+            ) : (
+              <p>{t("common.validator-not-found", {ns: ['main', 'home']})} </p>
+            )
+            
+          }
+       
         <br />
         <NavigateButton link="/stories" variant="secondary">
         {t("story.back-button", {ns: ['main', 'home']})}

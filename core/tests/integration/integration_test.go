@@ -512,17 +512,18 @@ func TestIntegration(t *testing.T) {
 		if err6 != nil {
 			t.Error("error calling validator")
 		}
+		time.Sleep(5 * time.Second)
 		body1, err7 := h.GetValidator()
 		if err7 != nil {
 			t.Error("error getting validator")
 		}
-		var obj1 map[string]validator.Request
+		var obj1 []validator.Request
 		err8 := json.Unmarshal(body1, &obj1)
 		if err8 != nil {
 			t.Error("error unmarshal validator")
 		}
-		for k, v := range obj1 {
-			if k == "story" {
+		for _, v := range obj1 {
+			if v.Kind == "story" {
 				if v.ID == storyEmpty.ID {
 					if v.Valid != false {
 						t.Error("error validator story ID")

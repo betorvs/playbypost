@@ -26,7 +26,10 @@
         "skill": "Perícia",
         "target": "Alvo",
         "other": "Outro",
-        "channel": "Canal"
+        "channel": "Canal",
+        "validator": "Validador",
+        "validator-not-found": "Validator não executado ainda",
+        "validator-okay": "Nenhum erro encontrado"
     },
     "home": {
         "menu": "Home",

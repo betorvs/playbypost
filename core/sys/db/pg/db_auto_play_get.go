@@ -57,7 +57,7 @@ func (db *DBX) GetAutoPlayByID(ctx context.Context, autoPlayID int) (types.AutoP
 
 func (db *DBX) GetNextEncounterByStoryID(ctx context.Context, storyID int) (types.AutoPlayEncounterList, error) {
 	list := types.AutoPlayEncounterList{}
-	query := "select e.title AS encounter, n.title AS next_encounter from auto_play_next_encounter AS a JOIN encounters AS e ON e.id = a.current_encounter_id JOIN encounters AS n ON n.id = a.next_encounter_id WHERE e.story_id = $1"
+	query := "select a.id, e.title AS encounter, e.id AS encounter_id, n.title AS next_encounter, n.id AS next_id from auto_play_next_encounter AS a JOIN encounters AS e ON e.id = a.current_encounter_id JOIN encounters AS n ON n.id = a.next_encounter_id WHERE e.story_id = $1"
 	rows, err := db.Conn.QueryContext(ctx, query, storyID)
 	if err != nil {
 		db.Logger.Error("query on auto_play_next_encounter by story_id failed", "error", err.Error())
@@ -66,7 +66,7 @@ func (db *DBX) GetNextEncounterByStoryID(ctx context.Context, storyID int) (type
 	defer rows.Close()
 	for rows.Next() {
 		var next types.AutoPlayEncounterWithNext
-		if err := rows.Scan(&next.Encounter, &next.NextEncounter); err != nil {
+		if err := rows.Scan(&next.ID, &next.Encounter, &next.EncounterID, &next.NextEncounter, &next.NextID); err != nil {
 			db.Logger.Error("scan error on auto_play_next_encounter by story_id ", "error", err.Error())
 		}
 		list.Link = append(list.Link, next)

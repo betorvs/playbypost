@@ -209,7 +209,7 @@ func (db *DBX) GetRunningStageByChannelID(ctx context.Context, channelID, userID
 // stage_encounter_activities
 func (db *DBX) GetStageEncounterActivitiesByEncounterID(ctx context.Context, id int) ([]types.Activity, error) {
 	list := []types.Activity{}
-	query := "select sa.id, sa.actions, sa.upstream_id, sa.encounter_id, sa.processed from stage_encounter_activities AS sa WHERE sa.encounter_id = $1 AND sa.finished = false"
+	query := "select sa.id, sa.actions, sa.upstream_id, sa.encounter_id, sa.processed from stage_encounter_activities AS sa WHERE sa.encounter_id = $1"
 	rows, err := db.Conn.QueryContext(ctx, query, id)
 	if err != nil {
 		db.Logger.Error("query on stage_encounter_activities by encounter_id failed", "error", err.Error())
