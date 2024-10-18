@@ -6,6 +6,9 @@ type AutoPlay = {
 };
 
 type AutoPlayEncounterWithNext = {
+  id: number;
+	encounter_id: number;
+	next_id: number;
   encounter: string;
   next_encounter: string;
 }

@@ -3,6 +3,8 @@ import NavigateButton from "./Button/NavigateButton";
 import { CloseStage, FetchStage } from "../functions/Stages";
 import StageAggregated from "../types/StageAggregated";
 import { useTranslation } from "react-i18next";
+import Validator from "../types/validator";
+import { FetchValidatorByIDKind } from "../functions/Validator";
 
 interface props {
   id: string;
@@ -12,10 +14,13 @@ interface props {
 
 const StageDetailHeader = ({ id, storyID, detail }: props) => {
   const [stage, setStage] = useState<StageAggregated | undefined>();
-   const { t } = useTranslation(['home', 'main']);
+  const [validator, setValidator] = useState<Validator>();
+  const { t } = useTranslation(['home', 'main']);
+  const kind = "stage";
 
   useEffect(() => {
     FetchStage(id, setStage);
+    FetchValidatorByIDKind(Number(id), kind, setValidator);
   }, []);
   const handleClose = () => {
     console.log("Close stage");
@@ -37,6 +42,21 @@ const StageDetailHeader = ({ id, storyID, detail }: props) => {
         <p className="lead mb-0">{t("common.notes", {ns: ['main', 'home']})}: {stage?.story.notes || t("common.notes-not-found", {ns: ['main', 'home']})}</p>
         <br />
         <p className="lead mb-0">{t("stage.running-channel", {ns: ['main', 'home']})}: {stage?.channel.channel || "Stage not started yet"}</p>
+        <br />
+        <p>
+          { 
+            validator != null ? (
+              validator.valid === true ? (
+                <p>{t("common.validator", {ns: ['main', 'home']})}: {t("common.validator-okay", {ns: ['main', 'home']})}</p>
+              ) : (
+                <p>{t("common.validator", {ns: ['main', 'home']})}: {validator?.analise?.results || t("common.validator-not-found", {ns: ['main', 'home']}) }</p>
+              )
+            ) : (
+              <p>{t("common.validator-not-found", {ns: ['main', 'home']})}</p>
+            )
+            
+          }
+        </p>
         <br />
         <NavigateButton link="/stages" variant="secondary">
         {t("stage.back-button", {ns: ['main', 'home']})}

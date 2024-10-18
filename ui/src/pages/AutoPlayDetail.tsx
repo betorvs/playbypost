@@ -8,15 +8,15 @@ import { AutoPlayEncounterList } from "../types/AutoPlay";
 import { useTranslation } from "react-i18next";
 
 const AutoPlayDetail = () => {
-    const { id, story } = useParams();
-    const { Logoff } = useContext(AuthContext);
-    const { t } = useTranslation(['home', 'main']);
+  const { id, story } = useParams();
+  const { Logoff } = useContext(AuthContext);
+  const { t } = useTranslation(['home', 'main']);
   
-    const safeID: string = id ?? "";
+  const safeID: string = id ?? "";
   
-    const storySafeID: string = story ?? "";
+  const storySafeID: string = story ?? "";
   
-    const [encountersList, setEncountersList] = useState<AutoPlayEncounterList>();
+  const [encountersList, setEncountersList] = useState<AutoPlayEncounterList>();
 
   useEffect(() => {
     FetchEncountersAutoPlay(storySafeID, setEncountersList);
@@ -37,13 +37,13 @@ const AutoPlayDetail = () => {
               {
                 encountersList?.encounter_list != null ? (
                   encountersList?.encounter_list.map((encounter) => (
-                    <li className="list-group-item" key={encounter.id} >{encounter.name}
+                    <li className="list-group-item" key={encounter.id} >{encounter.name} ({encounter.id})
                     {
                       encountersList.link != null ? (
                         encountersList.link.filter((next) => next.encounter === encounter.name)
                         .map((next) => (
                           <ul>
-                            <li>{t("encounter.link", {ns: ['main', 'home']})}: {next.next_encounter}</li>
+                            <li key={next.id}>{t("encounter.link", {ns: ['main', 'home']})}: {next.next_encounter} ({next.next_id}) </li>
                           </ul>
                         ))
                       ) : (

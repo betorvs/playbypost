@@ -1,3 +1,5 @@
+import { Button } from "react-bootstrap";
+import { ValidatorPut } from "../../functions/Validator";
 import Stage from "../../types/Stage";
 import NavigateButton from "../Button/NavigateButton";
 import { useTranslation } from "react-i18next";
@@ -8,6 +10,9 @@ interface Props {
 }
 
 const StageCards = ({ ID, stage }: Props) => {
+  const validatorPut = (id: number) => {
+    ValidatorPut(id, "stage");
+  };
   const { t } = useTranslation(['home', 'main']);
   return (
     <div className="card" key={ID}>
@@ -22,6 +27,9 @@ const StageCards = ({ ID, stage }: Props) => {
         <NavigateButton link={`/stages/${stage.id}/story/${stage.story_id}`} variant="primary">
         {t("common.details", {ns: ['main', 'home']})}
         </NavigateButton>{" "}
+        <Button variant="secondary" onClick={() => validatorPut(stage.id)}>
+          {t("common.validator", {ns: ['main', 'home']})}
+        </Button>{" "}
       </div>
       <div className="card-footer text-body-secondary">
       {t("common.storyteller", {ns: ['main', 'home']})} ID: {stage.storyteller_id}

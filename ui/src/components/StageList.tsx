@@ -8,6 +8,8 @@ const StageList = () => {
   const [stages, setStage] = useState<Stage[]>([]);
   const { t } = useTranslation(['home', 'main']);
 
+  
+
   useEffect(() => {
     FetchStages(setStage);
   }, []);
