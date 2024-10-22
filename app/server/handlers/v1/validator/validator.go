@@ -2,8 +2,6 @@ package validator
 
 import (
 	"context"
-	"encoding/json"
-	"fmt"
 	"log/slog"
 	"sync"
 	"time"
@@ -101,15 +99,12 @@ func (v *Validator) Execute() {
 
 func (v *Validator) Slice() []Request {
 	result := []Request{}
-	vReqK, _ := json.Marshal(v.Request)
-	fmt.Println("result map json", string(vReqK))
 	for k, value := range v.Request {
 		i, ok := containsResultIDKind(result, value)
 		if !ok {
 			result = append(result, value)
 			// result = slices.Replace(result, i, i, v)
 		} else {
-			fmt.Println("result", result[i], ok, v.Request[k])
 			if result[i].UpdatedAt.Before(v.Request[k].UpdatedAt) {
 				result[i] = value
 			}
