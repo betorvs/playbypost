@@ -29,7 +29,9 @@
         "channel": "Channel",
         "validator": "Validator",
         "validator-not-found": "Validator not executed yet",
-        "validator-okay": "No Errors"
+        "validator-okay": "No Errors",
+        "delete": "Delete",
+        "edit": "Edit"
     },
     "home": {
         "menu": "Home",
@@ -64,6 +66,7 @@
         "detail": "Story Detail",
         "button": "New Story",
         "header-new": "Create a new story",
+        "header-edit": "Edit Story",
         "form-title-text": "A great history starts with a great title",
         "form-announce-text": "It will be post to all players. Think about all senses and create a great description!",
         "form-notes-text": "It will be used only for you. Keep here good notes about what should happen."
@@ -73,6 +76,7 @@
         "add-to-stage": "Add to Stage",
         "button": "New Encounter",
         "header": "Create a new encounter",
+        "header-edit": "Edit Encounter",
         "form-title-text": "A great encounter starts with a great title",
         "form-announce-text": "It will be post to all players. Think about all senses and create a great description!",
         "form-notes-text": "It will be used only for you. Keep here good notes about what should happen.",
@@ -148,7 +152,8 @@
         "back-button": "Back to Stage",
         "text": "Text",
         "running-channel": "Running on Channel",
-        "close": "Close Stage"
+        "close": "Close Stage",
+        "manage-next-encounter": "Manage Next Encounter"
     },
     "player": {
         "this": "Player",

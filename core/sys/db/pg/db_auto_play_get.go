@@ -10,7 +10,7 @@ import (
 )
 
 func (db *DBX) GetAutoPlay(ctx context.Context) ([]types.AutoPlay, error) {
-	var autoPlay []types.AutoPlay
+	autoPlay := []types.AutoPlay{}
 	query := "select id, display_text, story_id, solo from auto_play"
 	rows, err := db.Conn.QueryContext(ctx, query)
 	if err != nil {
@@ -35,7 +35,7 @@ func (db *DBX) GetAutoPlay(ctx context.Context) ([]types.AutoPlay, error) {
 }
 
 func (db *DBX) GetAutoPlayByID(ctx context.Context, autoPlayID int) (types.AutoPlay, error) {
-	var autoPlay types.AutoPlay
+	autoPlay := types.AutoPlay{}
 	query := "select id, display_text, story_id, solo from	auto_play WHERE id = $1"
 	rows, err := db.Conn.QueryContext(ctx, query, autoPlayID)
 	if err != nil {
@@ -55,8 +55,8 @@ func (db *DBX) GetAutoPlayByID(ctx context.Context, autoPlayID int) (types.AutoP
 	return autoPlay, nil
 }
 
-func (db *DBX) GetNextEncounterByStoryID(ctx context.Context, storyID int) (types.AutoPlayEncounterList, error) {
-	list := types.AutoPlayEncounterList{}
+func (db *DBX) GetAutoPlayEncounterListByStoryID(ctx context.Context, storyID int) (types.EncounterList, error) {
+	list := types.EncounterList{}
 	query := "select a.id, e.title AS encounter, e.id AS encounter_id, n.title AS next_encounter, n.id AS next_id from auto_play_next_encounter AS a JOIN encounters AS e ON e.id = a.current_encounter_id JOIN encounters AS n ON n.id = a.next_encounter_id WHERE e.story_id = $1"
 	rows, err := db.Conn.QueryContext(ctx, query, storyID)
 	if err != nil {
@@ -65,7 +65,7 @@ func (db *DBX) GetNextEncounterByStoryID(ctx context.Context, storyID int) (type
 	}
 	defer rows.Close()
 	for rows.Next() {
-		var next types.AutoPlayEncounterWithNext
+		var next types.EncounterWithNext
 		if err := rows.Scan(&next.ID, &next.Encounter, &next.EncounterID, &next.NextEncounter, &next.NextID); err != nil {
 			db.Logger.Error("scan error on auto_play_next_encounter by story_id ", "error", err.Error())
 		}
@@ -96,7 +96,7 @@ func (db *DBX) GetNextEncounterByStoryID(ctx context.Context, storyID int) (type
 // case channel id is not found, return nil, []AutoPlayStartOptions, error
 // case channel id is found, return auto play, []AutoPlayStartOptions, error
 func (db *DBX) GetAutoPlayOptionsByChannelID(ctx context.Context, channelID, userID string) (types.AutoPlayOptions, error) {
-	var autoPlay types.AutoPlayOptions
+	autoPlay := types.AutoPlayOptions{}
 
 	query := `SELECT ap.id, ap.display_text, ap.story_id, ap.solo, ap.encoding_key, 
 	ac.id AS auto_play_channel_id, ac.channel AS channel_id, 
@@ -144,7 +144,7 @@ func (db *DBX) GetAutoPlayOptionsByChannelID(ctx context.Context, channelID, use
 }
 
 func (db *DBX) GetAutoPlayActivities(ctx context.Context) ([]types.Activity, error) {
-	var autoPlay []types.Activity
+	autoPlay := []types.Activity{}
 	query := "select id, upstream_id, encounter_id, actions, processed from auto_play_encounter_activities"
 	rows, err := db.Conn.QueryContext(ctx, query)
 	if err != nil {
@@ -186,7 +186,7 @@ func (db *DBX) GetAnnounceByEncounterID(ctx context.Context, encounterID, autoPl
 
 // func GetNextEncounterByAutoPlayID
 func (db *DBX) GetNextEncounterByAutoPlayID(ctx context.Context, autoPlayID int) ([]types.Next, error) {
-	var next []types.Next
+	next := []types.Next{}
 	query := "select a.id, a.upstream_id, a.current_encounter_id, a.next_encounter_id, a.display_text, apno.kind, apno.values from auto_play_next_encounter AS a JOIN auto_play_next_objectives AS apno ON apno.upstream_id = a.id WHERE a.upstream_id = $1"
 	rows, err := db.Conn.QueryContext(ctx, query, autoPlayID)
 	if err != nil {

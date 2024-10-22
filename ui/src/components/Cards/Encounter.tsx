@@ -27,6 +27,9 @@ const EncounterCards = ({ encounter, disable_footer }: props) => {
           <NavigateButton link={`/stories/${encounter.story_id}/encounter/${encounter.id}`} variant="primary">
           {t("encounter.add-to-stage", {ns: ['main', 'home']})}
           </NavigateButton>{" "}
+          <NavigateButton link={`/stories/${encounter.story_id}/encounter/edit/${encounter.id}`} variant="warning">
+          {t("common.edit", {ns: ['main', 'home']})}
+          </NavigateButton>{" "}
           </div>
         </div>
       </div>

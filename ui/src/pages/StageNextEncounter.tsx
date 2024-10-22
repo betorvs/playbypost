@@ -12,7 +12,7 @@ import NextEncounterType from "../types/Next";
 import { useTranslation } from "react-i18next";
 
 
-const AutoPlayNext = () => {
+const StageNextEncounter = () => {
     const { Logoff } = useContext(AuthContext);
     const { id, story } = useParams();
     const safeID: string = story ?? "";
@@ -65,13 +65,13 @@ const AutoPlayNext = () => {
     }, []);
   
     const cancelButton = () => {
-      navigate(`/autoplay/${id}/story/${story}`);
+      navigate(`/stages/${id}/story/${story}/next`);
     };
   
     async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
       e.preventDefault();
       const apiURL = UseLocation();
-      const urlAPI = new URL("api/v1/autoplay/next", apiURL);
+      const urlAPI = new URL("api/v1/stage/encounter/next", apiURL);
       const response = await fetch(urlAPI, {
         method: "POST",
         headers: {
@@ -83,7 +83,7 @@ const AutoPlayNext = () => {
       });
       if (response.ok) {
         alert("Next Encounter added! Have a great session with your friends!");
-        navigate(`/autoplay/${id}/story/${story}`);
+        navigate(`/stages/${id}/story/${story}/next`);
       } else {
         alert("Something goes wrong. Next Encounter was not added to encounter");
       };
@@ -176,4 +176,4 @@ const AutoPlayNext = () => {
     );
   };
     
-  export default AutoPlayNext;
+  export default StageNextEncounter;

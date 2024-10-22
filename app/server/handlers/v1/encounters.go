@@ -39,6 +39,29 @@ func (a MainApi) GetEncounterById(w http.ResponseWriter, r *http.Request) {
 		a.s.ErrJSON(w, http.StatusBadRequest, "encounters issue")
 		return
 	}
+	headerUsername := r.Header.Get(types.HeaderUsername)
+	user, err := a.db.GetWriterByID(a.ctx, obj.WriterID)
+	if err != nil {
+		a.s.ErrJSON(w, http.StatusBadRequest, "writer id not found")
+		return
+	}
+	if user.Username != headerUsername {
+		a.logger.Info("username does not match with header", "username", user.Username, "header", headerUsername)
+		a.s.JSON(w, obj)
+		return
+	}
+	announce, err := utils.DecryptText(obj.Announcement, user.EncodingKeys[obj.StoryID])
+	if err != nil {
+		a.s.ErrJSON(w, http.StatusBadRequest, "announcement decoding fails")
+		return
+	}
+	note, err := utils.DecryptText(obj.Notes, user.EncodingKeys[obj.StoryID])
+	if err != nil {
+		a.s.ErrJSON(w, http.StatusBadRequest, "notes decoding fails")
+		return
+	}
+	obj.Announcement = announce
+	obj.Notes = note
 	a.s.JSON(w, obj)
 }
 

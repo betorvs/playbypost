@@ -28,7 +28,7 @@ const StageDetail = () => {
     <>
       <div className="container mt-3" key="1">
         <Layout Logoff={Logoff} />
-        {<StageDetailHeader detail={true} id={safeID} storyID={storySafeID} />}
+        {<StageDetailHeader detail={true} id={safeID} storyID={storySafeID} backButtonLink="/stages" />}
         <div className="row mb-2" key="2">
           {encounters != null ? (
             encounters.map((encounter, index) => (

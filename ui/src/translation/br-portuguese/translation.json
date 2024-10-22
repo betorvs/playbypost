@@ -29,7 +29,9 @@
         "channel": "Canal",
         "validator": "Validador",
         "validator-not-found": "Validator não executado ainda",
-        "validator-okay": "Nenhum erro encontrado"
+        "validator-okay": "Nenhum erro encontrado",
+        "delete": "Deletar",
+        "edit": "Editar"
     },
     "home": {
         "menu": "Home",
@@ -63,6 +65,7 @@
         "not-found": "História não encontrada",
         "button": "Nova história",
         "header-new": "Criar uma nova story (história)",
+        "header-edit": "Editar uma história",
         "form-title-text": "Uma grande história começa com um grande título",
         "form-announce-text": "Será postado para todos os jogadores. Pense em todos os sentidos e crie uma ótima descrição!",
         "form-notes": "Notas",
@@ -73,6 +76,7 @@
         "add-to-stage": "Adicionar ao Stage",
         "button": "Novo Encontro",
         "header": "Criar um novo encontro",
+        "header-edit": "Editar Encontro",
         "form-title-text": "Um grande encontro começa com um grande título",
         "form-announce-text": "Será postado para todos os jogadores. Pense em todos os sentidos e crie uma ótima descrição!",
         "form-notes-text": "Será usado apenas por você. Mantenha aqui boas notas sobre o que deve acontecer.",
@@ -148,7 +152,8 @@
         "back-button": "Voltar para Stage",
         "text": "Texto",
         "running-channel": "Rodando no Canal",
-        "close": "Fechar Stage"
+        "close": "Fechar Stage",
+        "manage-next-encounter": "Gerenciar Próximo Encontro"
     },
     "player": {
         "this": "Jogador",

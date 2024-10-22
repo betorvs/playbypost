@@ -33,6 +33,10 @@ import AutoPlayPage from "./pages/AutoPlay";
 import AutoPlayAdd from "./pages/AutoPlayAdd";
 import AutoPlayDetail from "./pages/AutoPlayDetail";
 import AutoPlayNext from "./pages/AutoPlayNext";
+import StageManageNextEncounter from "./pages/StageManageNextEncounter";
+import StageNextEncounter from "./pages/StageNextEncounter";
+import EditStory from "./pages/EditStory";
+import EditEncounter from "./pages/EditEncounter";
 
 const PrivateRoutes = () => {
   const { authenticated } = useContext(AuthContext);
@@ -73,9 +77,11 @@ const Routes = () => {
         <Route path="/stories">
           <Route path="/stories" element={<StoriesPage />} />
           <Route path="/stories/new" element={<NewStory />} />
+          <Route path="/stories/:id/edit" element={<EditStory />} />
           <Route path="/stories/:id" element={<StoryDetail />} />
           <Route path="/stories/players/:id" element={<StoryPlayers />} />
           <Route path="/stories/encounter/new/:id" element={<NewEncounter />} />
+          <Route path="/stories/:story_id/encounter/edit/:enc_id" element={<EditEncounter />} />
           <Route path="/stories/:story_id/encounter/:enc_id" element={<EncounterToStage />} />
         </Route>
         <Route path="/tasks">
@@ -86,6 +92,8 @@ const Routes = () => {
           <Route path="/stages" element={<StagesPage />} />
           <Route path="/stages/:id/story/:story" element={<StageDetail />} />
           <Route path="/stages/:id/story/:story/players" element={<PlayersPage />} />
+          <Route path="/stages/:id/story/:story/next" element={<StageManageNextEncounter />} />
+          <Route path="/stages/:id/story/:story/addnext" element={<StageNextEncounter />} />
           <Route path="/stages/:id/story/:story/encounter/:encounterid" element={<StageEncounterDetail />} />
           <Route path="/stages/:id/story/:story/encounter/:encounterid/players" element={<AddPlayerToStageEncounter />} />
           <Route path="/stages/:id/story/:story/encounter/:encounterid/npc/:storyteller_id" element={<AddNPCToStageEncounter />} />

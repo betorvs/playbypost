@@ -153,7 +153,7 @@ func (db *DBX) GetStoryIDByTitle(ctx context.Context, title string) (int, error)
 }
 
 func (db *DBX) GetStoryByID(ctx context.Context, id int) (types.Story, error) {
-	var story types.Story
+	story := types.Story{}
 	rows, err := db.Conn.QueryContext(ctx, "SELECT id, title, announcement, notes, writer_id FROM story WHERE id = $1", id)
 	if err != nil {
 		db.Logger.Error("query on story by id failed", "error", err.Error())
@@ -173,7 +173,7 @@ func (db *DBX) GetStoryByID(ctx context.Context, id int) (types.Story, error) {
 }
 
 func (db *DBX) GetStoriesByWriterID(ctx context.Context, id int) ([]types.Story, error) {
-	var stories []types.Story
+	stories := []types.Story{}
 	rows, err := db.Conn.QueryContext(ctx, "SELECT id, title, announcement, notes, writer_id FROM story WHERE writer_id = $1", id)
 	if err != nil {
 		db.Logger.Error("query on story by writer_id failed", "error", err.Error())

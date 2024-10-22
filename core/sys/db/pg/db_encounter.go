@@ -32,7 +32,7 @@ func (db *DBX) GetEncounters(ctx context.Context) ([]types.Encounter, error) {
 }
 
 func (db *DBX) GetEncounterByStoryID(ctx context.Context, storyID int) ([]types.Encounter, error) {
-	var encounters []types.Encounter
+	encounters := []types.Encounter{}
 	rows, err := db.Conn.QueryContext(ctx, "SELECT id, title, notes, announcement, story_id, writer_id, first_encounter, last_encounter FROM encounters WHERE story_id = $1", storyID)
 	if err != nil {
 		db.Logger.Error("query on encounters by id failed", "error", err.Error())
@@ -54,7 +54,7 @@ func (db *DBX) GetEncounterByStoryID(ctx context.Context, storyID int) ([]types.
 }
 
 func (db *DBX) GetEncounterByID(ctx context.Context, id int) (types.Encounter, error) {
-	var enc types.Encounter
+	enc := types.Encounter{}
 	rows, err := db.Conn.QueryContext(ctx, "SELECT id, title, announcement, notes, story_id, writer_id, first_encounter, last_encounter FROM encounters WHERE id = $1", id)
 	if err != nil {
 		db.Logger.Error("query on encounters by id failed", "error", err.Error())

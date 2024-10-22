@@ -97,7 +97,10 @@ func main() {
 	srv.Register("PUT /api/v1/stage/encounter/{id}/{phase}", app.UpdateEncounterPhaseById)
 	srv.Register("POST /api/v1/stage/encounter", app.AddEncounterToStage)
 	srv.Register("POST /api/v1/stage/encounter/participants", app.AddParticipants)
+	srv.Register("GET /api/v1/stage/encounter/story/{id}", app.GetStageEncounterListByStoryID)
+	srv.Register("GET /api/v1/stage/encounter/next/{id}", app.GetNextEncounterByStageID)
 	srv.Register("POST /api/v1/stage/encounter/next", app.AddNextEncounter)
+	srv.Register("DELETE /api/v1/stage/encounter/next/{id}", app.DeleteStageNextEncounter)
 	srv.Register("POST /api/v1/stage/encounter/task", app.AddRunningTask)
 	srv.Register("GET /api/v1/stage/encounter/activities", app.GetStageEncounterActivities)
 	srv.Register("GET /api/v1/stage/encounter/activities/{id}", app.GetStageEncounterActivitiesByEncounterID)
@@ -134,10 +137,11 @@ func main() {
 	// auto play
 	srv.Register("GET /api/v1/autoplay", app.GetAutoPlay)
 	srv.Register("GET /api/v1/autoplay/{id}", app.GetAutoPlayByID)
-	srv.Register("GET /api/v1/autoplay/encounter/story/{id}", app.GetNextEncounterByStoryId)
+	srv.Register("GET /api/v1/autoplay/encounter/story/{id}", app.GetAutoPlayEncounterListByStoryID)
 	srv.Register("POST /api/v1/autoplay", app.CreateAutoPlay)
 	srv.Register("POST /api/v1/autoplay/next", app.AddAutoPlayNext)
 	srv.Register("GET /api/v1/autoplay/next/{id}", app.GetAutoPlayNextEncounterByAutoPlayID)
+	srv.Register("DELETE /api/v1/autoplay/next/{id}", app.DeleteAutoPlayNextEncounter)
 
 	// validator auto play and stage and story
 	srv.Register("GET /api/v1/validator/autoplay/{hashid}", app.GetValidateAutoPlay)

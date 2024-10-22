@@ -13,6 +13,7 @@ type Encounter = {
   storyteller_id: number;
   writer_id: number;
   first_encounter: boolean;
+  last_encounter: boolean;
   pc: Participant[];
   npc: Participant[]
 };
