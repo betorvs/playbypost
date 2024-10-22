@@ -73,6 +73,7 @@ const NewStory = () => {
             <Form.Label>{t("common.announce", {ns: ['main', 'home']})}</Form.Label>
             <Form.Control
               type="text"
+              as="textarea"
               placeholder="annoucement"
               value={announce}
               onChange={(e) => setAnnouncement(e.target.value)}
@@ -85,6 +86,7 @@ const NewStory = () => {
             <Form.Label>{t("common.notes", {ns: ['main', 'home']})}</Form.Label>
             <Form.Control
               type="text"
+              as="textarea"
               placeholder="notes"
               value={note}
               onChange={(e) => setNotes(e.target.value)}

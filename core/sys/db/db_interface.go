@@ -19,7 +19,8 @@ type DBClient interface {
 	GetWriterByUsername(ctx context.Context, username string) (types.Writer, error)
 	// story
 	GetStory(ctx context.Context) ([]types.Story, error)
-	CreateStoryTx(ctx context.Context, title, announcement, notes, encodingKey string, masterID int) (int, error)
+	CreateStoryTx(ctx context.Context, title, announcement, notes, encodingKey string, writerID int) (int, error)
+	UpdateStoryTx(ctx context.Context, title, announcement, notes string, storyID int) (int, error)
 	GetStoryIDByTitle(ctx context.Context, title string) (int, error)
 	GetStoryByID(ctx context.Context, id int) (types.Story, error)
 	GetStoriesByWriterID(ctx context.Context, id int) ([]types.Story, error)
@@ -28,6 +29,7 @@ type DBClient interface {
 	GetEncounterByStoryID(ctx context.Context, storyID int) ([]types.Encounter, error)
 	GetEncounterByID(ctx context.Context, id int) (types.Encounter, error)
 	CreateEncounterTx(ctx context.Context, title, announcement, notes string, storyID, storytellerID int, first, last bool) (int, error)
+	UpdateEncounterTx(ctx context.Context, title, announcement, notes string, id, storyID int, first, last bool) (int, error)
 	// Tasks
 	GetTask(ctx context.Context) ([]types.Task, error)
 	CreateTask(ctx context.Context, description, ability, skill string, kind types.TaskKind, target int) (int, error)

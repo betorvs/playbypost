@@ -62,7 +62,7 @@ func main() {
 	srv.Register("GET /health", srv.GetHealth)
 
 	client := cli.NewHeaders("http://localhost:8091", adminUser, adminToken)
-	app := v1.NewMainApi(ctx, d, db, logger, srv, client, rpgSystem)
+	app := v1.NewMainApi(adminUser, ctx, d, db, logger, srv, client, rpgSystem)
 
 	srv.RegisterStatic()
 
@@ -81,6 +81,7 @@ func main() {
 	srv.Register("GET /api/v1/story/{id}", app.GetStoryById)
 	srv.Register("GET /api/v1/story/writer/{id}", app.GetStoryByWriterId)
 	srv.Register("POST /api/v1/story", app.CreateStory)
+	srv.Register("PUT /api/v1/story/{id}", app.UpdateStoryByID)
 
 	// stage
 	srv.Register("GET /api/v1/stage", app.GetStage)
@@ -114,6 +115,7 @@ func main() {
 	srv.Register("GET /api/v1/encounter/{id}", app.GetEncounterById)
 	srv.Register("GET /api/v1/encounter/story/{id}", app.GetEncounterByStoryId)
 	srv.Register("POST /api/v1/encounter", app.CreateEncounter)
+	srv.Register("PUT /api/v1/encounter/{id}", app.UpdateEncounterByID)
 	//
 	srv.Register("GET /api/v1/task", app.GetTask)
 	srv.Register("POST /api/v1/task", app.CreateTasks)

@@ -95,6 +95,43 @@ func (db *DBX) CreateStoryTx(ctx context.Context, title, announcement, notes, en
 	return storyID, nil
 }
 
+func (db *DBX) UpdateStoryTx(ctx context.Context, title, announcement, notes string, id int) (int, error) {
+	// TX
+	tx, err := db.Conn.BeginTx(ctx, nil)
+	if err != nil {
+		db.Logger.Error("tx begin on CreateStoryTx failed", "error", err.Error())
+		return -1, err
+	}
+	// Defer a rollback in case anything fails.
+	defer func() {
+		rollback := tx.Rollback()
+		if err != nil && rollback != nil {
+			err = fmt.Errorf("rolling back transaction: %w", err)
+		}
+	}()
+	// insert story
+	queryStory := "UPDATE story SET title = $1, notes = $2, announcement = $3 WHERE id = $4 RETURNING id"
+	stmtStory, err := db.Conn.PrepareContext(ctx, queryStory)
+	if err != nil {
+		db.Logger.Error("tx prepare on story_keys failed", "error", err.Error())
+		return -1, err
+	}
+	defer stmtStory.Close()
+	var storyID int
+	err = tx.StmtContext(ctx, stmtStory).QueryRow(title, notes, announcement, id).Scan(&storyID)
+	if err != nil {
+		db.Logger.Error("query row insert into story failed", "error", err.Error(), "notes", notes, "announcement", announcement)
+		return -1, err
+	}
+	// commit if everything is okay
+	if err = tx.Commit(); err != nil {
+		db.Logger.Error("tx commit on CreateStoryTx failed", "error", err.Error())
+		return -1, err
+	}
+
+	return storyID, nil
+}
+
 func (db *DBX) GetStoryIDByTitle(ctx context.Context, title string) (int, error) {
 	var storyID int
 	rows, err := db.Conn.QueryContext(ctx, "SELECT id FROM story WHERE title = $1", title)

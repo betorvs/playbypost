@@ -52,6 +52,20 @@ var storyCmd = &cobra.Command{
 				os.Exit(1)
 			}
 			app.Logger.Info(msg.Msg, "title", title, "master_id", writerID)
+
+		case "update":
+			body, err := app.Web.UpdateStory(title, announcement, notes, storyID, writerID)
+			if err != nil {
+				app.Logger.Error("story update error", "error", err.Error())
+				os.Exit(1)
+			}
+			var msg types.Msg
+			err = json.Unmarshal(body, &msg)
+			if err != nil {
+				app.Logger.Error("json unmarsharl error", "error", err.Error())
+				os.Exit(1)
+			}
+			app.Logger.Info(msg.Msg, "title", title, "master_id", writerID)
 		default:
 			app.Logger.Info("story command called")
 		}
@@ -64,4 +78,5 @@ func init() {
 	storyCmd.Flags().StringVarP(&announcement, "announcement", "a", "", "announcement when starting story")
 	storyCmd.Flags().StringVarP(&notes, "notes", "n", "-", " notes are internal notes about what it means and how to use it")
 	storyCmd.Flags().IntVar(&writerID, "writer-id", 0, "writer id equal user ID")
+	storyCmd.Flags().IntVar(&storyID, "story-id", 0, "story id")
 }

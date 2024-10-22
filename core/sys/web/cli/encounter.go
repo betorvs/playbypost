@@ -76,3 +76,23 @@ func (c *Cli) AddParticipants(encounterID int, npc bool, IDs []int) ([]byte, err
 	res, err := c.postGeneric(enc, body)
 	return res, err
 }
+
+func (c *Cli) UpdateEncounter(title, announcement, notes string, id, storyID, writerID int, first, last bool) ([]byte, error) {
+	s := types.Encounter{
+		ID:             id,
+		Title:          title,
+		Announcement:   announcement,
+		Notes:          notes,
+		StoryID:        storyID,
+		WriterID:       writerID,
+		FirstEncounter: first,
+		LastEncounter:  last,
+	}
+	body, err := json.Marshal(s)
+	if err != nil {
+		return []byte{}, err
+	}
+	kind := fmt.Sprintf("%s/%d", encounter, id)
+	res, err := c.putGenericWithHeaders(kind, body)
+	return res, err
+}

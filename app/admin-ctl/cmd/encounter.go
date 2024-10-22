@@ -69,6 +69,24 @@ var encounterCmd = &cobra.Command{
 			}
 			app.Logger.Info(msg.Msg, "title", title, "story_id", storyID)
 
+		case "update":
+			if storyID == 0 || title == "" || announcement == "" || encounterID == 0 {
+				app.Logger.Error("story-id, title, announcement and encounter-id are mandatory")
+				os.Exit(2)
+			}
+			body, err := app.Web.UpdateEncounter(title, announcement, notes, encounterID, storyID, writerID, firstEncounter, lastEncounter)
+			if err != nil {
+				app.Logger.Error("encounter error", "error", err.Error())
+				os.Exit(1)
+			}
+			var msg types.Msg
+			err = json.Unmarshal(body, &msg)
+			if err != nil {
+				app.Logger.Error("json unmarsharl error", "error", err.Error())
+				os.Exit(1)
+			}
+			app.Logger.Info(msg.Msg, "title", title, "story_id", storyID)
+
 		default:
 			app.Logger.Info("encounters command called")
 		}

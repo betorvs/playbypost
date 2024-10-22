@@ -177,3 +177,31 @@ func (c *Cli) putEmptyBodyGeneric(kind string) ([]byte, error) {
 	}
 	return respBody, fmt.Errorf("status code not expected %d", resp.StatusCode)
 }
+
+func (c *Cli) putGenericWithHeaders(kind string, body []byte) ([]byte, error) {
+	url := fmt.Sprintf("%s/api/v1/%s", c.baseURL, kind)
+	req, err := http.NewRequest(http.MethodPut, url, bytes.NewBuffer(body))
+	if err != nil {
+		return []byte{}, err
+	}
+	req.Header.Set("Content-Type", "application/json")
+	if c.headers != nil {
+		for k, v := range c.headers {
+			if k != "" && v != "" {
+				req.Header.Set(k, v)
+			}
+		}
+	}
+	resp, err := c.Do(req)
+	if err != nil {
+		return []byte{}, err
+	}
+	respBody, err2 := io.ReadAll(resp.Body)
+	if err2 != nil {
+		return []byte{}, err2
+	}
+	if resp.StatusCode == http.StatusOK || resp.StatusCode == http.StatusAccepted {
+		return respBody, nil
+	}
+	return respBody, fmt.Errorf("status code not expected %d", resp.StatusCode)
+}

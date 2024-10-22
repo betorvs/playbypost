@@ -16,6 +16,7 @@ import (
 )
 
 type Session struct {
+	admin    string
 	logger   *slog.Logger
 	db       db.DBClient
 	s        *server.SvrWeb
@@ -28,8 +29,9 @@ type Sessions struct {
 	mu      *sync.Mutex
 }
 
-func NewSession(logger *slog.Logger, db db.DBClient, s *server.SvrWeb, ctx context.Context) *Session {
+func NewSession(admin string, logger *slog.Logger, db db.DBClient, s *server.SvrWeb, ctx context.Context) *Session {
 	return &Session{
+		admin:  admin,
 		logger: logger,
 		db:     db,
 		s:      s,
@@ -78,7 +80,7 @@ func (a *Session) CheckAuth(r *http.Request) bool {
 	return true
 }
 
-func (a Session) Signin(w http.ResponseWriter, r *http.Request) {
+func (a *Session) Signin(w http.ResponseWriter, r *http.Request) {
 	var creds types.Credentials
 	err := json.NewDecoder(r.Body).Decode(&creds)
 	if err != nil {
@@ -128,7 +130,7 @@ func (a Session) Signin(w http.ResponseWriter, r *http.Request) {
 	a.s.JSON(w, login)
 }
 
-func (a Session) Logout(w http.ResponseWriter, r *http.Request) {
+func (a *Session) Logout(w http.ResponseWriter, r *http.Request) {
 	if a.CheckAuth(r) {
 		a.s.ErrJSON(w, http.StatusForbidden, "required authentication headers")
 		return
@@ -149,7 +151,7 @@ func (a Session) Logout(w http.ResponseWriter, r *http.Request) {
 	a.s.JSON(w, login)
 }
 
-func (a Session) Refresh(w http.ResponseWriter, r *http.Request) {
+func (a *Session) Refresh(w http.ResponseWriter, r *http.Request) {
 	if a.CheckAuth(r) {
 		a.s.ErrJSON(w, http.StatusForbidden, "required authentication headers")
 		return
@@ -193,4 +195,8 @@ func (a Session) ValidateSession(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	a.s.JSON(w, types.Msg{Msg: "authenticated"})
+}
+
+func (s Session) Admin() string {
+	return s.admin
 }
