@@ -46,10 +46,10 @@ const UserAsPlayer = () => {
       }),
     });
     if (response.ok) {
-      alert("Player created! Have a great session with your friends!");
+      alert(t("alert.player", {ns: ['main', 'home']}));
       navigate("/users");
     } else {
-      alert("Something goes wrong. Player was not create.");
+      alert(t("alert.player-wrong", {ns: ['main', 'home']}));
     }
   }
   return (

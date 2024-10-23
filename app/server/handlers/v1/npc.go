@@ -22,13 +22,13 @@ func (a MainApi) GetNPCByStageID(w http.ResponseWriter, r *http.Request) {
 		a.s.ErrJSON(w, http.StatusBadRequest, "id should be a integer")
 		return
 	}
-	a.logger.Info("get npc by story id", "story-id", id)
+	a.logger.Debug("get npc by story id", "story-id", id)
 	obj, err := a.db.GetNPCByStageID(a.ctx, id)
 	if err != nil {
 		a.s.ErrJSON(w, http.StatusBadRequest, "npc database issue")
 		return
 	}
-	a.logger.Info("npc list", "obj", obj)
+	a.logger.Debug("npc list", "obj", obj)
 	a.s.JSON(w, obj)
 }
 

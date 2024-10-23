@@ -85,10 +85,10 @@ const EditEncounter = () => {
       }),
     });
     if (response.ok) {
-      alert("Encounter edited! Have a great session with your friends!");
+      alert(t("alert.encounter-edit", {ns: ['main', 'home']}));
       navigate(`/stories/${storySafeID}`);
     } else {
-      alert("Something goes wrong. No new encounter for you.");
+      alert(t("alert.encounter-edit-wrong", {ns: ['main', 'home']}));
     }
   }
 

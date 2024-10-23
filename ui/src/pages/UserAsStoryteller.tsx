@@ -49,10 +49,10 @@ const UserAsStoryteller = () => {
       }),
     });
     if (response.ok) {
-      alert("Stage created! Have a great session with your friends!");
+      alert(t("alert.stage", {ns: ['main', 'home']}));
       navigate("/users");
     } else {
-      alert("Something goes wrong. No new stage for you.");
+      alert(t("alert.stage-wrong", {ns: ['main', 'home']}));
     }
   }
   return (

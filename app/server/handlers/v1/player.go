@@ -98,13 +98,13 @@ func (a MainApi) GetPlayersByStageID(w http.ResponseWriter, r *http.Request) {
 		a.s.ErrJSON(w, http.StatusBadRequest, "id should be a integer")
 		return
 	}
-	a.logger.Info("get players by story id", "story-id", id)
+	a.logger.Debug("get players by story id", "story-id", id)
 	obj, err := a.db.GetPlayerByStageID(a.ctx, id, a.rpg)
 	if err != nil {
 		a.s.ErrJSON(w, http.StatusBadRequest, "players database issue")
 		return
 	}
-	a.logger.Info("players list", "obj", obj)
+	a.logger.Debug("players list", "obj", obj)
 	a.s.JSON(w, obj)
 }
 
@@ -119,7 +119,7 @@ func (a MainApi) GetPlayersByID(w http.ResponseWriter, r *http.Request) {
 	if r.URL.Query().Get("npc") == "true" {
 		npc = true
 	}
-	a.logger.Info("get players by id", "player-id", id, "query_npc", npc)
+	a.logger.Debug("get players by id", "player-id", id, "query_npc", npc)
 	obj, err := a.db.GetPlayerByID(a.ctx, id, a.rpg)
 	if err != nil {
 		a.s.ErrJSON(w, http.StatusBadRequest, "players database issue")

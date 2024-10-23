@@ -79,10 +79,10 @@ const NextEncounter = () => {
       body: JSON.stringify(formData),
     });
     if (response.ok) {
-      alert("Next Encounter added! Have a great session with your friends!");
+      alert(t("alert.next-encounter", {ns: ['main', 'home']}));
       navigate(`/stages/${id}/story/${story}/encounter/${encounterid}`);
     } else {
-      alert("Something goes wrong. Next Encounter was not added to encounter");
+      alert(t("alert.next-encounter-wrong", {ns: ['main', 'home']}));
     };
   };
 

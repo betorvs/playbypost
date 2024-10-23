@@ -107,15 +107,14 @@ func (a *Session) Signin(w http.ResponseWriter, r *http.Request) {
 	if ok && !s.IsExpired() {
 		sessionToken = s.Token
 		expiresAt = s.Expiry
-		a.logger.Info("user already logged in")
+		a.logger.Info("user already logged in", "user", creds.Username)
 	} else {
-		a.logger.Info("login added")
+		a.logger.Info("login added", "user", creds.Username)
 		session := types.Session{
 			Username: creds.Username,
 			Token:    sessionToken,
 			Expiry:   expiresAt,
 			UserID:   user.ID,
-			// EncodingKey: user.EncodingKey,
 		}
 		a.Sessions.Add(creds.Username, session)
 	}

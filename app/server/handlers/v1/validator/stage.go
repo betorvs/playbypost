@@ -11,7 +11,7 @@ func (v *Validator) ValidateStage(stage *types.StageAggregated, hashID string) {
 		a.Results = append(a.Results, storyAnalitics.Results...)
 		if valid {
 			ok = valid
-			v.logger.Info("story is valid", "story_id", stage.Story.ID)
+			v.logger.Debug("story is valid", "story_id", stage.Story.ID)
 		}
 		stageEncounter, err := v.db.GetStageEncountersByStageID(v.ctx, stage.Stage.ID)
 		if err != nil {

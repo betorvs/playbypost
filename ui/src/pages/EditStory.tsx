@@ -68,10 +68,10 @@ const EditStory = () => {
       }),
     });
     if (response.ok) {
-      alert("Story edited! Have a great session with your friends!");
+      alert(t("alert.story-edit", {ns: ['main', 'home']}));
       navigate("/stories");
     } else {
-      alert("Something goes wrong. No new story for you.");
+      alert(t("alert.story-edit-wrong", {ns: ['main', 'home']}));
     }
   }
   return (

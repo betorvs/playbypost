@@ -93,7 +93,7 @@ func (v *Validator) RemoveOldRequests() {
 }
 
 func (v *Validator) Execute() {
-	v.logger.Info("starting validator worker api execution", "time", time.Now())
+	v.logger.Debug("starting validator worker api execution", "time", time.Now())
 	v.RemoveOldRequests()
 }
 

@@ -107,7 +107,7 @@ func (a MainApi) UpdateStoryByID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if headerUsername != user.Username {
-		a.logger.Info("username does not match with header", "username", user.Username, "header", headerUsername)
+		a.logger.Debug("username does not match with header", "username", user.Username, "header", headerUsername)
 		if headerUsername != a.Session.Admin() {
 			a.s.ErrJSON(w, http.StatusForbidden, "username does not match with header")
 			return
@@ -159,12 +159,12 @@ func (a MainApi) GetStoryById(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if user.Username != headerUsername {
-		a.logger.Info("username does not match with header", "username", user.Username, "header", headerUsername)
+		a.logger.Debug("username does not match with header", "username", user.Username, "header", headerUsername)
 		a.s.JSON(w, obj)
 		return
 	}
-	a.logger.Info("obj from db", "obj", obj)
-	a.logger.Info("used from db", "user", user)
+	a.logger.Debug("obj from db", "obj", obj)
+	a.logger.Debug("used from db", "user", user)
 	announce, _ := utils.DecryptText(obj.Announcement, user.EncodingKeys[obj.ID])
 	note, _ := utils.DecryptText(obj.Notes, user.EncodingKeys[obj.ID])
 	story := types.Story{
@@ -200,7 +200,7 @@ func (a MainApi) GetStoryByWriterId(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if user.Username != headerUsername {
-		a.logger.Info("username does not match with header")
+		a.logger.Debug("username does not match with header")
 		a.s.JSON(w, obj)
 		return
 	}

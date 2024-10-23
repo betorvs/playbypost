@@ -164,7 +164,7 @@ func (a MainApi) AddChannelToStage(w http.ResponseWriter, r *http.Request) {
 	}
 	msg := fmt.Sprintf("stage_channel id %v", res)
 	event := fmt.Sprintf("Title: %s\nAnnounce: %s\n", stage.Story.Title, stage.Story.Announcement)
-	a.logger.Info("event content", "event", event)
+	a.logger.Debug("event content", "event", event)
 	resp, err := a.client.PostEvent(obj.Channel, "ALL", event, types.EventAnnounce)
 	if err != nil {
 		a.logger.Error("cannot post to slack", "error", err.Error())
@@ -172,7 +172,7 @@ func (a MainApi) AddChannelToStage(w http.ResponseWriter, r *http.Request) {
 		a.s.ErrJSON(w, http.StatusBadGateway, "error sending message to slack")
 		return
 	}
-	a.logger.Info("add channel okay", "body", string(resp))
+	a.logger.Debug("add channel okay", "body", string(resp))
 	a.s.JSON(w, types.Msg{Msg: msg})
 }
 
@@ -192,7 +192,7 @@ func (a MainApi) GetStageEncounterByStageID(w http.ResponseWriter, r *http.Reque
 		a.s.ErrJSON(w, http.StatusBadRequest, "stage_encounters database issue")
 		return
 	}
-	a.logger.Info("encounter list", "obj", obj)
+	a.logger.Debug("encounter list", "obj", obj)
 	a.s.JSON(w, obj)
 }
 
@@ -224,7 +224,7 @@ func (a MainApi) UpdateEncounterPhaseById(w http.ResponseWriter, r *http.Request
 		return
 	}
 	status := types.PhaseAtoi(phase)
-	a.logger.Info("change phase worked", "phase", status)
+	a.logger.Debug("change phase worked", "phase", status)
 	a.s.JSON(w, types.Msg{Msg: fmt.Sprintf("change to phase: %s", status)})
 }
 
@@ -244,7 +244,7 @@ func (a MainApi) GetStageEncounterByEncounterID(w http.ResponseWriter, r *http.R
 		a.s.ErrJSON(w, http.StatusBadRequest, "stage_encounters database issue")
 		return
 	}
-	a.logger.Info("encounter", "obj", obj)
+	a.logger.Debug("encounter", "obj", obj)
 	a.s.JSON(w, obj)
 }
 

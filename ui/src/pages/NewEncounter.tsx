@@ -53,10 +53,10 @@ const NewEncounter = () => {
       }),
     });
     if (response.ok) {
-      alert("Encounter created! Have a great session with your friends!");
+      alert(t("alert.encounter", {ns: ['main', 'home']}));
       navigate(`/stories/${safeID}`);
     } else {
-      alert("Something goes wrong. No new encounter for you.");
+      alert(t("alert.encounter-wrong", {ns: ['main', 'home']}));
     }
   }
 

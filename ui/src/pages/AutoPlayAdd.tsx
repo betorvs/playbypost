@@ -48,10 +48,10 @@ const AutoPlayAdd = () => {
       }),
     });
     if (response.ok) {
-      alert("Auto Play created! Now you need to organise the encounters.");
+      alert(t("alert.auto-play", {ns: ['main', 'home']}));
       navigate("/autoplay");
     } else {
-      alert("Something goes wrong. No new stage for you.");
+      alert(t("alert.auto-play-wrong", {ns: ['main', 'home']}));
     }
   }
   return (

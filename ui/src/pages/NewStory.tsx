@@ -42,10 +42,10 @@ const NewStory = () => {
       }),
     });
     if (response.ok) {
-      alert("Story created! Have a great session with your friends!");
+      alert(t("alert.story", {ns: ['main', 'home']}));
       navigate("/stories");
     } else {
-      alert("Something goes wrong. No new story for you.");
+      alert(t("alert.story-wrong", {ns: ['main', 'home']}));
     }
   }
   return (

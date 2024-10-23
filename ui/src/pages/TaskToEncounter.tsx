@@ -49,10 +49,10 @@ const TaskToEncounter = () => {
           }),
         });
         if (response.ok) {
-          alert("Task added! Have a great session with your friends!");
+          alert(t("alert.task-add", {ns: ['main', 'home']}));
           navigate(`/stages/${id}/story/${story}/encounter/${encounterid}`);
         } else {
-          alert("Something goes wrong. Task was not added to encounter.");
+          alert(t("alert.task-add-wrong", {ns: ['main', 'home']}));
         }
   };
   

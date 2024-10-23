@@ -46,7 +46,7 @@ func (a MainApi) GetEncounterById(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if user.Username != headerUsername {
-		a.logger.Info("username does not match with header", "username", user.Username, "header", headerUsername)
+		a.logger.Debug("username does not match with header", "username", user.Username, "header", headerUsername)
 		a.s.JSON(w, obj)
 		return
 	}
@@ -96,7 +96,7 @@ func (a MainApi) GetEncounterByStoryId(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if user.Username != headerUsername {
-		a.logger.Info("username does not match with header", "username", user.Username, "header", headerUsername)
+		a.logger.Debug("username does not match with header", "username", user.Username, "header", headerUsername)
 		a.s.JSON(w, obj)
 		return
 	}
@@ -201,7 +201,7 @@ func (a MainApi) UpdateEncounterByID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if headerUsername != user.Username {
-		a.logger.Info("username does not match with header", "username", user.Username, "header", headerUsername)
+		a.logger.Debug("username does not match with header", "username", user.Username, "header", headerUsername)
 		if headerUsername != a.Session.Admin() {
 			a.s.ErrJSON(w, http.StatusForbidden, "username does not match with header")
 			return

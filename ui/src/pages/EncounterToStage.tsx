@@ -52,10 +52,10 @@ const EncounterToStage = () => {
       }),
     });
     if (response.ok) {
-      alert("Encounter associated! Have a great session with your friends!");
+      alert(t("alert.encounter-associated", {ns: ['main', 'home']}));
       navigate(`/stories/${safeID}`);
     } else {
-      alert("Something goes wrong. Encounter cannot be associate.");
+      alert(t("alert.encounter-associated-wrong", {ns: ['main', 'home']}));
     }
   }
   return (

@@ -49,10 +49,10 @@ const StageStart = () => {
       }),
     });
     if (response.ok) {
-      alert("Stage started! Have a great session with your friends!");
+      alert(t("alert.stage-start", {ns: ['main', 'home']}));
       navigate(`/stages/${safeID}/story/${stage?.stage.story_id}`);
     } else {
-      alert("Something goes wrong. Stage could not start.");
+      alert(t("alert.stage-start-wrong", {ns: ['main', 'home']}));
     }
   }
 
