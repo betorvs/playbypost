@@ -2,6 +2,7 @@ import GetUsername from "../context/GetUsername";
 import GetToken from "../context/GetToken";
 import UseLocation from "../context/UseLocation";
 import Task from "../types/Task";
+import CleanSession from "../context/CleanSession";
 
 const FetchTasks = async (
   setTask: React.Dispatch<React.SetStateAction<Task[]>>
@@ -20,6 +21,9 @@ const FetchTasks = async (
     const data = await response.text();
     console.log(data);
     setTask(JSON.parse(data));
+  } else if (response.status === 403) {
+    console.log("Not authorized");
+    CleanSession();
   }
 };
 export default FetchTasks;

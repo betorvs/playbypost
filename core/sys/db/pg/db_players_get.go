@@ -28,7 +28,7 @@ func (db *DBX) GetPlayers(ctx context.Context, rpgSystem *rpg.RPGSystem) ([]type
 		c.Extension = rpg.NewExtendedSystem(rpgSystem, extended)
 		types.CreatureToPlayer(p, c)
 		// for k, v := range c.Abilities {
-		// 	db.Logger.Info("abilities", "k", k, "v", v)
+		// 	db.Logger.Debug("abilities", "k", k, "v", v)
 		// 	key := k
 		// 	if v.DisplayName != "" {
 		// 		key = v.DisplayName

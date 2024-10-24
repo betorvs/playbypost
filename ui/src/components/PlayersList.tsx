@@ -9,7 +9,7 @@ interface props {
 }
 
 const PlayersList = ({ id }: props) => {
-  const [players, setPlayer] = useState<Players[]>();
+  const [players, setPlayer] = useState<Players[]>([]);
   const { t } = useTranslation(['home', 'main']);
 
   useEffect(() => {
@@ -19,7 +19,7 @@ const PlayersList = ({ id }: props) => {
   return (
     <>
       <div className="row mb-2" key="2">
-        {players != null ? (
+        {players.length !== 0 ? (
           players.map((player, index) => (
             <PlayerCards player={player} key={index} />
           ))

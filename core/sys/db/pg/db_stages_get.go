@@ -129,7 +129,7 @@ func (db *DBX) GetStageEncountersByStageID(ctx context.Context, id int) ([]types
 }
 
 func (db *DBX) GetRunningStageByChannelID(ctx context.Context, channelID, userID string, rpgSystem *rpg.RPGSystem) (types.RunningStage, error) {
-	db.Logger.Info("GetRunningStageByChannelID", "channelID", channelID, "userID", userID)
+	db.Logger.Debug("GetRunningStageByChannelID", "channelID", channelID, "userID", userID)
 	running := types.RunningStage{}
 	aggr := types.StageAggregated{}
 	query := "SELECT sa.id, sa.display_text, sa.story_id, sa.storyteller_id, sa.encoding_key, sy.title, sy.announcement, sy.notes, sy.writer_id, u.userid, sc.channel, sc.active FROM stage AS sa JOIN story AS sy ON sa.story_id = sy.id JOIN users AS u ON sa.storyteller_id = u.id LEFT JOIN stage_channel AS sc ON sc.upstream_id = sa.id WHERE sc.channel = $1 AND sa.finished = false"
@@ -174,12 +174,12 @@ func (db *DBX) GetRunningStageByChannelID(ctx context.Context, channelID, userID
 	if running.StageAggregated.Stage.UserID == userID {
 		storyteller = true
 		if enc.ID == 0 {
-			db.Logger.Info("running encounter not found", "encounter", enc)
+			db.Logger.Debug("running encounter not found", "encounter", enc)
 			encs, err := db.GetStageEncountersByStageID(ctx, running.StageAggregated.Stage.ID)
 			if err != nil {
 				db.Logger.Error("rows err on stage_encounters by stage_id", "error", err.Error())
 			}
-			db.Logger.Info("encounters list", "encounters", encs)
+			db.Logger.Debug("encounters list", "encounters", encs)
 			running.Encounters = encs
 		}
 
@@ -278,7 +278,7 @@ func (db *DBX) GetStageTaskFromRunningTaskID(ctx context.Context, taskID int) (t
 }
 
 func (db *DBX) GetCreatureFromParticipantsList(ctx context.Context, players []types.Options, npcs []types.Options, rpgSystem *rpg.RPGSystem) (map[int]*rules.Creature, map[int]*rules.Creature, error) {
-	db.Logger.Info("GetCreatureFromParticipantsList", "players", players, "npcs", npcs)
+	db.Logger.Debug("GetCreatureFromParticipantsList", "players", players, "npcs", npcs)
 	// players
 	playersMap := map[int]*rules.Creature{}
 	creatureMap := map[int]*rules.Creature{}
@@ -508,7 +508,7 @@ func (db *DBX) getStageEncounterByEncounterID(ctx context.Context, id int, phase
 	if err != nil {
 		db.Logger.Error("error on db.getStageEncounterByEncounterID when calling getParticipantsByStageEncounterID", "error", err.Error())
 	}
-	db.Logger.Info("players and npcs", "encounter_id", enc.ID, "player", p, "npc", n)
+	db.Logger.Debug("players and npcs", "encounter_id", enc.ID, "player", p, "npc", n)
 	enc.PC = p
 	enc.NPC = n
 	return enc, nil

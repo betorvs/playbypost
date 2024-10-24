@@ -13,7 +13,7 @@ const UsersList = () => {
   }, []);
   return (
     <div className="row mb-2" key="1">
-      {users != null ? (
+      {users.length !== 0 ? (
         users.map((user, index) => <UserCards user={user} key={index} />)
       ) : (
         <p>{t("user.not-found", {ns: ['main', 'home']})}</p>

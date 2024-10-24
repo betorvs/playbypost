@@ -123,7 +123,7 @@ func (db *DBX) AddAutoPlayNext(ctx context.Context, next []types.Next) error {
 			db.Logger.Error("error on insert into auto_play_next_encounter", "error", err.Error())
 			return err
 		}
-		db.Logger.Info("adding auto play objectives", "nextEncounterIDDB", nextEncounterIDDB, "values", n.Objective.Values)
+		db.Logger.Debug("adding auto play objectives", "nextEncounterIDDB", nextEncounterIDDB, "values", n.Objective.Values)
 		// insert into auto_play_next_objectives
 		query = "INSERT INTO auto_play_next_objectives (upstream_id, kind, values) VALUES ($1, $2, $3) RETURNING id"
 		stmt, err = db.Conn.PrepareContext(ctx, query)
@@ -138,7 +138,7 @@ func (db *DBX) AddAutoPlayNext(ctx context.Context, next []types.Next) error {
 			db.Logger.Error("error on insert into auto_play_next_objectives", "error", err.Error())
 			return err
 		}
-		db.Logger.Info("auto play next objective added", "next_id", nextEncounterIDDB, "objective_id", objectiveID)
+		db.Logger.Debug("auto play next objective added", "next_id", nextEncounterIDDB, "objective_id", objectiveID)
 	}
 	// Commit the transaction.
 	if err = tx.Commit(); err != nil {
@@ -240,7 +240,7 @@ func (db *DBX) CreateAutoPlayChannelTx(ctx context.Context, channelID, userID st
 	var validUserID int
 	err = tx.StmtContext(ctx, stmtQueryUser).QueryRow(userID).Scan(&validUserID)
 	if err != nil {
-		db.Logger.Info("user not found", "return", err.Error())
+		db.Logger.Debug("user not found", "return", err.Error())
 		// just log this error
 		// return -1, err
 
@@ -333,7 +333,7 @@ func (db *DBX) UpdateAutoPlayGroup(ctx context.Context, id, count int, date time
 
 // update auto_play_state
 func (db *DBX) UpdateAutoPlayState(ctx context.Context, autoPlayChannel string, encounterID int) error {
-	db.Logger.Info("update auto play state", "autoPlayChannelID", autoPlayChannel, "encounterID", encounterID)
+	db.Logger.Debug("update auto play state", "autoPlayChannelID", autoPlayChannel, "encounterID", encounterID)
 	// start tx
 	tx, err := db.Conn.BeginTx(ctx, nil)
 	if err != nil {
@@ -373,11 +373,11 @@ func (db *DBX) UpdateAutoPlayState(ctx context.Context, autoPlayChannel string, 
 	var apsID int
 	err = tx.StmtContext(ctx, stmt).QueryRow(autoPlayChannelID).Scan(&apsID)
 	if err != nil {
-		db.Logger.Info("auto play state id not found")
+		db.Logger.Debug("auto play state id not found")
 		// return fmt.Errorf("auto play state id not found")
 	}
 	if apsID == 0 {
-		db.Logger.Info("auto play state id not found")
+		db.Logger.Debug("auto play state id not found")
 		query := "INSERT INTO auto_play_state(upstream_id, encounter_id, active) VALUES($1, $2, $3)"
 		stmt, err := db.Conn.PrepareContext(ctx, query)
 		if err != nil {
@@ -392,7 +392,7 @@ func (db *DBX) UpdateAutoPlayState(ctx context.Context, autoPlayChannel string, 
 		}
 
 	} else {
-		db.Logger.Info("auto play state", "apsID", apsID, "encounterID", encounterID, "autoPlayChannelID", autoPlayChannelID)
+		db.Logger.Debug("auto play state", "apsID", apsID, "encounterID", encounterID, "autoPlayChannelID", autoPlayChannelID)
 		query := "UPDATE auto_play_state SET encounter_id = $1 WHERE id = $2"
 		stmt, err := db.Conn.PrepareContext(ctx, query)
 		if err != nil {

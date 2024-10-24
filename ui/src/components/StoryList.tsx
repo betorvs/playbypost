@@ -14,7 +14,7 @@ const StoryList = () => {
   }, []);
   return (
     <div className="container mt-3" key="2">
-      {stories != null ? (
+      {stories.length !== 0 ? (
         stories.map((story) => (
           <StoryCards
             key={story.id}
@@ -25,7 +25,8 @@ const StoryList = () => {
         ))
       ) : (
         <p>{t("story.error", {ns: ['main', 'home']})}</p>
-      )}
+      )
+      }
     </div>
   );
 };

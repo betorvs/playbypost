@@ -1,6 +1,7 @@
 import GetUsername from "../context/GetUsername";
 import GetToken from "../context/GetToken";
 import UseLocation from "../context/UseLocation";
+import CleanSession from "../context/CleanSession";
 
 const FetchChannel = async (
   setChannel: React.Dispatch<React.SetStateAction<string[]>>
@@ -18,6 +19,9 @@ const FetchChannel = async (
   if (response.ok) {
     const data = await response.text();
     setChannel(JSON.parse(data));
+  } else if (response.status === 403) {
+    console.log("Not authorized");
+    CleanSession();
   }
 };
 

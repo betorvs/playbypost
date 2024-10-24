@@ -5,6 +5,7 @@ import UseLocation from "../context/UseLocation";
 import StageAggregated from "../types/StageAggregated";
 import Encounter from "../types/Encounter";
 import { EncounterList } from "../types/Next";
+import CleanSession from "../context/CleanSession";
 
 
 const FetchStages = async (
@@ -23,6 +24,9 @@ const FetchStages = async (
   if (response.ok) {
     const data = await response.text();
     setStage(JSON.parse(data));
+  } else if (response.status === 403) {
+    console.log("Not authorized");
+    CleanSession();
   }
 };
 
@@ -43,6 +47,9 @@ const FetchStage = async (
   if (response.ok) {
     const data = await response.text();
     setStage(JSON.parse(data));
+  } else if (response.status === 403) {
+    console.log("Not authorized");
+    CleanSession();
   }
 };
 
@@ -63,6 +70,9 @@ const FetchStageByStoryID = async (
   if (response.ok) {
     const data = await response.text();
     setStage(JSON.parse(data));
+  } else if (response.status === 403) {
+    console.log("Not authorized");
+    CleanSession();
   }
 };
 
@@ -83,6 +93,9 @@ const FetchStageEncountersByID = async (
   if (response.ok) {
     const data = await response.text();
     setEncounters(JSON.parse(data));
+  } else if (response.status === 403) {
+    console.log("Not authorized");
+    CleanSession();
   }
 };
 
@@ -103,6 +116,9 @@ const FetchStageEncounterByEncounterID = async (
   if (response.ok) {
     const data = await response.text();
     setEncounter(JSON.parse(data));
+  } else if (response.status === 403) {
+    console.log("Not authorized");
+    CleanSession();
   }
 };
 
@@ -123,6 +139,9 @@ const FetchEncounterListStage = async (
   if (response.ok) {
     const data = await response.text();
     setEncounterList(JSON.parse(data));
+  } else if (response.status === 403) {
+    console.log("Not authorized");
+    CleanSession();
   }
 };
 
@@ -141,6 +160,9 @@ const DeleteStageNextEncounter = async (
   });
   if (response.ok) {
     console.log("Stage deleted");
+  } else if (response.status === 403) {
+    console.log("Not authorized");
+    CleanSession();
   }
 }
 
@@ -159,6 +181,9 @@ const CloseStage = async (
   });
   if (response.ok) {
     console.log("Stage closed");
+  } else if (response.status === 403) {
+    console.log("Not authorized");
+    CleanSession();
   }
 }
 

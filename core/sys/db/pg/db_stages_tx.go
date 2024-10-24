@@ -34,7 +34,7 @@ func (db *DBX) CreateStageTx(ctx context.Context, text, userid string, storyID i
 	var userID int
 	err = tx.StmtContext(ctx, stmtQueryUser).QueryRow(userid).Scan(&userID)
 	if err != nil {
-		db.Logger.Info("user not found", "return", err.Error())
+		db.Logger.Debug("user not found", "return", err.Error())
 
 	}
 	// insert user if it does not exist
@@ -168,7 +168,7 @@ func (db *DBX) UpdatePhase(ctx context.Context, id, phase int) error {
 		db.Logger.Error("tx commit on UpdatePhase failed", "error", err.Error())
 		return err
 	}
-	db.Logger.Info("stage_encounter changed", "id", id)
+	db.Logger.Debug("stage_encounter changed", "id", id)
 	return nil
 }
 
@@ -246,7 +246,7 @@ func (db *DBX) AddNextEncounter(ctx context.Context, next []types.Next) error {
 			db.Logger.Error("error on insert into stage_next_objectives", "error", err.Error())
 			return err
 		}
-		db.Logger.Info("stage next objective added", "next_id", nextEncounterIDDB, "objective_id", objectiveID)
+		db.Logger.Debug("stage next objective added", "next_id", nextEncounterIDDB, "objective_id", objectiveID)
 	}
 
 	// Commit the transaction.
@@ -314,7 +314,7 @@ func (db *DBX) AddEncounterActivities(ctx context.Context, text string, stageID,
 
 // stage_encounter_activities
 func (db *DBX) RegisterActivities(ctx context.Context, stageID, encounterID int, actions types.Actions) error {
-	db.Logger.Info("RegisterActivities", "stageID", stageID, "encounterID", encounterID, "actions", actions)
+	db.Logger.Debug("RegisterActivities", "stageID", stageID, "encounterID", encounterID, "actions", actions)
 	query := "INSERT INTO stage_encounter_activities (actions, stage_id, encounter_id) VALUES ($1, $2, $3)"
 	tx, err := db.Conn.BeginTx(ctx, nil)
 	if err != nil {
