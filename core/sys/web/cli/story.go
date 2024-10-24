@@ -2,6 +2,7 @@ package cli
 
 import (
 	"encoding/json"
+	"fmt"
 
 	"github.com/betorvs/playbypost/core/sys/web/types"
 )
@@ -35,5 +36,22 @@ func (c *Cli) CreateStory(title, announcement, notes string, writerID int) ([]by
 		return []byte{}, err
 	}
 	res, err := c.postGeneric(story, body)
+	return res, err
+}
+
+func (c *Cli) UpdateStory(title, announcement, notes string, id, writerID int) ([]byte, error) {
+	s := types.Story{
+		ID:           id,
+		Title:        title,
+		Announcement: announcement,
+		Notes:        notes,
+		WriterID:     writerID,
+	}
+	body, err := json.Marshal(s)
+	if err != nil {
+		return []byte{}, err
+	}
+	kind := fmt.Sprintf("%s/%d", story, id)
+	res, err := c.putGenericWithHeaders(kind, body)
 	return res, err
 }

@@ -32,7 +32,7 @@ func (a MainApi) GetValidateAutoPlay(w http.ResponseWriter, r *http.Request) {
 			a.s.ErrJSON(w, http.StatusBadRequest, "id should be a integer")
 			return
 		}
-		a.logger.Info("output json set and looking for id", "id", id)
+		// a.logger.Debug("output json set and looking for id", "id", id)
 		slice := a.Validator.Slice()
 		for _, v := range slice {
 			if v.ID == id {
@@ -72,7 +72,7 @@ func (a MainApi) GetValidateStage(w http.ResponseWriter, r *http.Request) {
 			a.s.ErrJSON(w, http.StatusBadRequest, "id should be a integer")
 			return
 		}
-		a.logger.Info("output json set and looking for id", "id", id)
+		// a.logger.Debug("output json set and looking for id", "id", id)
 		slice := a.Validator.Slice()
 		for _, v := range slice {
 			if v.ID == id {
@@ -112,7 +112,7 @@ func (a MainApi) GetValidateStory(w http.ResponseWriter, r *http.Request) {
 			a.s.ErrJSON(w, http.StatusBadRequest, "id should be a integer")
 			return
 		}
-		a.logger.Info("output json set and looking for id", "id", id)
+		// a.logger.Debug("output json set and looking for id", "id", id)
 		slice := a.Validator.Slice()
 		for _, v := range slice {
 			if v.ID == id {

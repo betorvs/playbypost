@@ -50,10 +50,10 @@ const AddPlayerToStageEncounter = () => {
           }),
         });
         if (response.ok) {
-          alert("Players added! Have a great session with your friends!");
+          alert(t("alert.player-add", {ns: ['main', 'home']}));
           navigate(`/stages/${id}/story/${story}/encounter/${encounterid}`);
         } else {
-          alert("Something goes wrong. Players was not added to encounter.");
+          alert(t("alert.player-add-wrong", {ns: ['main', 'home']}));
         }
     }
     console.log("starting with values:", ids);

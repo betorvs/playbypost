@@ -1,7 +1,8 @@
 import GetToken from "../context/GetToken";
 import GetUsername from "../context/GetUsername";
 import UseLocation from "../context/UseLocation";
-import AutoPlay, { AutoPlayEncounterList } from "../types/AutoPlay";
+import AutoPlay from "../types/AutoPlay";
+import { EncounterList } from "../types/Next";
 
 
 
@@ -44,9 +45,9 @@ const FetchAutoPlayByID = async (
   }
 };
 
-const FetchEncountersAutoPlay = async (
+const FetchEncounterListAutoPlay = async (
   id: string,
-  setEncounters: React.Dispatch<React.SetStateAction<AutoPlayEncounterList | undefined>>
+  setEncounters: React.Dispatch<React.SetStateAction<EncounterList | undefined>>
 ): Promise<void> => {
   const requestHeaders: HeadersInit = new Headers();
   requestHeaders.set("Content-Type", "application/json");
@@ -64,5 +65,23 @@ const FetchEncountersAutoPlay = async (
   }
 };
 
+const DeleteAutoPlayNextEncounter = async (
+  id: number,
+): Promise<void> => {
+  const requestHeaders: HeadersInit = new Headers();
+  requestHeaders.set("Content-Type", "application/json");
+  requestHeaders.set("X-Username", GetUsername());
+  requestHeaders.set("X-Access-Token", GetToken());
+  const apiURL = UseLocation();
+  const urlAPI = new URL("api/v1/autoplay/next/" + id, apiURL);
+  const response = await fetch(urlAPI, {
+    method: "DELETE",
+    headers: requestHeaders,
+  });
+  if (response.ok) {
+    console.log("Deleted");
+  }
+}
+
 export default FetchAutoPlay;
-export { FetchAutoPlayByID, FetchEncountersAutoPlay };
+export { FetchAutoPlayByID, FetchEncounterListAutoPlay, DeleteAutoPlayNextEncounter };

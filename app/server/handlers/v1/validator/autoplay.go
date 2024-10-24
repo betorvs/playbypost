@@ -21,7 +21,6 @@ func (v *Validator) ValidateAutoPlay(autoPlay *types.AutoPlay, hashID string) {
 		a.Results = append(a.Results, storyAnalitics.Results...)
 		if valid {
 			ok = valid
-			// v.logger.Info("story is valid", "story_id", story.ID)
 			// check if next encounters are valid
 			next, err := v.db.GetNextEncounterByAutoPlayID(v.ctx, autoPlay.ID)
 			if err != nil {

@@ -34,7 +34,6 @@ func NewPlayer() *Players {
 
 func CreatureToPlayer(p *Players, c *rules.Creature) {
 	for k, v := range c.Abilities {
-		// db.logger.Info("abilities", "k", k, "v", v)
 		key := k
 		if v.DisplayName != "" && v.DisplayName != v.Name {
 			key = v.DisplayName
@@ -42,7 +41,6 @@ func CreatureToPlayer(p *Players, c *rules.Creature) {
 		p.Abilities[key] = v.Value
 	}
 	for k, v := range c.Skills {
-		// tiltdb.logger.Info("skills", "k", k, "v", v)
 		key := k
 		if v.DisplayName != "" && v.DisplayName != v.Name {
 			key = v.DisplayName

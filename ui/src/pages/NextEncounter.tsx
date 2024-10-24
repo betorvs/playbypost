@@ -79,10 +79,10 @@ const NextEncounter = () => {
       body: JSON.stringify(formData),
     });
     if (response.ok) {
-      alert("Next Encounter added! Have a great session with your friends!");
+      alert(t("alert.next-encounter", {ns: ['main', 'home']}));
       navigate(`/stages/${id}/story/${story}/encounter/${encounterid}`);
     } else {
-      alert("Something goes wrong. Next Encounter was not added to encounter");
+      alert(t("alert.next-encounter-wrong", {ns: ['main', 'home']}));
     };
   };
 
@@ -99,8 +99,8 @@ const NextEncounter = () => {
               <div key={index}>
                 <Form.Group>
                   <Form.Label>{t("encounter.next", {ns: ['main', 'home']})}</Form.Label>
-                  <Form.Select name="next_encounter_id" value={group.next_encounter_id} onChange={(e) => handleDropdownChange(index, e)}>
-                    <option value="-1">{t("stage.select-encounter", {ns: ['main', 'home']})}</option>
+                  <Form.Select key={index} name="next_encounter_id" value={group.next_encounter_id} onChange={(e) => handleDropdownChange(index, e)}>
+                    <option value="-1">{t("encounter.select-encounter", {ns: ['main', 'home']})}</option>
                         {
                           encounters != null ? (
                             encounters.filter(encounter => encounter.id !== encounteridNumber)
@@ -125,7 +125,7 @@ const NextEncounter = () => {
                 <Form.Group>
                     <Form.Label>{t("encounter.next-automatic", {ns: ['main', 'home']})}</Form.Label>
                     <Form.Select name="objective" value={group.objective.kind} onChange={(e) => handleDropdownObjectiveChange(index, e)}>
-                      <option value="invalid">{t("encounter.next-objective", {ns: ['main', 'home']})}</option>
+                      <option value="invalid">{t("encounter.select-objective", {ns: ['main', 'home']})}</option>
                       <option value="no_action">{t("encounter.select-objective-1", {ns: ['main', 'home']})}</option>
                       <option value="dice_roll">{t("encounter.select-objective-2", {ns: ['main', 'home']})}</option>
                       <option value="task_okay">{t("encounter.select-objective-3", {ns: ['main', 'home']})}</option>

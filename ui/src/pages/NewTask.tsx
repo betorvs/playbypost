@@ -41,10 +41,10 @@ const NewTask = () => {
       }),
     });
     if (response.ok) {
-      alert("Task created! Have a great session with your friends!");
+      alert(t("alert.task", {ns: ['main', 'home']}));
       navigate("/tasks");
     } else {
-      alert("Something goes wrong. No new task for you.");
+      alert(t("alert.task-wrong", {ns: ['main', 'home']}));
     }
   }
   return (

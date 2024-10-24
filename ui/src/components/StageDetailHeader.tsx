@@ -5,14 +5,17 @@ import StageAggregated from "../types/StageAggregated";
 import { useTranslation } from "react-i18next";
 import Validator from "../types/validator";
 import { FetchValidatorByIDKind } from "../functions/Validator";
+import { Button } from "react-bootstrap";
 
 interface props {
   id: string;
   storyID: string;
+  backButtonLink: string;
   detail: boolean;
+  disableManageNextEncounter?: boolean;
 }
 
-const StageDetailHeader = ({ id, storyID, detail }: props) => {
+const StageDetailHeader = ({ id, storyID, detail, disableManageNextEncounter, backButtonLink }: props) => {
   const [stage, setStage] = useState<StageAggregated | undefined>();
   const [validator, setValidator] = useState<Validator>();
   const { t } = useTranslation(['home', 'main']);
@@ -22,8 +25,8 @@ const StageDetailHeader = ({ id, storyID, detail }: props) => {
     FetchStage(id, setStage);
     FetchValidatorByIDKind(Number(id), kind, setValidator);
   }, []);
-  const handleClose = () => {
-    console.log("Close stage");
+  const handleClose = (id: number) => {
+    if (id === 0) return;
     CloseStage(id);
   }
 
@@ -58,7 +61,7 @@ const StageDetailHeader = ({ id, storyID, detail }: props) => {
           }
         </p>
         <br />
-        <NavigateButton link="/stages" variant="secondary">
+        <NavigateButton link={backButtonLink} variant="secondary">
         {t("stage.back-button", {ns: ['main', 'home']})}
         </NavigateButton>{" "}
         {detail === true ? (
@@ -67,14 +70,16 @@ const StageDetailHeader = ({ id, storyID, detail }: props) => {
             <NavigateButton link={`/stages/start/${id}`} disabled={stage?.channel.active} variant="primary" >
             {t("stage.start", {ns: ['main', 'home']})}
             </NavigateButton>{" "}
+            <NavigateButton link={`/stages/${id}/story/${storyID}/next`} disabled={disableManageNextEncounter} variant="primary">
+            {t("stage.manage-next-encounter", {ns: ['main', 'home']})}
+            </NavigateButton>{" "}
             <NavigateButton link={`/stages/${id}/story/${storyID}/players`} variant="primary">
             {t("player.list", {ns: ['main', 'home']})}
             </NavigateButton>{" "}
+            
 
             <span>
-              <button className="btn btn-secondary" onClick={handleClose}>
-                {t("stage.close", {ns: ['main', 'home']})}
-              </button>{" "}
+              <Button variant="danger" size="sm" onClick={() => handleClose(stage?.stage.id || 0)}>{t("stage.close", {ns: ['main', 'home']})}</Button>
             </span>
           </>
         ) : (

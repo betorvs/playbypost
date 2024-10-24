@@ -65,6 +65,77 @@ func (a MainApi) CreateStory(w http.ResponseWriter, r *http.Request) {
 	a.s.JSON(w, types.Msg{Msg: msg})
 }
 
+func (a MainApi) UpdateStoryByID(w http.ResponseWriter, r *http.Request) {
+	if a.Session.CheckAuth(r) {
+		a.s.ErrJSON(w, http.StatusForbidden, "required authentication headers")
+		return
+	}
+	body := types.Story{}
+	err := json.NewDecoder(r.Body).Decode(&body)
+	if err != nil {
+		a.logger.Error("json error ", "error", err.Error())
+		a.s.ErrJSON(w, http.StatusBadRequest, "invalid json")
+		return
+	}
+	if body.Title == "" && body.Announcement == "" && body.Notes == "" {
+		a.s.ErrJSON(w, http.StatusBadRequest, "title, announcement and notes cannot be empty")
+		return
+	}
+	headerUsername := r.Header.Get(types.HeaderUsername)
+	idString := r.PathValue("id")
+	id, err := strconv.Atoi(idString)
+	if err != nil {
+		a.s.ErrJSON(w, http.StatusBadRequest, "id should be a integer")
+		return
+	}
+	if body.ID != 0 && body.ID != id {
+		a.s.ErrJSON(w, http.StatusBadRequest, "id does not match with body")
+		return
+	}
+	obj, err := a.db.GetStoryByID(a.ctx, id)
+	if err != nil {
+		a.s.ErrJSON(w, http.StatusBadRequest, "story issue")
+		return
+	}
+	if body.WriterID != obj.WriterID {
+		a.s.ErrJSON(w, http.StatusBadRequest, "writer id does not match with body")
+		return
+	}
+	user, err := a.db.GetWriterByID(a.ctx, obj.WriterID)
+	if err != nil {
+		a.s.ErrJSON(w, http.StatusBadRequest, "writer id not found")
+		return
+	}
+	if headerUsername != user.Username {
+		a.logger.Debug("username does not match with header", "username", user.Username, "header", headerUsername)
+		if headerUsername != a.Session.Admin() {
+			a.s.ErrJSON(w, http.StatusForbidden, "username does not match with header")
+			return
+		}
+
+	}
+	announce, err := utils.EncryptText(body.Announcement, user.EncodingKeys[obj.ID])
+	if err != nil {
+		a.logger.Error("error announce", "writer_id", obj.WriterID)
+		a.s.ErrJSON(w, http.StatusBadRequest, "announcement encoding fails")
+		return
+	}
+	note, err := utils.EncryptText(body.Notes, user.EncodingKeys[obj.ID])
+	if err != nil {
+		a.logger.Error("error note ", "writer_id", obj.WriterID)
+		a.s.ErrJSON(w, http.StatusBadRequest, "notes encoding fails")
+		return
+	}
+	res, err := a.db.UpdateStoryTx(a.ctx, body.Title, announce, note, obj.ID)
+	if err != nil {
+		a.s.ErrJSON(w, http.StatusBadRequest, "story issue")
+		return
+	}
+
+	msg := fmt.Sprintf("story id %v updatred", res)
+	a.s.JSON(w, types.Msg{Msg: msg})
+}
+
 func (a MainApi) GetStoryById(w http.ResponseWriter, r *http.Request) {
 	if a.Session.CheckAuth(r) {
 		a.s.ErrJSON(w, http.StatusForbidden, "required authentication headers")
@@ -88,12 +159,12 @@ func (a MainApi) GetStoryById(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if user.Username != headerUsername {
-		a.logger.Info("username does not match with header", "username", user.Username, "header", headerUsername)
+		a.logger.Debug("username does not match with header", "username", user.Username, "header", headerUsername)
 		a.s.JSON(w, obj)
 		return
 	}
-	a.logger.Info("obj from db", "obj", obj)
-	a.logger.Info("used from db", "user", user)
+	a.logger.Debug("obj from db", "obj", obj)
+	a.logger.Debug("used from db", "user", user)
 	announce, _ := utils.DecryptText(obj.Announcement, user.EncodingKeys[obj.ID])
 	note, _ := utils.DecryptText(obj.Notes, user.EncodingKeys[obj.ID])
 	story := types.Story{
@@ -129,7 +200,7 @@ func (a MainApi) GetStoryByWriterId(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if user.Username != headerUsername {
-		a.logger.Info("username does not match with header")
+		a.logger.Debug("username does not match with header")
 		a.s.JSON(w, obj)
 		return
 	}

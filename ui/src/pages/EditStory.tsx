@@ -1,4 +1,4 @@
-import { useContext, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { AuthContext } from "../context/AuthContext";
 import Layout from "../components/Layout";
 import { Form } from "react-bootstrap";
@@ -6,53 +6,79 @@ import Button from "react-bootstrap/Button";
 import GetUserID from "../context/GetUserID";
 import GetUsername from "../context/GetUsername";
 import GetToken from "../context/GetToken";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import UseLocation from "../context/UseLocation";
 import { useTranslation } from "react-i18next";
+import FetchStory from "../functions/Stories";
+import Story from "../types/Story";
 
-const NewStory = () => {
+const EditStory = () => {
   const { Logoff } = useContext(AuthContext);
-  const [title, setTitle] = useState("");
-  const [announce, setAnnouncement] = useState("");
-  const [note, setNotes] = useState("");
+  const { id } = useParams();
+  const [story, setStory] = useState<Story>();
   const user_id = GetUserID();
   const navigate = useNavigate();
   const { t } = useTranslation(['home', 'main']);
+
+  const safeID: string = id ?? "";
 
   const cancelButton = () => {
     navigate("/stories");
   };
 
+  const onChangeTitle = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (story) {
+      setStory({ ...story, title: e.target.value });
+    }
+  }
+
+  const onChangeAnnouncement = (e: React.ChangeEvent<HTMLInputElement>) => {
+      if (story) {
+          setStory({ ...story, announcement: e.target.value });
+      }
+  }
+
+  const onChangeNotes = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+      if (story) {
+          setStory({ ...story, notes: e.target.value });
+      }
+  }
+
+  useEffect(() => {
+    FetchStory(safeID, setStory);
+  }, []);
+
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const apiURL = UseLocation();
-    const urlAPI = new URL("api/v1/story", apiURL);
+    const urlAPI = new URL("api/v1/story/" + id, apiURL);
     const response = await fetch(urlAPI, {
-      method: "POST",
+      method: "PUT",
       headers: {
         "Content-Type": "application/json",
         "X-Username": GetUsername(),
         "X-Access-Token": GetToken(),
       },
       body: JSON.stringify({
-        title: title,
-        announcement: announce,
-        notes: note,
+        id: Number(id),
+        title: story?.title,
+        announcement: story?.announcement,
+        notes: story?.notes,
         writer_id: user_id,
       }),
     });
     if (response.ok) {
-      alert(t("alert.story", {ns: ['main', 'home']}));
+      alert(t("alert.story-edit", {ns: ['main', 'home']}));
       navigate("/stories");
     } else {
-      alert(t("alert.story-wrong", {ns: ['main', 'home']}));
+      alert(t("alert.story-edit-wrong", {ns: ['main', 'home']}));
     }
   }
   return (
     <>
       <div className="container mt-3" key="1">
         <Layout Logoff={Logoff} />
-        <h2>{t("story.header-new", {ns: ['main', 'home']})}</h2>
+        <h2>{t("story.header-edit", {ns: ['main', 'home']})}</h2>
         <hr />
       </div>
       <div className="container mt-3" key="2">
@@ -61,9 +87,9 @@ const NewStory = () => {
             <Form.Label>{t("common.title", {ns: ['main', 'home']})}</Form.Label>
             <Form.Control
               type="text"
-              placeholder="title"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
+              placeholder={story?.title}
+              value={story?.title}
+              onChange={onChangeTitle}
             />
             <Form.Text className="text-muted">
             {t("story.form-title-text", {ns: ['main', 'home']})}
@@ -74,9 +100,9 @@ const NewStory = () => {
             <Form.Control
               type="text"
               as="textarea"
-              placeholder="annoucement"
-              value={announce}
-              onChange={(e) => setAnnouncement(e.target.value)}
+              placeholder={story?.announcement}
+              value={story?.announcement}
+              onChange={onChangeAnnouncement}
             />
             <Form.Text className="text-muted">
             {t("story.form-announce-text", {ns: ['main', 'home']})}
@@ -87,9 +113,9 @@ const NewStory = () => {
             <Form.Control
               type="text"
               as="textarea"
-              placeholder="notes"
-              value={note}
-              onChange={(e) => setNotes(e.target.value)}
+              placeholder={story?.notes}
+              value={story?.notes}
+              onChange={onChangeNotes}
             />
             <Form.Text className="text-muted">
             {t("story.form-notes-text", {ns: ['main', 'home']})}
@@ -107,4 +133,4 @@ const NewStory = () => {
   );
 };
 
-export default NewStory;
+export default EditStory;

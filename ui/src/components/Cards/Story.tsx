@@ -31,6 +31,9 @@ const StoryCards = ({ ID, story, LinkText }: Props) => {
         <Button variant="secondary" onClick={() => validatorPut(story.id)}>
           {t("common.validator", {ns: ['main', 'home']})}
         </Button>{" "}
+        <NavigateButton link={`/stories/${ID}/edit`} variant="warning">
+        {t("common.edit", {ns: ['main', 'home']})}
+        </NavigateButton>{" "}
       </div>
       <div className="card-footer text-body-secondary">
       {t("common.writer", {ns: ['main', 'home']})} ID: {story.writer_id}; {t("common.notes", {ns: ['main', 'home']})}: {story.notes}

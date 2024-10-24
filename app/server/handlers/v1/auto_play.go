@@ -68,7 +68,7 @@ func (a MainApi) GetAutoPlayByID(w http.ResponseWriter, r *http.Request) {
 	a.s.JSON(w, obj)
 }
 
-func (a MainApi) GetNextEncounterByStoryId(w http.ResponseWriter, r *http.Request) {
+func (a MainApi) GetAutoPlayEncounterListByStoryID(w http.ResponseWriter, r *http.Request) {
 	if a.Session.CheckAuth(r) {
 		a.s.ErrJSON(w, http.StatusForbidden, "required authentication headers")
 		return
@@ -79,7 +79,7 @@ func (a MainApi) GetNextEncounterByStoryId(w http.ResponseWriter, r *http.Reques
 		a.s.ErrJSON(w, http.StatusBadRequest, "id should be a integer")
 		return
 	}
-	obj, err := a.db.GetNextEncounterByStoryID(a.ctx, id)
+	obj, err := a.db.GetAutoPlayEncounterListByStoryID(a.ctx, id)
 	if err != nil {
 		a.s.ErrJSON(w, http.StatusBadRequest, "auto play database issue")
 		return
@@ -130,4 +130,24 @@ func (a MainApi) GetAutoPlayNextEncounterByAutoPlayID(w http.ResponseWriter, r *
 		return
 	}
 	a.s.JSON(w, obj)
+}
+
+func (a MainApi) DeleteAutoPlayNextEncounter(w http.ResponseWriter, r *http.Request) {
+	if a.Session.CheckAuth(r) {
+		a.s.ErrJSON(w, http.StatusForbidden, "required authentication headers")
+		return
+	}
+	idString := r.PathValue("id")
+	id, err := strconv.Atoi(idString)
+	if err != nil {
+		a.s.ErrJSON(w, http.StatusBadRequest, "id should be a integer")
+		return
+	}
+	err = a.db.DeleteAutoPlayNextEncounter(a.ctx, id)
+	if err != nil {
+		a.s.ErrJSON(w, http.StatusBadRequest, "auto play database issue")
+		return
+	}
+	msg := fmt.Sprintf("next encounter id %v deleted", id)
+	a.s.JSON(w, types.Msg{Msg: msg})
 }

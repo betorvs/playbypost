@@ -34,28 +34,6 @@ func (a MainApi) GenerateInitiative(w http.ResponseWriter, r *http.Request) {
 		actions["text"] = "created by web handler"
 		actions["channel"] = obj.Channel
 		actions["userid"] = obj.UserID
-		// party := make(map[string]int)
-		// players, err := a.db.GetPlayersByEncounterID(a.ctx, obj.EncounterID, false, a.rpg)
-		// if err != nil {
-		// 	a.s.ErrJSON(w, http.StatusBadRequest, "error restoring players")
-		// 	return
-		// }
-		// for _, p := range players {
-		// 	i, _ := p.Extension.InitiativeBonus()
-		// 	party[p.Name] = i
-		// 	a.logger.Info("participant found", "name", p.Name, "init bonus", i)
-		// }
-		// name := fmt.Sprintf("%s-encID-%d-storyID-%d", obj.Name, obj.EncounterID, enc.StoryID)
-		// init := initiative.NewInitiative(a.dice, party, name, a.rpg.InitiativeDice())
-		// a.logger.Info("initiative rolled", "initiative", fmt.Sprintf("%+v", init))
-		// initID, err := a.db.SaveInitiativeTx(a.ctx, init, obj.EncounterID)
-		// if err != nil {
-		// 	a.s.ErrJSON(w, http.StatusBadRequest, "error saving initiative on database")
-		// 	return
-		// }
-		// msg := fmt.Sprintf("initiative id %d, and first to play %s", initID, init.Participants[0].Name)
-		// a.s.JSON(w, types.Msg{Msg: msg})
-		// return
 	}
 	a.s.ErrJSON(w, http.StatusBadRequest, "encounter not in running phase")
 }

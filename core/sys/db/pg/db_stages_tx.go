@@ -233,7 +233,7 @@ func (db *DBX) AddNextEncounter(ctx context.Context, next []types.Next) error {
 			return err
 		}
 		// insert into stage_next_objectives
-		queryObjectives := "INSERT INTO stage_next_objectives (stage_next_id, kind, values) VALUES ($1, $2, $3)"
+		queryObjectives := "INSERT INTO stage_next_objectives (upstream_id, kind, values) VALUES ($1, $2, $3) RETURNING id"
 		stmtObjectives, err := db.Conn.PrepareContext(ctx, queryObjectives)
 		if err != nil {
 			db.Logger.Error("prepare insert into stage_next_objectives failed", "error", err.Error())
@@ -418,6 +418,68 @@ func (db *DBX) CloseStage(ctx context.Context, id int) error {
 
 	// Commit the transaction.
 	if err = tx.Commit(); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (db *DBX) DeleteStageNextEncounter(ctx context.Context, id int) error {
+	// TX
+	tx, err := db.Conn.BeginTx(ctx, nil)
+	if err != nil {
+		db.Logger.Error("tx begin on DeleteStagegNextEncounter failed", "error", err.Error())
+		return err
+	}
+	// Defer a rollback in case anything fails.
+	defer func() {
+		rollback := tx.Rollback()
+		if err != nil && rollback != nil {
+			err = fmt.Errorf("rolling back transaction: %w", err)
+		}
+	}()
+	// select ids
+	query := "SELECT s.id, o.id FROM stage_next_encounter AS s JOIN stage_next_objectives AS o ON s.id = o.upstream_id WHERE s.id = $1"
+	stmt, err := db.Conn.PrepareContext(ctx, query)
+	if err != nil {
+		db.Logger.Error("tx prepare on stage_next_encounter failed", "error", err.Error())
+		return err
+	}
+	defer stmt.Close()
+	var nextID, objectiveID int
+	err = tx.StmtContext(ctx, stmt).QueryRow(id).Scan(&nextID, &objectiveID)
+	if err != nil {
+		db.Logger.Error("tx query on stage_next_encounter failed", "error", err.Error())
+		return err
+	}
+	// delete from stage_next_objectives
+	query = "DELETE FROM stage_next_objectives WHERE id = $1"
+	stmt, err = db.Conn.PrepareContext(ctx, query)
+	if err != nil {
+		db.Logger.Error("tx prepare on stage_next_objectives failed", "error", err.Error())
+		return err
+	}
+	defer stmt.Close()
+	_, err = tx.StmtContext(ctx, stmt).ExecContext(ctx, objectiveID)
+	if err != nil {
+		db.Logger.Error("tx exec on stage_next_objectives failed", "error", err.Error())
+		return err
+	}
+	// delete from stage_next_encounter
+	query = "DELETE FROM stage_next_encounter WHERE id = $1"
+	stmt, err = db.Conn.PrepareContext(ctx, query)
+	if err != nil {
+		db.Logger.Error("tx prepare on stage_next_encounter failed", "error", err.Error())
+		return err
+	}
+	defer stmt.Close()
+	_, err = tx.StmtContext(ctx, stmt).ExecContext(ctx, nextID)
+	if err != nil {
+		db.Logger.Error("tx exec on stage_next_encounter failed", "error", err.Error())
+		return err
+	}
+	// Commit the transaction.
+	if err = tx.Commit(); err != nil {
+		db.Logger.Error("error on commit stage_next_encounter", "error", err.Error())
 		return err
 	}
 	return nil

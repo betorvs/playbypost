@@ -27,8 +27,8 @@ type MainApi struct {
 	autoPlay  *rpg.RPGSystem
 }
 
-func NewMainApi(ctx context.Context, dice rpg.Roll, db db.DBClient, l *slog.Logger, s *server.SvrWeb, client *cli.Cli, rpgSystem *rpg.RPGSystem) *MainApi {
-	session := handlers.NewSession(l, db, s, ctx)
+func NewMainApi(admin string, ctx context.Context, dice rpg.Roll, db db.DBClient, l *slog.Logger, s *server.SvrWeb, client *cli.Cli, rpgSystem *rpg.RPGSystem) *MainApi {
+	session := handlers.NewSession(admin, l, db, s, ctx)
 	autoPlay := rpg.LoadRPGSystemsDefault(rpg.AutoPlay)
 	validator := validator.New(l, db, ctx)
 	worker := worker.NewWorkerAPI(ctx, dice, db, l, client, rpgSystem, autoPlay)

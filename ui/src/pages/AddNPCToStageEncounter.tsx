@@ -43,10 +43,10 @@ const AddNPCToStageEncounter = () => {
           }),
         });
         if (response.ok) {
-          alert("NPC generated! Have a great session with your friends!");
+          alert(t("alert.npc", {ns: ['main', 'home']}));
           navigate(`/stages/${id}/story/${story}/encounter/${encounterid}`);
         } else {
-          alert("Something goes wrong. NPC was not generated.");
+          alert(t("alert.npc-wrong", {ns: ['main', 'home']}));
         }
     };
 

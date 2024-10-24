@@ -9,6 +9,7 @@ import (
 	"github.com/betorvs/playbypost/core/rules"
 	"github.com/betorvs/playbypost/core/sys/web/types"
 	"github.com/betorvs/playbypost/core/utils"
+	"github.com/lib/pq"
 )
 
 func (db *DBX) GetStage(ctx context.Context) ([]types.Stage, error) {
@@ -358,6 +359,79 @@ func (db *DBX) GetNextEncounterByEncounterID(ctx context.Context, id int) (types
 		db.Logger.Error("rows err on stage_next_encounter by encounter_id", "error", err.Error())
 	}
 	return ne, nil
+}
+
+// get next stage encounter by stage id
+func (db *DBX) GetNextEncounterByStageID(ctx context.Context, id int) ([]types.Next, error) {
+	next := []types.Next{}
+	query := "SELECT s.id, s.upstream_id, s.current_encounter_id, s.next_encounter_id, s.display_text, o.kind, o.values FROM stage_next_encounter AS s JOIN stage_next_objectives AS o ON s.id = o.upstream_id WHERE s.upstream_id = $1"
+	rows, err := db.Conn.QueryContext(ctx, query, id)
+	if err != nil {
+		db.Logger.Error("query on stage_next_encounter failed", "error", err.Error())
+		return next, err
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var n types.Next
+		var o types.Objective
+		var values []sql.NullInt64
+		if err := rows.Scan(&n.ID, &n.UpstreamID, &n.EncounterID, &n.NextEncounterID, &n.Text, &o.Kind, pq.Array(&values)); err != nil {
+			db.Logger.Error("scan error on stage_next_encounter ", "error", err.Error())
+		}
+		n.Objective = o
+		if len(values) > 0 {
+			for _, v := range values {
+				if v.Valid {
+					n.Objective.Values = append(n.Objective.Values, int(v.Int64))
+				}
+			}
+		}
+
+		next = append(next, n)
+	}
+	// Check for errors from iterating over rows.
+	if err := rows.Err(); err != nil {
+		db.Logger.Error("rows err on stage_next_encounter", "error", err.Error())
+	}
+	return next, nil
+
+}
+
+func (db *DBX) GetStageEncounterListByStoryID(ctx context.Context, storyID int) (types.EncounterList, error) {
+	list := types.EncounterList{}
+	query := "select a.id, e.title AS encounter, e.id AS encounter_id, n.title AS next_encounter, n.id AS next_id from stage_next_encounter AS a JOIN encounters AS e ON e.id = a.current_encounter_id JOIN encounters AS n ON n.id = a.next_encounter_id WHERE e.story_id = $1"
+	rows, err := db.Conn.QueryContext(ctx, query, storyID)
+	if err != nil {
+		db.Logger.Error("query on auto_play_next_encounter by story_id failed", "error", err.Error())
+		return list, err
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var next types.EncounterWithNext
+		if err := rows.Scan(&next.ID, &next.Encounter, &next.EncounterID, &next.NextEncounter, &next.NextID); err != nil {
+			db.Logger.Error("scan error on auto_play_next_encounter by story_id ", "error", err.Error())
+		}
+		list.Link = append(list.Link, next)
+	}
+	// Check for errors from iterating over rows.
+	if err := rows.Err(); err != nil {
+		db.Logger.Error("rows err on auto_play_next_encounter by story_id", "error", err.Error())
+	}
+	queryEncounter := "select id, title AS name from encounters WHERE story_id = $1"
+	rowsEncounter, err := db.Conn.QueryContext(ctx, queryEncounter, storyID)
+	if err != nil {
+		db.Logger.Error("query on encounters by story_id failed", "error", err.Error())
+		return list, err
+	}
+	defer rowsEncounter.Close()
+	for rowsEncounter.Next() {
+		var generic types.Options
+		if err := rowsEncounter.Scan(&generic.ID, &generic.Name); err != nil {
+			db.Logger.Error("scan error on encounters by story_id ", "error", err.Error())
+		}
+		list.EncounterList = append(list.EncounterList, generic)
+	}
+	return list, nil
 }
 
 // stage_running_tasks

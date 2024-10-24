@@ -29,7 +29,9 @@
         "channel": "Canal",
         "validator": "Validador",
         "validator-not-found": "Validator não executado ainda",
-        "validator-okay": "Nenhum erro encontrado"
+        "validator-okay": "Nenhum erro encontrado",
+        "delete": "Deletar",
+        "edit": "Editar"
     },
     "home": {
         "menu": "Home",
@@ -63,6 +65,7 @@
         "not-found": "História não encontrada",
         "button": "Nova história",
         "header-new": "Criar uma nova story (história)",
+        "header-edit": "Editar uma história",
         "form-title-text": "Uma grande história começa com um grande título",
         "form-announce-text": "Será postado para todos os jogadores. Pense em todos os sentidos e crie uma ótima descrição!",
         "form-notes": "Notas",
@@ -73,6 +76,7 @@
         "add-to-stage": "Adicionar ao Stage",
         "button": "Novo Encontro",
         "header": "Criar um novo encontro",
+        "header-edit": "Editar Encontro",
         "form-title-text": "Um grande encontro começa com um grande título",
         "form-announce-text": "Será postado para todos os jogadores. Pense em todos os sentidos e crie uma ótima descrição!",
         "form-notes-text": "Será usado apenas por você. Mantenha aqui boas notas sobre o que deve acontecer.",
@@ -148,7 +152,8 @@
         "back-button": "Voltar para Stage",
         "text": "Texto",
         "running-channel": "Rodando no Canal",
-        "close": "Fechar Stage"
+        "close": "Fechar Stage",
+        "manage-next-encounter": "Gerenciar Próximo Encontro"
     },
     "player": {
         "this": "Jogador",
@@ -177,5 +182,35 @@
         "didatic": "Esta é uma aventura didática",
         "back-button": "Voltar para Auto Play",
         "not-found": "Auto Play não encontrado"
+    },
+    "alert": {
+        "player-add": "Jogador adicionado com sucesso",
+        "player-add-wrong": "Algo deu errado. Jogador não foi adicionado ao encontro.",
+        "next-encounter": "Próximo encontro adicionado com sucesso",
+        "next-encounter-wrong": "Algo deu errado. Próximo encontro não foi adicionado ao encontro.",
+        "stage": "Stage adicionado com sucesso",
+        "stage-wrong": "Algo deu errado. Stage não foi adicionado ao canal.",
+        "task-add": "Tarefa adicionada com sucesso",
+        "task-add-wrong": "Algo deu errado. Tarefa não foi adicionada ao encontro.",
+        "npc": "NPC gerado com sucesso",
+        "npc-wrong": "Algo deu errado. NPC não foi gerado.",
+        "stage-start": "Stage iniciado com sucesso",
+        "stage-start-wrong": "Algo deu errado. Stage não foi iniciado.",
+        "player": "Jogador adicionado com sucesso",
+        "player-wrong": "Algo deu errado. Jogador não foi adicionado ao canal.",
+        "story": "História adicionada com sucesso",
+        "story-wrong": "Algo deu errado. História não foi adicionada ao canal.",
+        "encounter": "Encontro adicionado com sucesso",
+        "encounter-wrong": "Algo deu errado. Encontro não foi adicionado ao canal.",
+        "auto-play": "Auto Play adicionado com sucesso",
+        "auto-play-wrong": "Algo deu errado. Auto Play não foi adicionado ao canal.",
+        "task": "Tarefa adicionada com sucesso",
+        "task-wrong": "Algo deu errado. Tarefa não foi adicionada ao canal.",
+        "encounter-associated": "Encontro associado com sucesso",
+        "encounter-associated-wrong": "Algo deu errado. Encontro não pode ser associado.",
+        "story-edit": "História editada com sucesso",
+        "story-edit-wrong": "Algo deu errado. História não foi editada.",
+        "encounter-edit": "Encontro editado com sucesso",
+        "encounter-edit-wrong": "Algo deu errado. Encontro não foi editado."
     }
 }

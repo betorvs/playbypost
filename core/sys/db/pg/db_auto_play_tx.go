@@ -491,3 +491,66 @@ func (db *DBX) CloseAutoPlayChannel(ctx context.Context, channelID string, autoP
 
 	return nil
 }
+
+func (db *DBX) DeleteAutoPlayNextEncounter(ctx context.Context, id int) error {
+	// start tx
+	tx, err := db.Conn.BeginTx(ctx, nil)
+	if err != nil {
+		db.Logger.Error("tx begin on DeleteNextEncounter failed", "error", err.Error())
+		return err
+	}
+	// Defer a rollback in case anything fails.
+	defer func() {
+		rollback := tx.Rollback()
+		if err != nil && rollback != nil {
+			err = fmt.Errorf("rolling back transaction: %w", err)
+		}
+	}()
+	// select ids to delete
+	query := "SELECT a.id, apno.id FROM auto_play_next_encounter AS a JOIN auto_play_next_objectives AS apno ON apno.upstream_id = a.id WHERE a.id = $1"
+	stmt, err := db.Conn.PrepareContext(ctx, query)
+	if err != nil {
+		db.Logger.Error("tx prepare on auto_play_next_encounter failed", "error", err.Error())
+		return err
+	}
+	defer stmt.Close()
+	var nextID, objectiveID int
+	err = tx.StmtContext(ctx, stmt).QueryRow(id).Scan(&nextID, &objectiveID)
+	if err != nil {
+		db.Logger.Error("tx query on auto_play_next_encounter failed", "error", err.Error())
+		return err
+	}
+	// delete from auto_play_next_objectives
+	query = "DELETE FROM auto_play_next_objectives WHERE id = $1"
+	stmt, err = db.Conn.PrepareContext(ctx, query)
+	if err != nil {
+		db.Logger.Error("tx prepare on auto_play_next_objectives failed", "error", err.Error())
+		return err
+	}
+	defer stmt.Close()
+	_, err = tx.StmtContext(ctx, stmt).ExecContext(ctx, objectiveID)
+	if err != nil {
+		db.Logger.Error("tx exec on auto_play_next_objectives failed", "error", err.Error())
+		return err
+	}
+	// delete from auto_play_next_encounter
+	query = "DELETE FROM auto_play_next_encounter WHERE id = $1"
+	stmt, err = db.Conn.PrepareContext(ctx, query)
+	if err != nil {
+		db.Logger.Error("tx prepare on auto_play_next_encounter failed", "error", err.Error())
+		return err
+	}
+	defer stmt.Close()
+	_, err = tx.StmtContext(ctx, stmt).ExecContext(ctx, nextID)
+	if err != nil {
+		db.Logger.Error("tx exec on auto_play_next_encounter failed", "error", err.Error())
+		return err
+	}
+	// commit if everything is okay
+	if err = tx.Commit(); err != nil {
+		db.Logger.Error("tx commit on DeleteNextEncounter failed", "error", err.Error())
+		return err
+	}
+
+	return nil
+}

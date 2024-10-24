@@ -19,7 +19,8 @@ type DBClient interface {
 	GetWriterByUsername(ctx context.Context, username string) (types.Writer, error)
 	// story
 	GetStory(ctx context.Context) ([]types.Story, error)
-	CreateStoryTx(ctx context.Context, title, announcement, notes, encodingKey string, masterID int) (int, error)
+	CreateStoryTx(ctx context.Context, title, announcement, notes, encodingKey string, writerID int) (int, error)
+	UpdateStoryTx(ctx context.Context, title, announcement, notes string, storyID int) (int, error)
 	GetStoryIDByTitle(ctx context.Context, title string) (int, error)
 	GetStoryByID(ctx context.Context, id int) (types.Story, error)
 	GetStoriesByWriterID(ctx context.Context, id int) ([]types.Story, error)
@@ -28,6 +29,7 @@ type DBClient interface {
 	GetEncounterByStoryID(ctx context.Context, storyID int) ([]types.Encounter, error)
 	GetEncounterByID(ctx context.Context, id int) (types.Encounter, error)
 	CreateEncounterTx(ctx context.Context, title, announcement, notes string, storyID, storytellerID int, first, last bool) (int, error)
+	UpdateEncounterTx(ctx context.Context, title, announcement, notes string, id, storyID int, first, last bool) (int, error)
 	// Tasks
 	GetTask(ctx context.Context) ([]types.Task, error)
 	CreateTask(ctx context.Context, description, ability, skill string, kind types.TaskKind, target int) (int, error)
@@ -44,6 +46,8 @@ type DBClient interface {
 	GetStageTaskFromRunningTaskID(ctx context.Context, taskID int) (types.Task, error)
 	GetCreatureFromParticipantsList(ctx context.Context, players []types.Options, npcs []types.Options, rpgSystem *rpg.RPGSystem) (map[int]*rules.Creature, map[int]*rules.Creature, error)
 	GetNextEncounterByEncounterID(ctx context.Context, id int) (types.Next, error)
+	GetNextEncounterByStageID(ctx context.Context, id int) ([]types.Next, error)
+	GetStageEncounterListByStoryID(ctx context.Context, storyID int) (types.EncounterList, error)
 	CreateStageTx(ctx context.Context, text, userid string, storyID int) (int, error)
 	AddChannelToStage(ctx context.Context, channel string, id int) (int, error)
 	AddEncounterToStage(ctx context.Context, text string, stage_id, storyteller_id, encounter_id int) (int, error)
@@ -55,6 +59,7 @@ type DBClient interface {
 	RegisterActivities(ctx context.Context, stageID, encounterID int, actions types.Actions) error
 	UpdateProcessedActivities(ctx context.Context, id int, processed bool, actions types.Actions) error
 	CloseStage(ctx context.Context, id int) error
+	DeleteStageNextEncounter(ctx context.Context, id int) error
 	// NPC
 	GetNPCByStageID(ctx context.Context, id int) ([]types.Players, error)
 	GenerateNPC(ctx context.Context, name string, stageID, storytellerID int, creature *rules.Creature) (int, error)
@@ -84,7 +89,7 @@ type DBClient interface {
 	//  Auto Play
 	GetAutoPlay(ctx context.Context) ([]types.AutoPlay, error)
 	GetAutoPlayByID(ctx context.Context, autoPlayID int) (types.AutoPlay, error)
-	GetNextEncounterByStoryID(ctx context.Context, storyID int) (types.AutoPlayEncounterList, error)
+	GetAutoPlayEncounterListByStoryID(ctx context.Context, storyID int) (types.EncounterList, error)
 	GetAutoPlayOptionsByChannelID(ctx context.Context, channelID, userID string) (types.AutoPlayOptions, error)
 	GetAutoPlayActivities(ctx context.Context) ([]types.Activity, error)
 	GetAnnounceByEncounterID(ctx context.Context, encounterID, autoPlayID int) (string, bool, error)
@@ -97,4 +102,5 @@ type DBClient interface {
 	UpdateAutoPlayGroup(ctx context.Context, id, count int, date time.Time) error
 	UpdateAutoPlayState(ctx context.Context, autoPlayChannel string, encounterID int) error
 	CloseAutoPlayChannel(ctx context.Context, channelID string, autoPlayID int) error
+	DeleteAutoPlayNextEncounter(ctx context.Context, id int) error
 }

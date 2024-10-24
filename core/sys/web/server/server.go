@@ -73,7 +73,7 @@ func (s *SvrWeb) JSON(w http.ResponseWriter, v interface{}) {
 }
 
 func (s *SvrWeb) GetHealth(w http.ResponseWriter, r *http.Request) {
-	s.logger.Info("get health", "http_method", r.Method)
+	s.logger.Debug("get health", "http_method", r.Method)
 	type health struct {
 		Status string `json:"status"`
 	}
@@ -93,7 +93,7 @@ func (s *SvrWeb) ErrJSON(w http.ResponseWriter, code int, msg string) {
 }
 
 func (s *SvrWeb) Options(w http.ResponseWriter, r *http.Request) {
-	s.logger.Info("options", "http_method", r.Method, "url", r.URL.Path)
+	s.logger.Debug("options", "http_method", r.Method, "url", r.URL.Path)
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.Header().Set("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization, X-Username, X-Access-Token")

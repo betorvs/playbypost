@@ -40,18 +40,18 @@ func (a *AutoPlayGroup) Scan(value interface{}) error {
 	return json.Unmarshal(b, &a)
 }
 
-type AutoPlayEncounterList struct {
-	EncounterList []Options                   `json:"encounter_list"`
-	Link          []AutoPlayEncounterWithNext `json:"link"`
-}
+// type AutoPlayEncounterList struct {
+// 	EncounterList []Options                   `json:"encounter_list"`
+// 	Link          []AutoPlayEncounterWithNext `json:"link"`
+// }
 
-type AutoPlayEncounterWithNext struct {
-	ID            int    `json:"id"`
-	EncounterID   int    `json:"encounter_id"`
-	NextID        int    `json:"next_id"`
-	Encounter     string `json:"encounter"`
-	NextEncounter string `json:"next_encounter"`
-}
+// type AutoPlayEncounterWithNext struct {
+// 	ID            int    `json:"id"`
+// 	EncounterID   int    `json:"encounter_id"`
+// 	NextID        int    `json:"next_id"`
+// 	Encounter     string `json:"encounter"`
+// 	NextEncounter string `json:"next_encounter"`
+// }
 
 type AutoPlayOptions struct {
 	AutoPlay

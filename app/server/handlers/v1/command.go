@@ -26,7 +26,7 @@ func (a MainApi) ExecuteCommand(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	text := strings.ToLower(obj.Text)
-	a.logger.Info("command received", "command", text, "userid", headerUserID, "channel", headerStoryChannel)
+	a.logger.Debug("command received", "command", text, "userid", headerUserID, "channel", headerStoryChannel)
 
 	switch {
 	case strings.HasPrefix(text, "solo-start"):
@@ -40,7 +40,7 @@ func (a MainApi) ExecuteCommand(w http.ResponseWriter, r *http.Request) {
 		}
 		opts := parser.ParserAutoPlaysSolo(options)
 		composed := types.Composed{Msg: "Solo start options", Opts: opts}
-		a.logger.Info("msg back", "composed", composed)
+		a.logger.Debug("msg back", "composed", composed)
 		a.s.JSON(w, composed)
 		return
 
@@ -52,12 +52,12 @@ func (a MainApi) ExecuteCommand(w http.ResponseWriter, r *http.Request) {
 			a.s.ErrJSON(w, http.StatusBadRequest, "no auto play found")
 			return
 		}
-		a.logger.Info("auto play found", "opt", opt)
+		a.logger.Debug("auto play found", "opt", opt)
 
 		composed := types.Composed{Msg: "Solo next options"}
 		if len(opt.NextEncounters) > 0 {
 			opts, _ := parser.ParserAutoPlaysNext(opt.NextEncounters)
-			a.logger.Info("auto play found", "opts", opts)
+			a.logger.Debug("auto play found", "opts", opts)
 			composed.Opts = opts
 		}
 
@@ -78,7 +78,7 @@ func (a MainApi) ExecuteCommand(w http.ResponseWriter, r *http.Request) {
 		opts := parser.ParserOptions(storyteller, runningStage)
 
 		composed := types.Composed{Msg: msg, Opts: opts}
-		a.logger.Info("msg back", "composed", composed)
+		a.logger.Debug("msg back", "composed", composed)
 		a.s.JSON(w, composed)
 		return
 	case strings.HasPrefix(text, "cmd"):
@@ -146,7 +146,7 @@ func (a MainApi) ExecuteCommand(w http.ResponseWriter, r *http.Request) {
 		// process solo choices for player
 		// start solo mode: requires channel id and user id
 		// next solo mode: requires channel id and user id
-		a.logger.Info("choice command received", "text", text)
+		a.logger.Debug("choice command received", "text", text)
 		actions := types.NewActions()
 		cmd, err := parser.TextToCommand(obj.Text)
 		if err != nil {
@@ -157,7 +157,7 @@ func (a MainApi) ExecuteCommand(w http.ResponseWriter, r *http.Request) {
 		actions["text"] = cmd.Text
 		actions["channel"] = headerStoryChannel
 		actions["userid"] = headerUserID
-		a.logger.Info("choice command received", "cmd", cmd)
+		a.logger.Debug("choice command received", "cmd", cmd)
 		// command=choice;start-solo-solo-adventure-1:1;1 userid=1272952428379242611 channel=1275626175678517289
 		// err = a.db.RegisterActivitiesAutoPlay(a.ctx, cmd.ID, cmd.NF, actions)
 		switch {

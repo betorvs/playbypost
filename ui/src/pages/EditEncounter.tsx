@@ -1,4 +1,4 @@
-import { useContext, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import Layout from "../components/Layout";
 import { AuthContext } from "../context/AuthContext";
@@ -6,57 +6,89 @@ import Button from "react-bootstrap/Button";
 import { Form } from "react-bootstrap";
 import GetUsername from "../context/GetUsername";
 import GetToken from "../context/GetToken";
-import GetUserID from "../context/GetUserID";
 import UseLocation from "../context/UseLocation";
 import { useTranslation } from "react-i18next";
+import Encounter from "../types/Encounter";
+import { FetchEncounter } from "../functions/Encounters";
 
-const NewEncounter = () => {
-  const { id } = useParams();
+const EditEncounter = () => {
+  const { story_id, enc_id } = useParams();
   const { Logoff } = useContext(AuthContext);
   const navigate = useNavigate();
-  const [title, setTitle] = useState("");
-  const [announce, setAnnouncement] = useState("");
-  const [note, setNotes] = useState("");
-  const [firstEncounter, setFirstEncounter] = useState(false);
-  const [lastEncounter, setLastEncounter] = useState(false);
-  const user_id = GetUserID();
+  const [encounter, setEncounter] = useState<Encounter>();
   const { t } = useTranslation(['home', 'main']);
 
-  const safeID: string = id ?? "";
+  const storySafeID: string = story_id ?? "";
+  const encSafeID: string = enc_id ?? "";
 
   const cancelButton = () => {
-    if (safeID === "") {
+    if (storySafeID === "") {
       navigate("/stories");
     }
-    navigate(`/stories/${safeID}`);
+    navigate(`/stories/${storySafeID}`);
   };
+
+  const onChangeTitle = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (encounter) {
+      setEncounter({ ...encounter, title: e.target.value });
+    }
+  }
+
+  const onChangeAnnouncement = (e: React.ChangeEvent<HTMLInputElement>) => {  
+    if (encounter) {
+      setEncounter({ ...encounter, announcement: e.target.value });
+    }
+  }
+
+  const onChangeNotes = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    if (encounter) {
+      setEncounter({ ...encounter, notes: e.target.value });
+    }
+  }
+
+  const onChangeFirstEncounter = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (encounter) {
+      setEncounter({ ...encounter, first_encounter: e.target.checked });
+    }
+  }
+  
+  const onChangeLastEncounter = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (encounter) {
+      setEncounter({ ...encounter, last_encounter: e.target.checked });
+    }
+  }
+
+  useEffect(() => {
+    FetchEncounter(encSafeID, setEncounter);
+  }, []);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const apiURL = UseLocation();
-    const urlAPI = new URL("api/v1/encounter", apiURL);
+    const urlAPI = new URL("api/v1/encounter/" + enc_id, apiURL);
     const response = await fetch(urlAPI, {
-      method: "POST",
+      method: "PUT",
       headers: {
         "Content-Type": "application/json",
         "X-Username": GetUsername(),
         "X-Access-Token": GetToken(),
       },
       body: JSON.stringify({
-        title: title,
-        announcement: announce,
-        notes: note,
-        story_id: Number(safeID),
-        writer_id: user_id,
-        first_encounter: firstEncounter,
-        last_encounter: lastEncounter,
+        id: Number(encSafeID),
+        title: encounter?.title,
+        announcement: encounter?.announcement,
+        notes: encounter?.notes,
+        story_id: Number(storySafeID),
+        writer_id: encounter?.writer_id,
+        first_encounter: encounter?.first_encounter,
+        last_encounter: encounter?.last_encounter,
       }),
     });
     if (response.ok) {
-      alert(t("alert.encounter", {ns: ['main', 'home']}));
-      navigate(`/stories/${safeID}`);
+      alert(t("alert.encounter-edit", {ns: ['main', 'home']}));
+      navigate(`/stories/${storySafeID}`);
     } else {
-      alert(t("alert.encounter-wrong", {ns: ['main', 'home']}));
+      alert(t("alert.encounter-edit-wrong", {ns: ['main', 'home']}));
     }
   }
 
@@ -64,7 +96,7 @@ const NewEncounter = () => {
     <>
       <div className="container mt-3" key="1">
         <Layout Logoff={Logoff} />
-        <h2>{t("encounter.header", {ns: ['main', 'home']})}</h2>
+        <h2>{t("encounter.header-edit", {ns: ['main', 'home']})}</h2>
         <hr />
       </div>
       <div className="container mt-3" key="2">
@@ -74,8 +106,8 @@ const NewEncounter = () => {
             <Form.Control
               type="text"
               placeholder="title"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
+              value={encounter?.title}
+              onChange={onChangeTitle}
             />
             <Form.Text className="text-muted">
             {t("encounter.form-title-text", {ns: ['main', 'home']})}
@@ -87,8 +119,8 @@ const NewEncounter = () => {
               type="text"
               as="textarea"
               placeholder="annoucement"
-              value={announce}
-              onChange={(e) => setAnnouncement(e.target.value)}
+              value={encounter?.announcement}
+              onChange={onChangeAnnouncement}
             />
             <Form.Text className="text-muted">
             {t("encounter.form-announce-text", {ns: ['main', 'home']})}
@@ -100,8 +132,8 @@ const NewEncounter = () => {
               type="text"
               as="textarea"
               placeholder="notes"
-              value={note}
-              onChange={(e) => setNotes(e.target.value)}
+              value={encounter?.notes}
+              onChange={onChangeNotes}
             />
             <Form.Text className="text-muted">
             {t("encounter.form-notes-text", {ns: ['main', 'home']})}
@@ -112,8 +144,8 @@ const NewEncounter = () => {
             <Form.Check
               type="checkbox"
               label={t("encounter.first-encounter-label", {ns: ['main', 'home']})}
-              checked={firstEncounter}
-              onChange={(e) => setFirstEncounter(e.target.checked)}
+              checked={encounter?.first_encounter}
+              onChange={onChangeFirstEncounter}
               />
             <Form.Text className="text-muted">
             {t("encounter.first-encounter-description", {ns: ['main', 'home']})}
@@ -124,8 +156,8 @@ const NewEncounter = () => {
             <Form.Check
               type="checkbox"
               label={t("encounter.last-encounter-label", {ns: ['main', 'home']})}
-              checked={lastEncounter}
-              onChange={(e) => setLastEncounter(e.target.checked)}
+              checked={encounter?.last_encounter}
+              onChange={onChangeLastEncounter}
               />
             <Form.Text className="text-muted">
             {t("encounter.last-encounter-description", {ns: ['main', 'home']})}
@@ -143,4 +175,4 @@ const NewEncounter = () => {
   );
 };
 
-export default NewEncounter;
+export default EditEncounter;
