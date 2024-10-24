@@ -20,7 +20,7 @@ const AddPlayerToStageEncounter = () => {
 
     const safeID: string = id ?? "";
 
-    const [players, setPlayer] = useState<Players[]>();
+    const [players, setPlayer] = useState<Players[]>([]);
     const [ids, setIDs] = useState<number[]>([]);
 
     useEffect(() => {
