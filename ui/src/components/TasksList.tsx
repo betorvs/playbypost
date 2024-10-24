@@ -13,7 +13,7 @@ const TasksList = () => {
   }, []);
   return (
     <div className="row mb-2" key="1">
-      {tasks != null ? (
+      {tasks.length !== 0 ? (
         tasks.map((task, index) => <TaskCard task={task} key={index} />)
       ) : (
         <p>{t("task.not-found", {ns: ['main', 'home']})}</p>

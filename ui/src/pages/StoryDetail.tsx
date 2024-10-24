@@ -27,7 +27,7 @@ const StoryDetail = () => {
         <Layout Logoff={Logoff} />
         {<StoryDetailHeader detail={true} id={safeID} />}
         <div className="row mb-2" key="2">
-          {encounters != null ? (
+          {encounters.length !== 0 ? (
             encounters.map((encounter, index) => (
               <EncounterCards encounter={encounter} key={index} disable_footer={false} />
             ))

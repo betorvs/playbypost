@@ -18,7 +18,7 @@ const StageEncounterDetail = () => {
     const { t } = useTranslation(['home', 'main']);
 
     const [encounter, setEncounter] = useState<Encounter>();
-    const [activities, setActivities] = useState<Activities[]>();
+    const [activities, setActivities] = useState<Activities[]>([]);
 
     useEffect(() => {
       FetchStageEncounterByEncounterID(encSafeID, setEncounter);
@@ -40,11 +40,17 @@ const StageEncounterDetail = () => {
               <ul className="list-group list-group-flush">
                 {
                   encounter?.pc != null ? (
-                    encounter.pc.map((pc) => (
-                      <li className="list-group-item" key={pc.id} >{pc.name}</li>
-                    ))) : (
+                      encounter?.pc.length === 0 ? (
+                        <li className="list-group-item">{t("player.not-found", {ns: ['main', 'home']})}</li>
+                      ) : ( 
+                        encounter.pc.map((pc) => (
+                          <li className="list-group-item" key={pc.id} >{pc.name}</li>
+                        ))
+                      )
+                    ) : (
                       <li className="list-group-item">{t("player.not-found", {ns: ['main', 'home']})}</li>
                     )
+                  
                 }
               </ul>
             </div>
@@ -57,11 +63,16 @@ const StageEncounterDetail = () => {
               <ul className="list-group list-group-flush">
                 {
                   encounter?.npc != null ? (
-                    encounter.npc.map((npc) => (
-                      <li className="list-group-item" key={npc.id}>{npc.name}</li>
-                    ))) : (
+                    encounter.npc.length === 0 ? (
                       <li className="list-group-item">{t("player.npc-not-found", {ns: ['main', 'home']})}</li>
+                    ) : (
+                      encounter.npc.map((npc) => (
+                        <li className="list-group-item" key={npc.id}>{npc.name}</li>
+                      ))
                     )
+                  ) : (
+                    <li className="list-group-item">{t("player.npc-not-found", {ns: ['main', 'home']})}</li>
+                  )
                 }
               </ul>
             </div>
@@ -74,7 +85,7 @@ const StageEncounterDetail = () => {
             </div>
             <ul className="list-group list-group-flush">
               {
-                activities != null ? (
+                activities.length !== 0 ? (
                   activities.map((activity) => (
                     <li className="list-group-item" key={activity.id} >{JSON.stringify(activity.actions)}</li>
                   ))) : (

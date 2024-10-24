@@ -2,6 +2,7 @@ import GetUsername from "../context/GetUsername";
 import GetToken from "../context/GetToken";
 import Encounter from "../types/Encounter";
 import UseLocation from "../context/UseLocation";
+import CleanSession from "../context/CleanSession";
 
 const FetchEncounters = async (
   id: string,
@@ -20,6 +21,9 @@ const FetchEncounters = async (
   if (response.ok) {
     const data = await response.text();
     setEncounters(JSON.parse(data));
+  } else if (response.status === 403) {
+    console.log("Not authorized");
+    CleanSession();
   }
 };
 
@@ -40,6 +44,9 @@ const FetchEncounter = async (
   if (response.ok) {
     const data = await response.text();
     setEncounter(JSON.parse(data));
+  } else if (response.status === 403) {
+    console.log("Not authorized");
+    CleanSession();
   }
 };
 

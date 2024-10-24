@@ -15,7 +15,7 @@ const StageList = () => {
   }, []);
   return (
     <div className="container mt-3" key="2">
-      {stages != null ? (
+      {stages.length !== 0 ? (
         stages.map((stage) => (
           <StageCards
             key={stage.id}

@@ -30,7 +30,7 @@ const StageDetail = () => {
         <Layout Logoff={Logoff} />
         {<StageDetailHeader detail={true} id={safeID} storyID={storySafeID} backButtonLink="/stages" />}
         <div className="row mb-2" key="2">
-          {encounters != null ? (
+          {encounters.length !== 0 ? (
             encounters.map((encounter, index) => (
               <StageEncounterCards encounter={encounter} key={index} stageID={safeID} storyId={storySafeID} />
             ))

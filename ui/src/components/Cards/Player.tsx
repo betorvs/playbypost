@@ -37,9 +37,6 @@ const PlayerCards = ({ player }: props) => {
           <p className="card-text">
             {extensions}
           </p>
-          {/* <a href="#" className="btn btn-primary">
-            Go somewhere
-          </a> */}
         </div>
       </div>
     </div>

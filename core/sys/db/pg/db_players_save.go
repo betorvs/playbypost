@@ -51,7 +51,7 @@ func (db *DBX) UpdatePlayer(ctx context.Context, id int, creature *rules.Creatur
 		return err
 	}
 	defer stmt.Close()
-	db.Logger.Info("update player", "creature", creature)
+	db.Logger.Debug("update player", "creature", creature)
 	_, err = stmt.ExecContext(ctx, creature.Abilities, creature.Skills, creature.Extension, destroyed, id)
 	if err != nil {
 		db.Logger.Error("update players exec failed", "error", err.Error())

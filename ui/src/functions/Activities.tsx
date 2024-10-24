@@ -5,7 +5,7 @@ import Activities from "../types/Activities";
 
 const FetchActivities = async (
     id: string,
-    setActivities: React.Dispatch<React.SetStateAction<Activities[] | undefined>>
+    setActivities: React.Dispatch<React.SetStateAction<Activities[]>>
 ) => {
   const requestHeaders: HeadersInit = new Headers();
   requestHeaders.set("Content-Type", "application/json");

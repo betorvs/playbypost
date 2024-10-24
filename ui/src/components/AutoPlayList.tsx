@@ -13,7 +13,7 @@ const AutoPlayList = () => {
   }, []);
   return (
     <div className="container mt-3" key="2">
-      {auto != null ? (
+      {auto.length !== 0 ? (
         auto.map((autoplay) => (
           <AutoPlayCards
             key={autoplay.id}

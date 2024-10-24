@@ -2,6 +2,7 @@ import GetUsername from "../context/GetUsername";
 import GetToken from "../context/GetToken";
 import Story from "../types/Story";
 import UseLocation from "../context/UseLocation";
+import CleanSession from "../context/CleanSession";
 
 const FetchStoriesByUserID = async (
   userID: number,
@@ -20,6 +21,9 @@ const FetchStoriesByUserID = async (
   if (response.ok) {
     const data = await response.text();
     setStory(JSON.parse(data));
+  } else if (response.status === 403) {
+    console.log("Not authorized");
+    CleanSession();
   }
 };
 
@@ -40,6 +44,9 @@ const FetchStory = async (
   if (response.ok) {
     const data = await response.text();
     setStory(JSON.parse(data));
+  } else if (response.status === 403) {
+    console.log("Not authorized");
+    CleanSession();
   }
 };
 

@@ -81,7 +81,7 @@ func (db *DBX) CreateUserTx(ctx context.Context, userid string) (int, error) {
 	var userID int
 	err = tx.StmtContext(ctx, stmtQueryUser).QueryRow(userid).Scan(&userID)
 	if err != nil {
-		db.Logger.Info("user not found", "return", err.Error())
+		db.Logger.Info("user not found creating new", "return", err.Error())
 		// just log this error
 		// return -1, err
 

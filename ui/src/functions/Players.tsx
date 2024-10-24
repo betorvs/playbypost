@@ -2,10 +2,11 @@ import GetUsername from "../context/GetUsername";
 import GetToken from "../context/GetToken";
 import Players from "../types/Players";
 import UseLocation from "../context/UseLocation";
+import CleanSession from "../context/CleanSession";
 
 const FetchPlayers = async (
   id: string,
-  setPlayer: React.Dispatch<React.SetStateAction<Players[] | undefined>>
+  setPlayer: React.Dispatch<React.SetStateAction<Players[]>>
 ): Promise<void> => {
   const requestHeaders: HeadersInit = new Headers();
   requestHeaders.set("Content-Type", "application/json");
@@ -20,6 +21,9 @@ const FetchPlayers = async (
   if (response.ok) {
     const data = await response.text();
     setPlayer(JSON.parse(data));
+  } else if (response.status === 403) {
+    console.log("Not authorized");
+    CleanSession();
   }
 };
 export default FetchPlayers;

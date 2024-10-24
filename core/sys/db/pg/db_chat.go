@@ -40,7 +40,7 @@ func (db *DBX) GetChatInformation(ctx context.Context) ([]types.ChatInfo, error)
 			db.Logger.Error("scan error on chat_information", "error", err.Error())
 		}
 		if v, ok := infoMap[s.UserID]; ok {
-			db.Logger.Info("ok map", "values", v)
+			db.Logger.Debug("ok map", "values", v)
 			if infoMap[s.UserID].Channel != s.Channel {
 				// infoMap[s.UserID].Channel = infoMap[s.UserID].Channel + ", " + s.Channel
 				s.Channel += ", " + infoMap[s.UserID].Channel

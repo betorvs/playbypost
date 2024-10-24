@@ -2,6 +2,7 @@ import GetUsername from "../context/GetUsername";
 import GetToken from "../context/GetToken";
 import UseLocation from "../context/UseLocation";
 import UsersCard from "../types/UserCard";
+import CleanSession from "../context/CleanSession";
 
 const FetchUsers = async (
   setUser: React.Dispatch<React.SetStateAction<UsersCard[]>>
@@ -20,6 +21,9 @@ const FetchUsers = async (
     const data = await response.text();
     console.log(data);
     setUser(JSON.parse(data));
+  } else if (response.status === 403) {
+    console.log("Not authorized");
+    CleanSession();
   }
 };
 export default FetchUsers;
