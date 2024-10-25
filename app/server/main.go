@@ -82,6 +82,7 @@ func main() {
 	srv.Register("GET /api/v1/story/writer/{id}", app.GetStoryByWriterId)
 	srv.Register("POST /api/v1/story", app.CreateStory)
 	srv.Register("PUT /api/v1/story/{id}", app.UpdateStoryByID)
+	srv.Register("DELETE /api/v1/story/{id}", app.DeleteStoryByID)
 
 	// stage
 	srv.Register("GET /api/v1/stage", app.GetStage)
@@ -96,6 +97,7 @@ func main() {
 	srv.Register("GET /api/v1/stage/encounters/{id}", app.GetStageEncounterByStageID)
 	srv.Register("PUT /api/v1/stage/encounter/{id}/{phase}", app.UpdateEncounterPhaseById)
 	srv.Register("POST /api/v1/stage/encounter", app.AddEncounterToStage)
+	srv.Register("DELETE /api/v1/stage/encounter/{id}", app.DeleteStageEncounterByID)
 	srv.Register("POST /api/v1/stage/encounter/participants", app.AddParticipants)
 	srv.Register("GET /api/v1/stage/encounter/story/{id}", app.GetStageEncounterListByStoryID)
 	srv.Register("GET /api/v1/stage/encounter/next/{id}", app.GetNextEncounterByStageID)
@@ -119,9 +121,13 @@ func main() {
 	srv.Register("GET /api/v1/encounter/story/{id}", app.GetEncounterByStoryId)
 	srv.Register("POST /api/v1/encounter", app.CreateEncounter)
 	srv.Register("PUT /api/v1/encounter/{id}", app.UpdateEncounterByID)
-	//
+	srv.Register("DELETE /api/v1/encounter/{id}", app.DeleteEncounterByID)
+	// tasks
 	srv.Register("GET /api/v1/task", app.GetTask)
+	srv.Register("GET /api/v1/task/{id}", app.GetTaskByID)
 	srv.Register("POST /api/v1/task", app.CreateTasks)
+	srv.Register("PUT /api/v1/task/{id}", app.UpdateTaskByID)
+	srv.Register("DELETE /api/v1/task/{id}", app.DeleteTaskByID)
 
 	// initiative
 	srv.Register("POST /api/v1/initiative", app.GenerateInitiative)
@@ -132,6 +138,7 @@ func main() {
 	srv.Register("POST /api/v1/info", app.AddChatInfo)
 	srv.Register("GET /api/v1/info/users", app.GetUsersInformation)
 	srv.Register("GET /api/v1/info/channel", app.GetChannelsInformation)
+	srv.Register("GET /api/v1/info/channel/{kind}", app.GetRunningChannels)
 	srv.Register("GET /api/v1/info/phases", app.GetEncountersPhase)
 
 	// auto play

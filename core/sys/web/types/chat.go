@@ -12,3 +12,9 @@ type ChatInfo struct {
 	Channel  string `json:"channel"`
 	Chat     string `json:"chat"`
 }
+
+type RunningChannels struct {
+	Title   string `json:"title"`
+	Channel string `json:"channel"`
+	Kind    string `json:"kind"`
+}

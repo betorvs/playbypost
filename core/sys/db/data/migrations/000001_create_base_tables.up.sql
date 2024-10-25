@@ -84,7 +84,7 @@ CREATE TABLE stage_encounters (
   phase int NOT NULL DEFAULT 0,
   stage_id int NOT NULL REFERENCES stage(id),
   storyteller_id int NOT NULL REFERENCES users(id),
-  encounters_id int NOT NULL REFERENCES encounters(id),
+  encounter_id int NOT NULL REFERENCES encounters(id),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   UNIQUE(display_text, encounters_id)
 );

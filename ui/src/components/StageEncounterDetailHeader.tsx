@@ -27,7 +27,19 @@ const StageEncounterDetailHeader = ({ stageID, storyID, encounter, detail }: pro
         </p>
         <p className="lead mb-0">Notes: {encounter?.notes || t("common.notes-not-found", {ns: ['main', 'home']})}</p>
         <br />
-        {/* <p className="lead mb-0">Running on channel: {encounter?.channel || "Stage not started yet"}</p> */}
+          {encounter?.phase !== 0 ? (
+              encounter?.phase === 1 ? (
+                <p>{t("encounter.phase", {ns: ['main', 'home']})}: {t("encounter.phase-started", {ns: ['main', 'home']})}</p>
+              ) : (
+                encounter?.phase === 2 ? (
+                  <p>{t("encounter.phase", {ns: ['main', 'home']})}: {t("encounter.phase-running", {ns: ['main', 'home']})}</p>
+                ) : (
+                  <p>{t("encounter.phase", {ns: ['main', 'home']})}: {t("encounter.phase-finished", {ns: ['main', 'home']})}</p>
+                )
+              )
+            ) : (
+              <p>{t("encounter.phase", {ns: ['main', 'home']})}: {t("encounter.phase-waiting", {ns: ['main', 'home']})}</p>
+            )}
         <br />
         <NavigateButton link={`/stages/${stageID}/story/${storyID}`} variant="secondary">
         {t("stage.back-button", {ns: ['main', 'home']})}

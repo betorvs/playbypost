@@ -177,3 +177,64 @@ func (db *DBX) UpdateEncounterTx(ctx context.Context, title, announcement, notes
 	}
 	return encounterID, nil
 }
+
+// deleteEncounterByID deletes an encounter by its ID.
+func (db *DBX) DeleteEncounterByID(ctx context.Context, id int) error {
+	// tx
+	tx, err := db.Conn.BeginTx(ctx, nil)
+	if err != nil {
+		return err
+	}
+	// Defer a rollback in case anything fails.
+	defer func() {
+		rollback := tx.Rollback()
+		if err != nil && rollback != nil {
+			err = fmt.Errorf("rolling back transaction: %w", err)
+		}
+	}()
+	// check if this encounter is associated with a stage
+	var countStage int
+	queryCheckStage := "SELECT COUNT(*) FROM stage_encounters WHERE encounter_id = $1"
+	if err = tx.QueryRowContext(ctx, queryCheckStage, id).Scan(&countStage); err != nil {
+		if err != sql.ErrNoRows {
+			db.Logger.Error("no rows passed", "err", err.Error())
+			return err
+		}
+	}
+	if countStage > 0 {
+		db.Logger.Error("encounter is associated with a stage")
+		return fmt.Errorf("encounter is associated with a stage")
+	}
+	// check if this encounter is associated with a next encounter in auto play
+	var countNext int
+	queryCheckNext := "SELECT COUNT(*) FROM auto_play_next_encounter WHERE current_encounter_id = $1 OR next_encounter_id = $1"
+	if err = tx.QueryRowContext(ctx, queryCheckNext, id).Scan(&countNext); err != nil {
+		if err != sql.ErrNoRows {
+			db.Logger.Error("no rows passed", "err", err.Error())
+			return err
+		}
+	}
+	if countNext > 0 {
+		db.Logger.Error("encounter is associated with a next encounter in auto play")
+		return fmt.Errorf("encounter is associated with a next encounter in auto play")
+	}
+	// Prepare the statement.
+	query := "DELETE FROM encounters WHERE id = $1"
+	stmtInsert, err := db.Conn.PrepareContext(ctx, query)
+	if err != nil {
+		db.Logger.Error("tx prepare on stmtInsert failed", "error", err.Error())
+		return err
+	}
+	defer stmtInsert.Close()
+	_, err = tx.StmtContext(ctx, stmtInsert).Exec(id)
+	if err != nil {
+		db.Logger.Error("error on delete from encounters", "error", err.Error())
+		return err
+	}
+	// Commit the transaction.
+	if err = tx.Commit(); err != nil {
+		db.Logger.Error("error on commit encounters", "error", err.Error())
+		return err
+	}
+	return nil
+}

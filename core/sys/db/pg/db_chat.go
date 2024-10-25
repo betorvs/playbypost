@@ -2,6 +2,7 @@ package pg
 
 import (
 	"context"
+	"fmt"
 	"slices"
 
 	"github.com/betorvs/playbypost/core/sys/web/types"
@@ -87,6 +88,33 @@ func (db *DBX) GetChatChannelInformation(ctx context.Context) ([]string, error) 
 	return info, nil
 }
 
-// func (db *DBX) GetUserCard(ctx context.Context) ([]types.ChatInfo, error) {
+func (db *DBX) GetChatRunningChannels(ctx context.Context, kind string) ([]types.RunningChannels, error) {
+	stats := []types.RunningChannels{}
+	var query string
+	switch kind {
+	case "stage":
+		query = "select s.display_text, c.channel from stage AS s JOIN stage_channel AS c ON s.id = c.upstream_id WHERE s.finished = false AND c.active = true"
 
-// }
+	case "auto_play":
+		query = "select a.display_text, c.channel from auto_play AS a JOIN auto_play_channel as c ON a.id = c.upstream_id WHERE c.active = true"
+
+	default:
+		return stats, fmt.Errorf("kind %s not found", kind)
+	}
+	rows, err := db.Conn.QueryContext(ctx, query)
+	if err != nil {
+		db.Logger.Error("query on chat_information.channel failed", "error", err.Error())
+		return stats, err
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var s types.RunningChannels
+		if err := rows.Scan(&s.Title, &s.Channel); err != nil {
+			db.Logger.Error("scan error on chat_information.channel", "error", err.Error())
+		}
+		s.Kind = kind
+		stats = append(stats, s)
+	}
+
+	return stats, nil
+}

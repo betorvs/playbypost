@@ -35,7 +35,7 @@ type EncounterAssociation struct {
 
 type StageEncounter struct {
 	Encounter
-	Phase         int
+	Phase         int       `json:"phase"`
 	Text          string    `json:"text"`
 	StorytellerID int       `json:"storyteller_id,omitempty"`
 	InitiativeID  int       `json:"initiative_id"`

@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strconv"
 
 	"github.com/betorvs/playbypost/core/sys/web/types"
 )
@@ -46,4 +47,73 @@ func (a MainApi) GetTask(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	a.s.JSON(w, obj)
+}
+
+func (a MainApi) GetTaskByID(w http.ResponseWriter, r *http.Request) {
+	if a.Session.CheckAuth(r) {
+		a.s.ErrJSON(w, http.StatusForbidden, "required authentication headers")
+		return
+	}
+	idString := r.PathValue("id")
+	id, err := strconv.Atoi(idString)
+	if err != nil {
+		a.s.ErrJSON(w, http.StatusBadRequest, "id should be a integer")
+		return
+	}
+	obj, err := a.db.GetTaskByID(a.ctx, id)
+	if err != nil {
+		a.s.ErrJSON(w, http.StatusBadRequest, "task does not exist")
+		return
+	}
+	a.s.JSON(w, obj)
+}
+
+func (a MainApi) UpdateTaskByID(w http.ResponseWriter, r *http.Request) {
+	if a.Session.CheckAuth(r) {
+		a.s.ErrJSON(w, http.StatusForbidden, "required authentication headers")
+		return
+	}
+	body := types.Task{}
+	err := json.NewDecoder(r.Body).Decode(&body)
+	if err != nil {
+		a.s.ErrJSON(w, http.StatusBadRequest, "json decode error")
+		return
+	}
+	idString := r.PathValue("id")
+	id, err := strconv.Atoi(idString)
+	if err != nil {
+		a.s.ErrJSON(w, http.StatusBadRequest, "id should be a integer")
+		return
+	}
+	if body.ID != 0 && body.ID != id {
+		a.s.ErrJSON(w, http.StatusBadRequest, "id does not match with body")
+		return
+	}
+	err = a.db.UpdateTaskByID(a.ctx, body.Description, body.Ability, body.Skill, body.Kind, body.Target, id)
+	if err != nil {
+		a.s.ErrJSON(w, http.StatusBadRequest, "error updating task on database")
+		return
+	}
+	msg := fmt.Sprintf("task id %v updatred", id)
+	a.s.JSON(w, types.Msg{Msg: msg})
+}
+
+func (a MainApi) DeleteTaskByID(w http.ResponseWriter, r *http.Request) {
+	if a.Session.CheckAuth(r) {
+		a.s.ErrJSON(w, http.StatusForbidden, "required authentication headers")
+		return
+	}
+	idString := r.PathValue("id")
+	id, err := strconv.Atoi(idString)
+	if err != nil {
+		a.s.ErrJSON(w, http.StatusBadRequest, "id should be a integer")
+		return
+	}
+	err = a.db.DeleteTaskByID(a.ctx, id)
+	if err != nil {
+		a.s.ErrJSON(w, http.StatusBadRequest, "error deleting task on database")
+		return
+	}
+	msg := fmt.Sprintf("task id %v deleted", id)
+	a.s.JSON(w, types.Msg{Msg: msg})
 }

@@ -1,6 +1,8 @@
+import { Button } from "react-bootstrap";
 import Encounter from "../../types/Encounter";
 import NavigateButton from "../Button/NavigateButton";
 import { useTranslation } from "react-i18next";
+import { DeleteEncounterByID } from "../../functions/Encounters";
 
 interface props {
   encounter: Encounter;
@@ -9,6 +11,12 @@ interface props {
 
 const EncounterCards = ({ encounter, disable_footer }: props) => {
   const { t } = useTranslation(['home', 'main']);
+
+  const handleDelete = (id: number) => {
+    console.log("Deleting encounter " + id);
+    DeleteEncounterByID(id);
+  }
+
   return (
     <>
       <div className="col-md-6">
@@ -30,6 +38,7 @@ const EncounterCards = ({ encounter, disable_footer }: props) => {
           <NavigateButton link={`/stories/${encounter.story_id}/encounter/edit/${encounter.id}`} variant="warning">
           {t("common.edit", {ns: ['main', 'home']})}
           </NavigateButton>{" "}
+          <Button variant="danger" size="sm" onClick={() => handleDelete(encounter.id)}>{t("common.delete", {ns: ['main', 'home']})}</Button>
           </div>
         </div>
       </div>

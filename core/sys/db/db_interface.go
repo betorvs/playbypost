@@ -24,15 +24,20 @@ type DBClient interface {
 	GetStoryIDByTitle(ctx context.Context, title string) (int, error)
 	GetStoryByID(ctx context.Context, id int) (types.Story, error)
 	GetStoriesByWriterID(ctx context.Context, id int) ([]types.Story, error)
+	DeleteStoryByID(ctx context.Context, id int) error
 	// Encounters
 	GetEncounters(ctx context.Context) ([]types.Encounter, error)
 	GetEncounterByStoryID(ctx context.Context, storyID int) ([]types.Encounter, error)
 	GetEncounterByID(ctx context.Context, id int) (types.Encounter, error)
 	CreateEncounterTx(ctx context.Context, title, announcement, notes string, storyID, storytellerID int, first, last bool) (int, error)
 	UpdateEncounterTx(ctx context.Context, title, announcement, notes string, id, storyID int, first, last bool) (int, error)
+	DeleteEncounterByID(ctx context.Context, id int) error
 	// Tasks
 	GetTask(ctx context.Context) ([]types.Task, error)
+	GetTaskByID(ctx context.Context, id int) (types.Task, error)
 	CreateTask(ctx context.Context, description, ability, skill string, kind types.TaskKind, target int) (int, error)
+	UpdateTaskByID(ctx context.Context, description, ability, skill string, kind types.TaskKind, target, id int) error
+	DeleteTaskByID(ctx context.Context, id int) error
 	// GetTasksByEncounterID(ctx context.Context, id int) (map[string]types.Task, error)
 	// stage
 	GetStage(ctx context.Context) ([]types.Stage, error)
@@ -60,6 +65,7 @@ type DBClient interface {
 	UpdateProcessedActivities(ctx context.Context, id int, processed bool, actions types.Actions) error
 	CloseStage(ctx context.Context, id int) error
 	DeleteStageNextEncounter(ctx context.Context, id int) error
+	DeleteStageEncounterByID(ctx context.Context, id int) error
 	// NPC
 	GetNPCByStageID(ctx context.Context, id int) ([]types.Players, error)
 	GenerateNPC(ctx context.Context, name string, stageID, storytellerID int, creature *rules.Creature) (int, error)
@@ -86,6 +92,7 @@ type DBClient interface {
 	AddChatInformation(ctx context.Context, username, userid, channel, chat string) (int, error)
 	GetChatInformation(ctx context.Context) ([]types.ChatInfo, error)
 	GetChatChannelInformation(ctx context.Context) ([]string, error)
+	GetChatRunningChannels(ctx context.Context, kind string) ([]types.RunningChannels, error)
 	//  Auto Play
 	GetAutoPlay(ctx context.Context) ([]types.AutoPlay, error)
 	GetAutoPlayByID(ctx context.Context, autoPlayID int) (types.AutoPlay, error)

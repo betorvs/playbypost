@@ -219,3 +219,23 @@ func (a MainApi) GetStoryByWriterId(w http.ResponseWriter, r *http.Request) {
 
 	a.s.JSON(w, stories)
 }
+
+func (a MainApi) DeleteStoryByID(w http.ResponseWriter, r *http.Request) {
+	if a.Session.CheckAuth(r) {
+		a.s.ErrJSON(w, http.StatusForbidden, "required authentication headers")
+		return
+	}
+	idString := r.PathValue("id")
+	id, err := strconv.Atoi(idString)
+	if err != nil {
+		a.s.ErrJSON(w, http.StatusBadRequest, "id should be a integer")
+		return
+	}
+	err = a.db.DeleteStoryByID(a.ctx, id)
+	if err != nil {
+		a.s.ErrJSON(w, http.StatusBadRequest, "story issue")
+		return
+	}
+	msg := fmt.Sprintf("story id %v deleted", id)
+	a.s.JSON(w, types.Msg{Msg: msg})
+}

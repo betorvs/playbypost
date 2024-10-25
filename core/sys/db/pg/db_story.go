@@ -2,6 +2,7 @@ package pg
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 
 	"github.com/betorvs/playbypost/core/sys/web/types"
@@ -192,4 +193,53 @@ func (db *DBX) GetStoriesByWriterID(ctx context.Context, id int) ([]types.Story,
 		db.Logger.Error("rows error on story by Writer_id", "error", err.Error())
 	}
 	return stories, nil
+}
+
+func (db *DBX) DeleteStoryByID(ctx context.Context, id int) error {
+	// tx
+	tx, err := db.Conn.BeginTx(ctx, nil)
+	if err != nil {
+		db.Logger.Error("tx begin on DeleteStoryByID failed", "error", err.Error())
+		return err
+	}
+	// Defer a rollback in case anything fails.
+	defer func() {
+		rollback := tx.Rollback()
+		if err != nil && rollback != nil {
+			err = fmt.Errorf("rolling back transaction: %w", err)
+		}
+	}()
+	// check if this have an encounter
+	var countEncounters int
+	queryCheckEncounter := "SELECT COUNT(*) FROM encounters WHERE story_id = $1"
+	if err = tx.QueryRowContext(ctx, queryCheckEncounter, id).Scan(&countEncounters); err != nil {
+		if err != sql.ErrNoRows {
+			db.Logger.Error("no rows passed", "err", err.Error())
+			return err
+		}
+	}
+	if countEncounters > 0 {
+		db.Logger.Error("found encounters", "story_id", id)
+		return fmt.Errorf("found encounters with this story")
+	}
+	// delete story
+	queryStory := "DELETE FROM story WHERE id = $1"
+	stmtStory, err := db.Conn.PrepareContext(ctx, queryStory)
+	if err != nil {
+		db.Logger.Error("tx prepare on story failed", "error", err.Error())
+		return err
+	}
+	defer stmtStory.Close()
+	_, err = tx.StmtContext(ctx, stmtStory).ExecContext(ctx, id)
+	if err != nil {
+		db.Logger.Error("exec on story failed", "error", err.Error())
+		return err
+	}
+	// commit if everything is okay
+	if err = tx.Commit(); err != nil {
+		db.Logger.Error("tx commit on DeleteStoryByID failed", "error", err.Error())
+		return err
+	}
+	return nil
+
 }
