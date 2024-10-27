@@ -25,7 +25,7 @@ func (db *DBX) CreateAutoPlayTx(ctx context.Context, text string, storyID int, s
 			err = fmt.Errorf("rolling back transaction: %w", err)
 		}
 	}()
-	queryStoryKeys := "select k.encoding_key from story AS s JOIN story_keys AS k ON s.id = k.story_id WHERE s.id = $1"
+	queryStoryKeys := "SELECT k.encoding_key FROM story AS s JOIN story_keys AS k ON s.id = k.story_id WHERE s.id = $1"
 	stmtStoryKeys, err := db.Conn.PrepareContext(ctx, queryStoryKeys)
 	if err != nil {
 		db.Logger.Error("tx prepare on story_keys failed", "error", err.Error())
@@ -35,7 +35,7 @@ func (db *DBX) CreateAutoPlayTx(ctx context.Context, text string, storyID int, s
 	var encodingKey string
 	err = tx.StmtContext(ctx, stmtStoryKeys).QueryRow(storyID).Scan(&encodingKey)
 	if err != nil {
-		db.Logger.Error("query row select story_keys and story failed", "error", err.Error())
+		db.Logger.Error("query row SELECT story_keys and story failed", "error", err.Error())
 		return -1, err
 	}
 	queryAutoPlay := "INSERT INTO auto_play(display_text, encoding_key, story_id, solo) VALUES($1, $2, $3, $4) RETURNING id"
@@ -97,7 +97,7 @@ func (db *DBX) AddAutoPlayNext(ctx context.Context, next []types.Next) error {
 		}
 		encountersID = append(encountersID, id)
 	}
-	// Check for errors from iterating over rows.
+	// Check for errors FROM iterating over rows.
 	if err := rows.Err(); err != nil {
 		db.Logger.Error("rows err on encounters", "error", err.Error())
 	}
@@ -185,7 +185,7 @@ func (db *DBX) CreateAutoPlayChannelTx(ctx context.Context, channelID, userID st
 	query := "SELECT id FROM auto_play_channel WHERE active = 'true' AND channel = $1 AND upstream_id = $2"
 	stmt, err = db.Conn.PrepareContext(ctx, query)
 	if err != nil {
-		db.Logger.Error("tx prepare select on auto_play_channel failed", "error", err.Error())
+		db.Logger.Error("tx prepare SELECT on auto_play_channel failed", "error", err.Error())
 		return -1, err
 	}
 	defer stmt.Close()
@@ -205,7 +205,7 @@ func (db *DBX) CreateAutoPlayChannelTx(ctx context.Context, channelID, userID st
 	var encounterID int
 	err = tx.StmtContext(ctx, stmtEncounter).QueryRow(autoPlayID).Scan(&encounterID)
 	if err != nil {
-		db.Logger.Error("query row select encounters failed", "error", err.Error())
+		db.Logger.Error("query row SELECT encounters failed", "error", err.Error())
 		return -1, err
 	}
 	// encounter id should be greater than 0
@@ -351,7 +351,7 @@ func (db *DBX) UpdateAutoPlayState(ctx context.Context, autoPlayChannel string, 
 	queryAutoPlayChannel := "SELECT id FROM auto_play_channel WHERE active = 'true' AND channel = $1"
 	stmt, err := db.Conn.PrepareContext(ctx, queryAutoPlayChannel)
 	if err != nil {
-		db.Logger.Error("tx prepare select on queryAutoPlayChannel failed", "error", err.Error())
+		db.Logger.Error("tx prepare SELECT on queryAutoPlayChannel failed", "error", err.Error())
 		return err
 	}
 	defer stmt.Close()
@@ -366,7 +366,7 @@ func (db *DBX) UpdateAutoPlayState(ctx context.Context, autoPlayChannel string, 
 	queryAutoPlayState := "SELECT id FROM auto_play_state WHERE active = 'true' AND upstream_id = $1"
 	stmt, err = db.Conn.PrepareContext(ctx, queryAutoPlayState)
 	if err != nil {
-		db.Logger.Error("tx prepare select on queryAutoPlayState failed", "error", err.Error())
+		db.Logger.Error("tx prepare SELECT on queryAutoPlayState failed", "error", err.Error())
 		return err
 	}
 	defer stmt.Close()
@@ -506,7 +506,7 @@ func (db *DBX) DeleteAutoPlayNextEncounter(ctx context.Context, id int) error {
 			err = fmt.Errorf("rolling back transaction: %w", err)
 		}
 	}()
-	// select ids to delete
+	// SELECT ids to delete
 	query := "SELECT a.id, apno.id FROM auto_play_next_encounter AS a JOIN auto_play_next_objectives AS apno ON apno.upstream_id = a.id WHERE a.id = $1"
 	stmt, err := db.Conn.PrepareContext(ctx, query)
 	if err != nil {
@@ -520,7 +520,7 @@ func (db *DBX) DeleteAutoPlayNextEncounter(ctx context.Context, id int) error {
 		db.Logger.Error("tx query on auto_play_next_encounter failed", "error", err.Error())
 		return err
 	}
-	// delete from auto_play_next_objectives
+	// delete FROM auto_play_next_objectives
 	query = "DELETE FROM auto_play_next_objectives WHERE id = $1"
 	stmt, err = db.Conn.PrepareContext(ctx, query)
 	if err != nil {
@@ -533,7 +533,7 @@ func (db *DBX) DeleteAutoPlayNextEncounter(ctx context.Context, id int) error {
 		db.Logger.Error("tx exec on auto_play_next_objectives failed", "error", err.Error())
 		return err
 	}
-	// delete from auto_play_next_encounter
+	// delete FROM auto_play_next_encounter
 	query = "DELETE FROM auto_play_next_encounter WHERE id = $1"
 	stmt, err = db.Conn.PrepareContext(ctx, query)
 	if err != nil {

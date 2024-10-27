@@ -37,7 +37,7 @@ func (db *DBX) GetPlayers(ctx context.Context, rpgSystem *rpg.RPGSystem) ([]type
 		// }
 		players = append(players, *p)
 	}
-	// Check for errors from iterating over rows.
+	// Check for errors FROM iterating over rows.
 	if err := rows.Err(); err != nil {
 		db.Logger.Error("rows err on players", "error", err.Error())
 	}
@@ -66,7 +66,7 @@ func (db *DBX) GetPlayerByID(ctx context.Context, id int, rpgSystem *rpg.RPGSyst
 			players = *p
 		}
 	}
-	// Check for errors from iterating over rows.
+	// Check for errors FROM iterating over rows.
 	if err := rows.Err(); err != nil {
 		db.Logger.Error("rows err on players by id ", "error", err.Error())
 	}
@@ -96,7 +96,7 @@ func (db *DBX) GetPlayerByPlayerID(ctx context.Context, id int, rpgSystem *rpg.R
 			players = *p
 		}
 	}
-	// Check for errors from iterating over rows.
+	// Check for errors FROM iterating over rows.
 	if err := rows.Err(); err != nil {
 		db.Logger.Error("rows err on players by player_id ", "error", err.Error())
 	}
@@ -125,7 +125,7 @@ func (db *DBX) GetPlayerByStageID(ctx context.Context, id int, rpgSystem *rpg.RP
 			players = append(players, *p)
 		}
 	}
-	// Check for errors from iterating over rows.
+	// Check for errors FROM iterating over rows.
 	if err := rows.Err(); err != nil {
 		db.Logger.Error("rows err on players by stage_id", "error", err.Error())
 	}
@@ -157,7 +157,7 @@ func (db *DBX) GetPlayerByUserID(ctx context.Context, id, channel string, rpgSys
 			}
 		}
 	}
-	// Check for errors from iterating over rows.
+	// Check for errors FROM iterating over rows.
 	if err := rows.Err(); err != nil {
 		db.Logger.Error("rows err on players by userid ", "error", err.Error())
 	}

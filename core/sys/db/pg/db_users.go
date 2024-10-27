@@ -24,7 +24,7 @@ func (db *DBX) GetUser(ctx context.Context) ([]types.User, error) {
 		}
 		users = append(users, u)
 	}
-	// Check for errors from iterating over rows.
+	// Check for errors FROM iterating over rows.
 	if err := rows.Err(); err != nil {
 		db.Logger.Error("rows err on users", "error", err.Error())
 	}
@@ -49,7 +49,7 @@ func (db *DBX) GetUserByUserID(ctx context.Context, id string) (types.User, erro
 			user = u
 		}
 	}
-	// Check for errors from iterating over rows.
+	// Check for errors FROM iterating over rows.
 	if err := rows.Err(); err != nil {
 		db.Logger.Error("rows err on users by userid", "error", err.Error())
 	}

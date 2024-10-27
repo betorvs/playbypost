@@ -27,7 +27,7 @@ func (db *DBX) GetNPCByStageID(ctx context.Context, id int) ([]types.Players, er
 		players = append(players, *p)
 		// }
 	}
-	// Check for errors from iterating over rows.
+	// Check for errors FROM iterating over rows.
 	if err := rows.Err(); err != nil {
 		db.Logger.Error("rows err on non_players by stage_id", "error", err.Error())
 	}

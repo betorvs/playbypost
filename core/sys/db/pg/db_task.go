@@ -41,7 +41,7 @@ func (db *DBX) GetTask(ctx context.Context) ([]types.Task, error) {
 		}
 		t = append(t, tl)
 	}
-	// Check for errors from iterating over rows.
+	// Check for errors FROM iterating over rows.
 	if err := rows.Err(); err != nil {
 		db.Logger.Error("rows err on tasks", "error", err.Error())
 	}

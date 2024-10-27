@@ -94,9 +94,9 @@ CREATE TABLE stage_running_tasks (
   display_text VARCHAR(100) NOT NULL,
   stage_id int NOT NULL REFERENCES stage(id),
   storyteller_id int NOT NULL REFERENCES users(id),
-  stage_encounters_id int NOT NULL REFERENCES stage_encounters(id),
+  stage_encounter_id int NOT NULL REFERENCES stage_encounters(id),
   task_id int NOT NULL REFERENCES tasks(id),
-  UNIQUE(display_text, stage_encounters_id, task_id)
+  UNIQUE(display_text, stage_encounter_id, task_id)
 );
 
 CREATE TABLE stage_next_encounter (
@@ -150,22 +150,22 @@ CREATE TABLE non_players (
 CREATE TABLE stage_encounters_participants_players (
   id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   players_id int NOT NULL REFERENCES players(id),
-  stage_encounters_id int NOT NULL REFERENCES stage_encounters(id),
-  UNIQUE(players_id, stage_encounters_id)
+  stage_encounter_id int NOT NULL REFERENCES stage_encounters(id),
+  UNIQUE(players_id, stage_encounter_id)
 );
 
 CREATE TABLE stage_encounters_participants_non_players (
   id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   non_players_id int NOT NULL REFERENCES non_players(id),
-  stage_encounters_id int NOT NULL REFERENCES stage_encounters(id),
-  UNIQUE(non_players_id, stage_encounters_id)
+  stage_encounter_id int NOT NULL REFERENCES stage_encounters(id),
+  UNIQUE(non_players_id, stage_encounter_id)
 );
 
 CREATE TABLE initiative (
   id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   title VARCHAR(50) UNIQUE NOT NULL,
   next_player int NOT NULL,
-  stage_encounters_id int NOT NULL REFERENCES stage_encounters(id)
+  stage_encounter_id int NOT NULL REFERENCES stage_encounters(id)
 );
 
 CREATE TABLE initiative_participants (

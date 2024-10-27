@@ -26,7 +26,7 @@ func (db *DBX) GetStoryChannels(ctx context.Context) (map[string]int, error) {
 			db.Logger.Error("channel added to story duplicate", "channel_id", value, "id", id)
 		}
 	}
-	// Check for errors from iterating over rows.
+	// Check for errors FROM iterating over rows.
 	if err := rows.Err(); err != nil {
 		db.Logger.Error("rows err on story", "error", err.Error())
 	}

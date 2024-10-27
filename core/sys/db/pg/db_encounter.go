@@ -24,7 +24,7 @@ func (db *DBX) GetEncounters(ctx context.Context) ([]types.Encounter, error) {
 		}
 		list = append(list, s)
 	}
-	// Check for errors from iterating over rows.
+	// Check for errors FROM iterating over rows.
 	if err := rows.Err(); err != nil {
 		db.Logger.Error("rows err on encounters", "error", err.Error())
 	}
@@ -33,7 +33,8 @@ func (db *DBX) GetEncounters(ctx context.Context) ([]types.Encounter, error) {
 
 func (db *DBX) GetEncounterByStoryID(ctx context.Context, storyID int) ([]types.Encounter, error) {
 	encounters := []types.Encounter{}
-	rows, err := db.Conn.QueryContext(ctx, "SELECT id, title, notes, announcement, story_id, writer_id, first_encounter, last_encounter FROM encounters WHERE story_id = $1", storyID)
+	query := "SELECT id, title, notes, announcement, story_id, writer_id, first_encounter, last_encounter FROM encounters WHERE story_id = $1"
+	rows, err := db.Conn.QueryContext(ctx, query, storyID)
 	if err != nil {
 		db.Logger.Error("query on encounters by id failed", "error", err.Error())
 		return encounters, err
@@ -46,7 +47,7 @@ func (db *DBX) GetEncounterByStoryID(ctx context.Context, storyID int) ([]types.
 		}
 		encounters = append(encounters, enc)
 	}
-	// Check for errors from iterating over rows.
+	// Check for errors FROM iterating over rows.
 	if err := rows.Err(); err != nil {
 		db.Logger.Error("rows error on encounters by id", "error", err.Error())
 	}
@@ -55,7 +56,8 @@ func (db *DBX) GetEncounterByStoryID(ctx context.Context, storyID int) ([]types.
 
 func (db *DBX) GetEncounterByID(ctx context.Context, id int) (types.Encounter, error) {
 	enc := types.Encounter{}
-	rows, err := db.Conn.QueryContext(ctx, "SELECT id, title, announcement, notes, story_id, writer_id, first_encounter, last_encounter FROM encounters WHERE id = $1", id)
+	query := "SELECT id, title, announcement, notes, story_id, writer_id, first_encounter, last_encounter FROM encounters WHERE id = $1"
+	rows, err := db.Conn.QueryContext(ctx, query, id)
 	if err != nil {
 		db.Logger.Error("query on encounters by id failed", "error", err.Error())
 		return enc, err
@@ -66,7 +68,7 @@ func (db *DBX) GetEncounterByID(ctx context.Context, id int) (types.Encounter, e
 			db.Logger.Error("scan error on encounters by id", "error", err.Error())
 		}
 	}
-	// Check for errors from iterating over rows.
+	// Check for errors FROM iterating over rows.
 	if err := rows.Err(); err != nil {
 		db.Logger.Error("rows error on encounters by id", "error", err.Error())
 	}
@@ -156,7 +158,7 @@ func (db *DBX) UpdateEncounterTx(ctx context.Context, title, announcement, notes
 	}
 
 	// Prepare the statement.
-	query := "Update encounters SET title = $1, announcement = $2, notes = $3, first_encounter = $4, last_encounter = $5 WHERE id = $6 RETURNING id"
+	query := "UPDATE encounters SET title = $1, announcement = $2, notes = $3, first_encounter = $4, last_encounter = $5 WHERE id = $6 RETURNING id"
 	stmtInsert, err := db.Conn.PrepareContext(ctx, query)
 	if err != nil {
 		db.Logger.Error("tx prepare on stmtInsert failed", "error", err.Error())
@@ -228,7 +230,7 @@ func (db *DBX) DeleteEncounterByID(ctx context.Context, id int) error {
 	defer stmtInsert.Close()
 	_, err = tx.StmtContext(ctx, stmtInsert).Exec(id)
 	if err != nil {
-		db.Logger.Error("error on delete from encounters", "error", err.Error())
+		db.Logger.Error("error on delete FROM encounters", "error", err.Error())
 		return err
 	}
 	// Commit the transaction.

@@ -8,7 +8,7 @@ import (
 )
 
 func (db *DBX) UpdateNextPlayer(ctx context.Context, id, nextPlayer int) error {
-	query := "Update initiative SET next_player = $1 WHERE id = $2 RETURNING id"
+	query := "UPDATE initiative SET next_player = $1 WHERE id = $2 RETURNING id"
 	stmt, err := db.Conn.PrepareContext(ctx, query)
 	if err != nil {
 		db.Logger.Error("tx prepare on initiative failed", "error", err.Error())
@@ -71,7 +71,8 @@ func (db *DBX) SaveInitiativeTx(ctx context.Context, i initiative.Initiative, en
 
 func (db *DBX) GetInitiativeByID(ctx context.Context, id int) (initiative.Initiative, error) {
 	obj := initiative.Initiative{}
-	rows, err := db.Conn.QueryContext(ctx, "SELECT i.id, i.title, i.next_player, p.participant_name, p.participant_result FROM initiative AS i JOIN initiative_participants AS p ON i.id = p.initiative_id WHERE p.active = true AND i.id = $1", id)
+	query := "SELECT i.id, i.title, i.next_player, p.participant_name, p.participant_result FROM initiative AS i JOIN initiative_participants AS p ON i.id = p.initiative_id WHERE p.active = true AND i.id = $1"
+	rows, err := db.Conn.QueryContext(ctx, query, id)
 	if err != nil {
 		db.Logger.Error("query on users failed", "error", err.Error())
 		return obj, err
@@ -92,7 +93,7 @@ func (db *DBX) GetInitiativeByID(ctx context.Context, id int) (initiative.Initia
 	obj.Name = title
 	obj.Position = nextPlayer
 	obj.Participants = party
-	// Check for errors from iterating over rows.
+	// Check for errors FROM iterating over rows.
 	if err := rows.Err(); err != nil {
 		db.Logger.Error("rows on users error", "error", err.Error())
 	}
@@ -124,7 +125,7 @@ func (db *DBX) GetRunningInitiativeByEncounterID(ctx context.Context, encounterI
 	obj.Name = title
 	obj.Position = nextPlayer
 	obj.Participants = party
-	// Check for errors from iterating over rows.
+	// Check for errors FROM iterating over rows.
 	if err := rows.Err(); err != nil {
 		db.Logger.Error("rows on users error", "error", err.Error())
 	}
@@ -134,7 +135,7 @@ func (db *DBX) GetRunningInitiativeByEncounterID(ctx context.Context, encounterI
 
 // deactivate part
 func (db *DBX) DeactivateParticipant(ctx context.Context, id int, name string) (int, error) {
-	query := "Update initiative_participants SET active = FALSE WHERE initiative_id = $1 AND participant_name = $2 RETURNING id"
+	query := "UPDATE initiative_participants SET active = FALSE WHERE initiative_id = $1 AND participant_name = $2 RETURNING id"
 	stmt, err := db.Conn.PrepareContext(ctx, query)
 	if err != nil {
 		db.Logger.Error("tx prepare on initiative_participants failed", "error", err.Error())

@@ -24,7 +24,7 @@ func (db *DBX) GetStory(ctx context.Context) ([]types.Story, error) {
 		}
 		story = append(story, s)
 	}
-	// Check for errors from iterating over rows.
+	// Check for errors FROM iterating over rows.
 	if err := rows.Err(); err != nil {
 		db.Logger.Error("rows err on story", "error", err.Error())
 	}
@@ -146,7 +146,7 @@ func (db *DBX) GetStoryIDByTitle(ctx context.Context, title string) (int, error)
 			db.Logger.Error("scan error on story by title", "error", err.Error())
 		}
 	}
-	// Check for errors from iterating over rows.
+	// Check for errors FROM iterating over rows.
 	if err := rows.Err(); err != nil {
 		db.Logger.Error("rows error on sotry by title", "error", err.Error())
 	}
@@ -166,7 +166,7 @@ func (db *DBX) GetStoryByID(ctx context.Context, id int) (types.Story, error) {
 			db.Logger.Error("scan error on story by id", "error", err.Error())
 		}
 	}
-	// Check for errors from iterating over rows.
+	// Check for errors FROM iterating over rows.
 	if err := rows.Err(); err != nil {
 		db.Logger.Error("rows error on story by id", "error", err.Error())
 	}
@@ -188,7 +188,7 @@ func (db *DBX) GetStoriesByWriterID(ctx context.Context, id int) ([]types.Story,
 		}
 		stories = append(stories, story)
 	}
-	// Check for errors from iterating over rows.
+	// Check for errors FROM iterating over rows.
 	if err := rows.Err(); err != nil {
 		db.Logger.Error("rows error on story by Writer_id", "error", err.Error())
 	}

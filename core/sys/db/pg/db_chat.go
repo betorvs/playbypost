@@ -53,7 +53,7 @@ func (db *DBX) GetChatInformation(ctx context.Context) ([]types.ChatInfo, error)
 		infoMap[s.UserID] = s
 		// info = append(info, s)
 	}
-	// Check for errors from iterating over rows.
+	// Check for errors FROM iterating over rows.
 	if err := rows.Err(); err != nil {
 		db.Logger.Error("rows err on chat_information", "error", err.Error())
 	}
@@ -81,7 +81,7 @@ func (db *DBX) GetChatChannelInformation(ctx context.Context) ([]string, error) 
 			info = append(info, s)
 		}
 	}
-	// Check for errors from iterating over rows.
+	// Check for errors FROM iterating over rows.
 	if err := rows.Err(); err != nil {
 		db.Logger.Error("rows err on chat_information.channel", "error", err.Error())
 	}
@@ -93,10 +93,10 @@ func (db *DBX) GetChatRunningChannels(ctx context.Context, kind string) ([]types
 	var query string
 	switch kind {
 	case "stage":
-		query = "select s.display_text, c.channel from stage AS s JOIN stage_channel AS c ON s.id = c.upstream_id WHERE s.finished = false AND c.active = true"
+		query = "SELECT s.display_text, c.channel FROM stage AS s JOIN stage_channel AS c ON s.id = c.upstream_id WHERE s.finished = false AND c.active = true"
 
 	case "auto_play":
-		query = "select a.display_text, c.channel from auto_play AS a JOIN auto_play_channel as c ON a.id = c.upstream_id WHERE c.active = true"
+		query = "SELECT a.display_text, c.channel FROM auto_play AS a JOIN auto_play_channel as c ON a.id = c.upstream_id WHERE c.active = true"
 
 	default:
 		return stats, fmt.Errorf("kind %s not found", kind)

@@ -47,7 +47,7 @@ func (db *DBX) CreateStageTx(ctx context.Context, text, userid string, storyID i
 		userID = id
 	}
 
-	queryStoryKeys := "select k.encoding_key from story AS s JOIN story_keys AS k ON s.id = k.story_id WHERE s.id = $1"
+	queryStoryKeys := "SELECT k.encoding_key FROM story AS s JOIN story_keys AS k ON s.id = k.story_id WHERE s.id = $1"
 	stmtStoryKeys, err := db.Conn.PrepareContext(ctx, queryStoryKeys)
 	if err != nil {
 		db.Logger.Error("tx prepare on story_keys failed", "error", err.Error())
@@ -57,7 +57,7 @@ func (db *DBX) CreateStageTx(ctx context.Context, text, userid string, storyID i
 	var encodingKey string
 	err = tx.StmtContext(ctx, stmtStoryKeys).QueryRow(storyID).Scan(&encodingKey)
 	if err != nil {
-		db.Logger.Error("query row select story_keys and story failed", "error", err.Error())
+		db.Logger.Error("query row SELECT story_keys and story failed", "error", err.Error())
 		return -1, err
 	}
 
@@ -135,7 +135,7 @@ func (db *DBX) UpdatePhase(ctx context.Context, id, phase int) error {
 	// check if phase is valid
 	if phase == int(types.Running) {
 		// check if on this stage we have any stage_encounter already in running stage
-		query := "SELECT (s.phase >= 0) from stage_encounters AS s JOIN stage_encounters AS se ON se.stage_id = s.stage_id WHERE se.id = $1 AND s.phase = $2"
+		query := "SELECT (s.phase >= 0) FROM stage_encounters AS s JOIN stage_encounters AS se ON se.stage_id = s.stage_id WHERE se.id = $1 AND s.phase = $2"
 		var running bool
 		p := int(types.Running)
 		if err = tx.QueryRowContext(ctx, query, id, p).Scan(&running); err != nil {
@@ -437,7 +437,7 @@ func (db *DBX) DeleteStageNextEncounter(ctx context.Context, id int) error {
 			err = fmt.Errorf("rolling back transaction: %w", err)
 		}
 	}()
-	// select ids
+	// SELECT ids
 	query := "SELECT s.id, o.id FROM stage_next_encounter AS s JOIN stage_next_objectives AS o ON s.id = o.upstream_id WHERE s.id = $1"
 	stmt, err := db.Conn.PrepareContext(ctx, query)
 	if err != nil {
@@ -451,7 +451,7 @@ func (db *DBX) DeleteStageNextEncounter(ctx context.Context, id int) error {
 		db.Logger.Error("tx query on stage_next_encounter failed", "error", err.Error())
 		return err
 	}
-	// delete from stage_next_objectives
+	// delete FROM stage_next_objectives
 	query = "DELETE FROM stage_next_objectives WHERE id = $1"
 	stmt, err = db.Conn.PrepareContext(ctx, query)
 	if err != nil {
@@ -464,7 +464,7 @@ func (db *DBX) DeleteStageNextEncounter(ctx context.Context, id int) error {
 		db.Logger.Error("tx exec on stage_next_objectives failed", "error", err.Error())
 		return err
 	}
-	// delete from stage_next_encounter
+	// delete FROM stage_next_encounter
 	query = "DELETE FROM stage_next_encounter WHERE id = $1"
 	stmt, err = db.Conn.PrepareContext(ctx, query)
 	if err != nil {
@@ -499,7 +499,7 @@ func (db *DBX) DeleteStageEncounterByID(ctx context.Context, id int) error {
 			err = fmt.Errorf("rolling back transaction: %w", err)
 		}
 	}()
-	// delete from stage_encounters
+	// delete FROM stage_encounters
 	query := "DELETE FROM stage_encounters WHERE id = $1"
 	stmt, err := db.Conn.PrepareContext(ctx, query)
 	if err != nil {

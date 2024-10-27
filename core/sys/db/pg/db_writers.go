@@ -42,7 +42,7 @@ func (db *DBX) GetWriters(ctx context.Context, active bool) ([]types.Writer, err
 		}
 		users = append(users, user)
 	}
-	// Check for errors from iterating over rows.
+	// Check for errors FROM iterating over rows.
 	if err := rows.Err(); err != nil {
 		db.Logger.Error("rows error on writers", "error", err.Error())
 	}
@@ -71,7 +71,7 @@ func (db *DBX) GetWriterByID(ctx context.Context, id int) (types.Writer, error) 
 		}
 		// users = append(users, user)
 	}
-	// Check for errors from iterating over rows.
+	// Check for errors FROM iterating over rows.
 	if err := rows.Err(); err != nil {
 		db.Logger.Error("rows error on writers by id", "error", err.Error())
 	}
@@ -94,7 +94,7 @@ func (db *DBX) GetWriterByUsername(ctx context.Context, username string) (types.
 		}
 		// users = append(users, user)
 	}
-	// Check for errors from iterating over rows.
+	// Check for errors FROM iterating over rows.
 	if err := rows.Err(); err != nil {
 		db.Logger.Error("rows error on writers by username", "error", err.Error())
 	}
