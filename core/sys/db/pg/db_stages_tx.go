@@ -102,17 +102,17 @@ func (db *DBX) AddChannelToStage(ctx context.Context, channel string, id int) (i
 }
 
 func (db *DBX) AddEncounterToStage(ctx context.Context, text string, stage_id, storyteller_id, encounter_id int) (int, error) {
-	query := "INSERT INTO stage_encounters(display_text, stage_id, storyteller_id, encounters_id) VALUES($1, $2, $3, $4) RETURNING id"
+	query := "INSERT INTO stage_encounters(display_text, stage_id, storyteller_id, encounter_id) VALUES($1, $2, $3, $4) RETURNING id"
 	stmt, err := db.Conn.PrepareContext(ctx, query)
 	if err != nil {
-		db.Logger.Error("prepare insert into stage_channel failed", "error", err.Error())
+		db.Logger.Error("prepare insert into stage_encounters failed", "error", err.Error())
 		return -1, err
 	}
 	defer stmt.Close()
 	var res int
 	err = stmt.QueryRow(text, stage_id, storyteller_id, encounter_id).Scan(&res)
 	if err != nil {
-		db.Logger.Error("query row insert into stage_channel failed", "error", err.Error())
+		db.Logger.Error("query row insert into stage_encounters failed", "error", err.Error())
 		return -1, err
 	}
 	return res, nil
