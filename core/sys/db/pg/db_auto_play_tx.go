@@ -164,7 +164,7 @@ func (db *DBX) CreateAutoPlayChannelTx(ctx context.Context, channelID, userID st
 		}
 	}()
 	// check if autoPlayID exists
-	queryAutoPlay := "SELECT id FROM auto_play WHERE id = $1"
+	queryAutoPlay := "SELECT id FROM auto_play WHERE id = $1" // dev:finder+query
 	stmt, err := db.Conn.PrepareContext(ctx, queryAutoPlay)
 	if err != nil {
 		db.Logger.Error("tx prepare on auto_play failed", "error", err.Error())

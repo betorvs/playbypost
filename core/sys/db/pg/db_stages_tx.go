@@ -371,7 +371,7 @@ func (db *DBX) CloseStage(ctx context.Context, id int) error {
 		}
 	}
 
-	queryUpdate := "UPDATE stage SET finished = $1 WHERE id = $2"
+	queryUpdate := "UPDATE stage SET finished = $1 WHERE id = $2" // dev:finder+query
 	_, err = tx.ExecContext(ctx, queryUpdate, true, id)
 	if err != nil {
 		return err
