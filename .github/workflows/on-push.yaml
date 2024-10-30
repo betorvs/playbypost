@@ -57,6 +57,8 @@ jobs:
           args: --timeout=10m
       - name: go test
         run: task test
+      - name: querier-linter
+        run: task querier-linter
       - name: build binaries
         run: task build_local
       - name: generates envs files

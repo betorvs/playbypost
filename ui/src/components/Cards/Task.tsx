@@ -1,5 +1,8 @@
 import Task from "../../types/Task";
 import { useTranslation } from "react-i18next";
+import NavigateButton from "../Button/NavigateButton";
+import { Button } from "react-bootstrap";
+import { DeleteTaskByID } from "../../functions/Tasks";
 
 interface props {
   task: Task;
@@ -7,6 +10,13 @@ interface props {
 
 const TaskCard = ({ task }: props) => {
   const { t } = useTranslation(['home', 'main']);
+
+  const handleDelete = (id: number) => {
+    console.log("Deleting task " + id);
+    DeleteTaskByID(id);
+  }
+
+
   return (
     <>
       <div className="col-md-6">
@@ -18,9 +28,13 @@ const TaskCard = ({ task }: props) => {
             <li className="list-group-item">{t("common.description", {ns: ['main', 'home']})}: {task.description}</li>
             <li className="list-group-item">{t("common.ability", {ns: ['main', 'home']})}: {task.ability}</li>
             <li className="list-group-item">{t("common.skill", {ns: ['main', 'home']})}: {task.skill}</li>
+            <li className="list-group-item">{t("common.target", {ns: ['main', 'home']})}: {task.target}</li>
           </ul>
           <div className="card-footer">
-            <p>{t("common.target", {ns: ['main', 'home']})}: {task.target}</p>
+            <NavigateButton link={`/tasks/${task.id}/edit`} variant="warning">
+              {t("common.edit", {ns: ['main', 'home']})}
+            </NavigateButton>{" "}
+            <Button variant="danger" size="sm" onClick={() => handleDelete(task.id)}>{t("common.delete", {ns: ['main', 'home']})}</Button>
           </div>
         </div>
       </div>

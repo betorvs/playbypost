@@ -37,6 +37,7 @@ import StageManageNextEncounter from "./pages/StageManageNextEncounter";
 import StageNextEncounter from "./pages/StageNextEncounter";
 import EditStory from "./pages/EditStory";
 import EditEncounter from "./pages/EditEncounter";
+import EditTask from "./pages/EditTask";
 
 const PrivateRoutes = () => {
   const { authenticated } = useContext(AuthContext);
@@ -87,6 +88,7 @@ const Routes = () => {
         <Route path="/tasks">
           <Route path="/tasks" element={<TasksPage />} />
           <Route path="/tasks/new" element={<NewTask />} />
+          <Route path="/tasks/:id/edit" element={<EditTask />} />
         </Route>
         <Route path="/stages"  >
           <Route path="/stages" element={<StagesPage />} />

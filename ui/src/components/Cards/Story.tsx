@@ -3,6 +3,7 @@ import { ValidatorPut } from "../../functions/Validator";
 import Story from "../../types/Story";
 import NavigateButton from "../Button/NavigateButton";
 import { useTranslation } from "react-i18next";
+import { DeleteStoryByID } from "../../functions/Stories";
 
 interface Props {
   ID: number;
@@ -15,6 +16,11 @@ const StoryCards = ({ ID, story, LinkText }: Props) => {
   const validatorPut = (id: number) => {
     ValidatorPut(id, "stage");
   };
+  const handleDelete = (id: number) => {
+    console.log("Deleting story " + id);
+    DeleteStoryByID(id);
+  }
+
   return (
     <div className="card" key={ID}>
       <div className="card-header">{t("story.this", {ns: ['main', 'home']})} ID: {story.id}</div>
@@ -34,6 +40,7 @@ const StoryCards = ({ ID, story, LinkText }: Props) => {
         <NavigateButton link={`/stories/${ID}/edit`} variant="warning">
         {t("common.edit", {ns: ['main', 'home']})}
         </NavigateButton>{" "}
+        <Button variant="danger" size="sm" onClick={() => handleDelete(story.id)}>{t("common.delete", {ns: ['main', 'home']})}</Button>
       </div>
       <div className="card-footer text-body-secondary">
       {t("common.writer", {ns: ['main', 'home']})} ID: {story.writer_id}; {t("common.notes", {ns: ['main', 'home']})}: {story.notes}

@@ -41,10 +41,10 @@ func (a MainApi) AddChatInfo(w http.ResponseWriter, r *http.Request) {
 }
 
 func (a MainApi) GetUsersInformation(w http.ResponseWriter, r *http.Request) {
-	// if a.Session.CheckAuth(r) {
-	// 	a.s.ErrJSON(w, http.StatusForbidden, "required authentication headers")
-	// 	return
-	// }
+	if a.Session.CheckAuth(r) {
+		a.s.ErrJSON(w, http.StatusForbidden, "required authentication headers")
+		return
+	}
 	obj, err := a.db.GetChatInformation(a.ctx)
 	if err != nil {
 		a.s.ErrJSON(w, http.StatusBadRequest, "slack information for users database issue")
@@ -54,13 +54,27 @@ func (a MainApi) GetUsersInformation(w http.ResponseWriter, r *http.Request) {
 }
 
 func (a MainApi) GetChannelsInformation(w http.ResponseWriter, r *http.Request) {
-	// if a.Session.CheckAuth(r) {
-	// 	a.s.ErrJSON(w, http.StatusForbidden, "required authentication headers")
-	// 	return
-	// }
+	if a.Session.CheckAuth(r) {
+		a.s.ErrJSON(w, http.StatusForbidden, "required authentication headers")
+		return
+	}
 	obj, err := a.db.GetChatChannelInformation(a.ctx)
 	if err != nil {
 		a.s.ErrJSON(w, http.StatusBadRequest, "slack information for channel database issue")
+		return
+	}
+	a.s.JSON(w, obj)
+}
+
+func (a MainApi) GetRunningChannels(w http.ResponseWriter, r *http.Request) {
+	if a.Session.CheckAuth(r) {
+		a.s.ErrJSON(w, http.StatusForbidden, "required authentication headers")
+		return
+	}
+	kind := r.PathValue("kind")
+	obj, err := a.db.GetChatRunningChannels(a.ctx, kind)
+	if err != nil {
+		a.s.ErrJSON(w, http.StatusBadRequest, "slack information for running channels database issue")
 		return
 	}
 	a.s.JSON(w, obj)

@@ -25,7 +25,7 @@ func (db *DBX) CreateAutoPlayTx(ctx context.Context, text string, storyID int, s
 			err = fmt.Errorf("rolling back transaction: %w", err)
 		}
 	}()
-	queryStoryKeys := "select k.encoding_key from story AS s JOIN story_keys AS k ON s.id = k.story_id WHERE s.id = $1"
+	queryStoryKeys := "SELECT k.encoding_key FROM story AS s JOIN story_keys AS k ON s.id = k.story_id WHERE s.id = $1" // dev:finder+query
 	stmtStoryKeys, err := db.Conn.PrepareContext(ctx, queryStoryKeys)
 	if err != nil {
 		db.Logger.Error("tx prepare on story_keys failed", "error", err.Error())
@@ -35,10 +35,10 @@ func (db *DBX) CreateAutoPlayTx(ctx context.Context, text string, storyID int, s
 	var encodingKey string
 	err = tx.StmtContext(ctx, stmtStoryKeys).QueryRow(storyID).Scan(&encodingKey)
 	if err != nil {
-		db.Logger.Error("query row select story_keys and story failed", "error", err.Error())
+		db.Logger.Error("query row SELECT story_keys and story failed", "error", err.Error())
 		return -1, err
 	}
-	queryAutoPlay := "INSERT INTO auto_play(display_text, encoding_key, story_id, solo) VALUES($1, $2, $3, $4) RETURNING id"
+	queryAutoPlay := "INSERT INTO auto_play(display_text, encoding_key, story_id, solo) VALUES($1, $2, $3, $4) RETURNING id" // dev:finder+query
 	stmtInsert, err := db.Conn.PrepareContext(ctx, queryAutoPlay)
 	if err != nil {
 		db.Logger.Error("tx prepare on stmtInsert failed", "error", err.Error())
@@ -76,7 +76,7 @@ func (db *DBX) AddAutoPlayNext(ctx context.Context, next []types.Next) error {
 		}
 	}()
 	// get encounters list
-	queryEncounters := "SELECT e.id FROM auto_play AS ap JOIN encounters AS e ON ap.story_id = e.story_id WHERE ap.id = $1"
+	queryEncounters := "SELECT e.id FROM auto_play AS ap JOIN encounters AS e ON ap.story_id = e.story_id WHERE ap.id = $1" // dev:finder+query
 	stmtEncounters, err := db.Conn.PrepareContext(ctx, queryEncounters)
 	if err != nil {
 		db.Logger.Error("tx prepare on encounters failed", "error", err.Error())
@@ -97,7 +97,7 @@ func (db *DBX) AddAutoPlayNext(ctx context.Context, next []types.Next) error {
 		}
 		encountersID = append(encountersID, id)
 	}
-	// Check for errors from iterating over rows.
+	// Check for errors FROM iterating over rows.
 	if err := rows.Err(); err != nil {
 		db.Logger.Error("rows err on encounters", "error", err.Error())
 	}
@@ -110,7 +110,7 @@ func (db *DBX) AddAutoPlayNext(ctx context.Context, next []types.Next) error {
 	}
 
 	for _, n := range next {
-		query := "INSERT INTO auto_play_next_encounter(display_text, upstream_id, current_encounter_id, next_encounter_id) VALUES ($1, $2, $3, $4) RETURNING id"
+		query := "INSERT INTO auto_play_next_encounter(display_text, upstream_id, current_encounter_id, next_encounter_id) VALUES ($1, $2, $3, $4) RETURNING id" // dev:finder+query
 		stmt, err := db.Conn.PrepareContext(ctx, query)
 		if err != nil {
 			db.Logger.Error("tx prepare on auto_play_next_encounter failed", "error", err.Error())
@@ -125,7 +125,7 @@ func (db *DBX) AddAutoPlayNext(ctx context.Context, next []types.Next) error {
 		}
 		db.Logger.Debug("adding auto play objectives", "nextEncounterIDDB", nextEncounterIDDB, "values", n.Objective.Values)
 		// insert into auto_play_next_objectives
-		query = "INSERT INTO auto_play_next_objectives (upstream_id, kind, values) VALUES ($1, $2, $3) RETURNING id"
+		query = "INSERT INTO auto_play_next_objectives (upstream_id, kind, values) VALUES ($1, $2, $3) RETURNING id" // dev:finder+query
 		stmt, err = db.Conn.PrepareContext(ctx, query)
 		if err != nil {
 			db.Logger.Error("tx prepare on auto_play_next_objectives failed", "error", err.Error())
@@ -182,10 +182,10 @@ func (db *DBX) CreateAutoPlayChannelTx(ctx context.Context, channelID, userID st
 	}
 
 	// check if channel already in use
-	query := "SELECT id FROM auto_play_channel WHERE active = 'true' AND channel = $1 AND upstream_id = $2"
+	query := "SELECT id FROM auto_play_channel WHERE active = true AND channel = $1 AND upstream_id = $2" // dev:finder+query
 	stmt, err = db.Conn.PrepareContext(ctx, query)
 	if err != nil {
-		db.Logger.Error("tx prepare select on auto_play_channel failed", "error", err.Error())
+		db.Logger.Error("tx prepare SELECT on auto_play_channel failed", "error", err.Error())
 		return -1, err
 	}
 	defer stmt.Close()
@@ -195,7 +195,7 @@ func (db *DBX) CreateAutoPlayChannelTx(ctx context.Context, channelID, userID st
 		return -1, fmt.Errorf("channel already in use")
 	}
 	// query for encounter_id
-	queryEncounter := "SELECT id FROM encounters WHERE story_id = (SELECT story_id FROM auto_play WHERE id = $1) AND first_encounter = true"
+	queryEncounter := "SELECT id FROM encounters WHERE story_id = (SELECT story_id FROM auto_play WHERE id = $1) AND first_encounter = true" // dev:finder+query
 	stmtEncounter, err := db.Conn.PrepareContext(ctx, queryEncounter)
 	if err != nil {
 		db.Logger.Error("tx prepare on encounters failed", "error", err.Error())
@@ -205,7 +205,7 @@ func (db *DBX) CreateAutoPlayChannelTx(ctx context.Context, channelID, userID st
 	var encounterID int
 	err = tx.StmtContext(ctx, stmtEncounter).QueryRow(autoPlayID).Scan(&encounterID)
 	if err != nil {
-		db.Logger.Error("query row select encounters failed", "error", err.Error())
+		db.Logger.Error("query row SELECT encounters failed", "error", err.Error())
 		return -1, err
 	}
 	// encounter id should be greater than 0
@@ -215,7 +215,7 @@ func (db *DBX) CreateAutoPlayChannelTx(ctx context.Context, channelID, userID st
 	}
 
 	// insert into auto_play_channel
-	query = "INSERT INTO auto_play_channel(channel, upstream_id, active) VALUES($1, $2, $3) RETURNING id"
+	query = "INSERT INTO auto_play_channel(channel, upstream_id, active) VALUES($1, $2, $3) RETURNING id" // dev:finder+query
 	stmt, err = db.Conn.PrepareContext(ctx, query)
 	if err != nil {
 		db.Logger.Error("tx prepare insert on auto_play_channel failed", "error", err.Error())
@@ -230,7 +230,7 @@ func (db *DBX) CreateAutoPlayChannelTx(ctx context.Context, channelID, userID st
 	// insert into users
 	// check if user exists
 	// check user exist
-	queryUser := "SELECT id FROM users WHERE userid = $1"
+	queryUser := "SELECT id FROM users WHERE userid = $1" // dev:finder+query
 	stmtQueryUser, err := db.Conn.PrepareContext(ctx, queryUser)
 	if err != nil {
 		db.Logger.Error("tx prepare on queryUser failed", "error", err.Error())
@@ -255,7 +255,7 @@ func (db *DBX) CreateAutoPlayChannelTx(ctx context.Context, channelID, userID st
 	}
 
 	// add user id to auto_play_group
-	query = "INSERT INTO auto_play_group(user_id, upstream_id, last_update_at, active) VALUES($1, $2, $3, $4)"
+	query = "INSERT INTO auto_play_group(user_id, upstream_id, last_update_at, active) VALUES($1, $2, $3, $4)" // dev:finder+query
 	stmt, err = db.Conn.PrepareContext(ctx, query)
 	if err != nil {
 		db.Logger.Error("tx prepare insert into auto_play_group failed", "error", err.Error())
@@ -278,7 +278,7 @@ func (db *DBX) CreateAutoPlayChannelTx(ctx context.Context, channelID, userID st
 
 // add registry to auto_play_encounter_activities
 func (db *DBX) RegisterActivitiesAutoPlay(ctx context.Context, autoPlayID, encounterID int, actions types.Actions) error {
-	query := "INSERT INTO auto_play_encounter_activities(upstream_id, encounter_id, actions) VALUES($1, $2, $3)"
+	query := "INSERT INTO auto_play_encounter_activities(upstream_id, encounter_id, actions) VALUES($1, $2, $3)" // dev:finder+query
 	_, err := db.Conn.ExecContext(ctx, query, autoPlayID, encounterID, actions)
 	if err != nil {
 		db.Logger.Error("error on insert into auto_play_encounter_activities", "error", err.Error(), "upstream_id", autoPlayID, "encounter_id", encounterID, "actions", actions)
@@ -289,7 +289,7 @@ func (db *DBX) RegisterActivitiesAutoPlay(ctx context.Context, autoPlayID, encou
 
 // update processed activity
 func (db *DBX) UpdateProcessedAutoPlay(ctx context.Context, id int, processed bool, actions types.Actions) error {
-	query := "UPDATE auto_play_encounter_activities SET processed = $1, actions = $2 WHERE id = $3"
+	query := "UPDATE auto_play_encounter_activities SET processed = $1, actions = $2 WHERE id = $3" // dev:finder+query
 	_, err := db.Conn.ExecContext(ctx, query, processed, actions, id)
 	if err != nil {
 		db.Logger.Error("error on update auto_play_encounter_activities", "error", err.Error())
@@ -311,7 +311,7 @@ func (db *DBX) UpdateAutoPlayGroup(ctx context.Context, id, count int, date time
 			err = fmt.Errorf("rolling back transaction: %w", err)
 		}
 	}()
-	query := "UPDATE auto_play_group SET last_update_at=$1, interactions=$2 WHERE id=$3"
+	query := "UPDATE auto_play_group SET last_update_at=$1, interactions=$2 WHERE id=$3" // dev:finder+query
 	stmt, err := db.Conn.PrepareContext(ctx, query)
 	if err != nil {
 		db.Logger.Error("tx prepare update auto_play_group failed", "error", err.Error())
@@ -348,10 +348,10 @@ func (db *DBX) UpdateAutoPlayState(ctx context.Context, autoPlayChannel string, 
 		}
 	}()
 	// find auto_play_channel_id
-	queryAutoPlayChannel := "SELECT id FROM auto_play_channel WHERE active = 'true' AND channel = $1"
+	queryAutoPlayChannel := "SELECT id FROM auto_play_channel WHERE active = true AND channel = $1" // dev:finder+query
 	stmt, err := db.Conn.PrepareContext(ctx, queryAutoPlayChannel)
 	if err != nil {
-		db.Logger.Error("tx prepare select on queryAutoPlayChannel failed", "error", err.Error())
+		db.Logger.Error("tx prepare SELECT on queryAutoPlayChannel failed", "error", err.Error())
 		return err
 	}
 	defer stmt.Close()
@@ -363,10 +363,10 @@ func (db *DBX) UpdateAutoPlayState(ctx context.Context, autoPlayChannel string, 
 	}
 
 	// check if autoPlayID exists
-	queryAutoPlayState := "SELECT id FROM auto_play_state WHERE active = 'true' AND upstream_id = $1"
+	queryAutoPlayState := "SELECT id FROM auto_play_state WHERE active = true AND upstream_id = $1" // dev:finder+query
 	stmt, err = db.Conn.PrepareContext(ctx, queryAutoPlayState)
 	if err != nil {
-		db.Logger.Error("tx prepare select on queryAutoPlayState failed", "error", err.Error())
+		db.Logger.Error("tx prepare SELECT on queryAutoPlayState failed", "error", err.Error())
 		return err
 	}
 	defer stmt.Close()
@@ -378,7 +378,7 @@ func (db *DBX) UpdateAutoPlayState(ctx context.Context, autoPlayChannel string, 
 	}
 	if apsID == 0 {
 		db.Logger.Debug("auto play state id not found")
-		query := "INSERT INTO auto_play_state(upstream_id, encounter_id, active) VALUES($1, $2, $3)"
+		query := "INSERT INTO auto_play_state(upstream_id, encounter_id, active) VALUES($1, $2, $3)" // dev:finder+query
 		stmt, err := db.Conn.PrepareContext(ctx, query)
 		if err != nil {
 			db.Logger.Error("tx prepare to insert into auto_play_state failed", "error", err.Error())
@@ -393,7 +393,7 @@ func (db *DBX) UpdateAutoPlayState(ctx context.Context, autoPlayChannel string, 
 
 	} else {
 		db.Logger.Debug("auto play state", "apsID", apsID, "encounterID", encounterID, "autoPlayChannelID", autoPlayChannelID)
-		query := "UPDATE auto_play_state SET encounter_id = $1 WHERE id = $2"
+		query := "UPDATE auto_play_state SET encounter_id = $1 WHERE id = $2" // dev:finder+query
 		stmt, err := db.Conn.PrepareContext(ctx, query)
 		if err != nil {
 			db.Logger.Error("tx prepare to update on auto_play_state failed", "error", err.Error())
@@ -430,7 +430,7 @@ func (db *DBX) CloseAutoPlayChannel(ctx context.Context, channelID string, autoP
 		}
 	}()
 	// get channel id
-	query := "SELECT id FROM auto_play_channel WHERE active = 'true' AND channel = $1 AND upstream_id = $2"
+	query := "SELECT id FROM auto_play_channel WHERE active = true AND channel = $1 AND upstream_id = $2" // dev:finder+query
 	stmt, err := db.Conn.PrepareContext(ctx, query)
 	if err != nil {
 		db.Logger.Error("tx prepare on auto_play_channel failed", "error", err.Error())
@@ -444,7 +444,7 @@ func (db *DBX) CloseAutoPlayChannel(ctx context.Context, channelID string, autoP
 		return err
 	}
 
-	query = "UPDATE auto_play_channel SET active = false WHERE id = $1"
+	query = "UPDATE auto_play_channel SET active = false WHERE id = $1" // dev:finder+query
 	stmt, err = db.Conn.PrepareContext(ctx, query)
 	if err != nil {
 		db.Logger.Error("tx prepare on auto_play_channel failed", "error", err.Error())
@@ -457,7 +457,7 @@ func (db *DBX) CloseAutoPlayChannel(ctx context.Context, channelID string, autoP
 		return err
 	}
 	// close group
-	query = "UPDATE auto_play_group SET active = false WHERE upstream_id = $1"
+	query = "UPDATE auto_play_group SET active = false WHERE upstream_id = $1" // dev:finder+query
 	stmt, err = db.Conn.PrepareContext(ctx, query)
 	if err != nil {
 		db.Logger.Error("tx prepare on auto_play_group failed", "error", err.Error())
@@ -470,7 +470,7 @@ func (db *DBX) CloseAutoPlayChannel(ctx context.Context, channelID string, autoP
 		return err
 	}
 	// close state
-	query = "UPDATE auto_play_state SET active = false WHERE upstream_id = $1"
+	query = "UPDATE auto_play_state SET active = false WHERE upstream_id = $1" // dev:finder+query
 	stmt, err = db.Conn.PrepareContext(ctx, query)
 	if err != nil {
 		db.Logger.Error("tx prepare on auto_play_state failed", "error", err.Error())
@@ -506,8 +506,8 @@ func (db *DBX) DeleteAutoPlayNextEncounter(ctx context.Context, id int) error {
 			err = fmt.Errorf("rolling back transaction: %w", err)
 		}
 	}()
-	// select ids to delete
-	query := "SELECT a.id, apno.id FROM auto_play_next_encounter AS a JOIN auto_play_next_objectives AS apno ON apno.upstream_id = a.id WHERE a.id = $1"
+	// SELECT ids to delete
+	query := "SELECT a.id, apno.id FROM auto_play_next_encounter AS a JOIN auto_play_next_objectives AS apno ON apno.upstream_id = a.id WHERE a.id = $1" // dev:finder+query
 	stmt, err := db.Conn.PrepareContext(ctx, query)
 	if err != nil {
 		db.Logger.Error("tx prepare on auto_play_next_encounter failed", "error", err.Error())
@@ -520,8 +520,8 @@ func (db *DBX) DeleteAutoPlayNextEncounter(ctx context.Context, id int) error {
 		db.Logger.Error("tx query on auto_play_next_encounter failed", "error", err.Error())
 		return err
 	}
-	// delete from auto_play_next_objectives
-	query = "DELETE FROM auto_play_next_objectives WHERE id = $1"
+	// delete FROM auto_play_next_objectives
+	query = "DELETE FROM auto_play_next_objectives WHERE id = $1" // dev:finder+query
 	stmt, err = db.Conn.PrepareContext(ctx, query)
 	if err != nil {
 		db.Logger.Error("tx prepare on auto_play_next_objectives failed", "error", err.Error())
@@ -533,8 +533,8 @@ func (db *DBX) DeleteAutoPlayNextEncounter(ctx context.Context, id int) error {
 		db.Logger.Error("tx exec on auto_play_next_objectives failed", "error", err.Error())
 		return err
 	}
-	// delete from auto_play_next_encounter
-	query = "DELETE FROM auto_play_next_encounter WHERE id = $1"
+	// delete FROM auto_play_next_encounter
+	query = "DELETE FROM auto_play_next_encounter WHERE id = $1" // dev:finder+query
 	stmt, err = db.Conn.PrepareContext(ctx, query)
 	if err != nil {
 		db.Logger.Error("tx prepare on auto_play_next_encounter failed", "error", err.Error())

@@ -10,7 +10,7 @@ import (
 
 func (db *DBX) GetPlayers(ctx context.Context, rpgSystem *rpg.RPGSystem) ([]types.Players, error) {
 	players := []types.Players{}
-	query := "SELECT id, character_name, stage_id, player_id, destroyed, abilities, skills, extensions, rpg FROM players"
+	query := "SELECT id, character_name, stage_id, player_id, destroyed, abilities, skills, extensions, rpg FROM players" // dev:finder+query
 	rows, err := db.Conn.QueryContext(ctx, query)
 	if err != nil {
 		db.Logger.Error("query on players failed", "error", err.Error())
@@ -37,7 +37,7 @@ func (db *DBX) GetPlayers(ctx context.Context, rpgSystem *rpg.RPGSystem) ([]type
 		// }
 		players = append(players, *p)
 	}
-	// Check for errors from iterating over rows.
+	// Check for errors FROM iterating over rows.
 	if err := rows.Err(); err != nil {
 		db.Logger.Error("rows err on players", "error", err.Error())
 	}
@@ -46,7 +46,7 @@ func (db *DBX) GetPlayers(ctx context.Context, rpgSystem *rpg.RPGSystem) ([]type
 
 func (db *DBX) GetPlayerByID(ctx context.Context, id int, rpgSystem *rpg.RPGSystem) (types.Players, error) {
 	players := types.Players{}
-	query := "SELECT id, character_name, stage_id, player_id, destroyed, abilities, skills, extensions, rpg  FROM players WHERE id = $1"
+	query := "SELECT id, character_name, stage_id, player_id, destroyed, abilities, skills, extensions, rpg FROM players WHERE id = $1" // dev:finder+query
 	rows, err := db.Conn.QueryContext(ctx, query, id)
 	if err != nil {
 		db.Logger.Error("query on players by id failed", "error", err.Error())
@@ -66,7 +66,7 @@ func (db *DBX) GetPlayerByID(ctx context.Context, id int, rpgSystem *rpg.RPGSyst
 			players = *p
 		}
 	}
-	// Check for errors from iterating over rows.
+	// Check for errors FROM iterating over rows.
 	if err := rows.Err(); err != nil {
 		db.Logger.Error("rows err on players by id ", "error", err.Error())
 	}
@@ -75,7 +75,7 @@ func (db *DBX) GetPlayerByID(ctx context.Context, id int, rpgSystem *rpg.RPGSyst
 
 func (db *DBX) GetPlayerByPlayerID(ctx context.Context, id int, rpgSystem *rpg.RPGSystem) (types.Players, error) {
 	players := types.Players{}
-	query := "SELECT id, character_name, stage_id, player_id, destroyed, abilities, skills, extensions, rpg FROM players WHERE player_id = $1"
+	query := "SELECT id, character_name, stage_id, player_id, destroyed, abilities, skills, extensions, rpg FROM players WHERE player_id = $1" // dev:finder+query
 	rows, err := db.Conn.QueryContext(ctx, query, id)
 	if err != nil {
 		db.Logger.Error("query on players by player_id failed", "error", err.Error())
@@ -96,7 +96,7 @@ func (db *DBX) GetPlayerByPlayerID(ctx context.Context, id int, rpgSystem *rpg.R
 			players = *p
 		}
 	}
-	// Check for errors from iterating over rows.
+	// Check for errors FROM iterating over rows.
 	if err := rows.Err(); err != nil {
 		db.Logger.Error("rows err on players by player_id ", "error", err.Error())
 	}
@@ -105,7 +105,7 @@ func (db *DBX) GetPlayerByPlayerID(ctx context.Context, id int, rpgSystem *rpg.R
 
 func (db *DBX) GetPlayerByStageID(ctx context.Context, id int, rpgSystem *rpg.RPGSystem) ([]types.Players, error) {
 	players := []types.Players{}
-	query := "SELECT id, character_name, stage_id, player_id, destroyed, abilities, skills, extensions, rpg FROM players WHERE stage_id = $1"
+	query := "SELECT id, character_name, stage_id, player_id, destroyed, abilities, skills, extensions, rpg FROM players WHERE stage_id = $1" // dev:finder+query
 	rows, err := db.Conn.QueryContext(ctx, query, id)
 	if err != nil {
 		db.Logger.Error("query on players by stage_id failed", "error", err.Error())
@@ -125,7 +125,7 @@ func (db *DBX) GetPlayerByStageID(ctx context.Context, id int, rpgSystem *rpg.RP
 			players = append(players, *p)
 		}
 	}
-	// Check for errors from iterating over rows.
+	// Check for errors FROM iterating over rows.
 	if err := rows.Err(); err != nil {
 		db.Logger.Error("rows err on players by stage_id", "error", err.Error())
 	}
@@ -134,7 +134,7 @@ func (db *DBX) GetPlayerByStageID(ctx context.Context, id int, rpgSystem *rpg.RP
 
 func (db *DBX) GetPlayerByUserID(ctx context.Context, id, channel string, rpgSystem *rpg.RPGSystem) (types.Players, error) {
 	players := types.Players{}
-	query := "SELECT p.id, p.character_name, p.stage_id, p.player_id, p.destroyed, p.abilities, p.skills, p.extensions, p.rpg, u.userid, c.channel FROM players AS p JOIN users AS u ON p.player_id = u.id JOIN stage_channel AS c ON c.stage_id = p.stage_id WHERE u.userid = $1"
+	query := "SELECT p.id, p.character_name, p.stage_id, p.player_id, p.destroyed, p.abilities, p.skills, p.extensions, p.rpg, u.userid, c.channel FROM players AS p JOIN users AS u ON p.player_id = u.id JOIN stage_channel AS c ON c.upstream_id = p.stage_id WHERE u.userid = $1" // dev:finder+query
 	rows, err := db.Conn.QueryContext(ctx, query, id)
 	if err != nil {
 		db.Logger.Error("query on players by userid failed", "error", err.Error())
@@ -157,7 +157,7 @@ func (db *DBX) GetPlayerByUserID(ctx context.Context, id, channel string, rpgSys
 			}
 		}
 	}
-	// Check for errors from iterating over rows.
+	// Check for errors FROM iterating over rows.
 	if err := rows.Err(); err != nil {
 		db.Logger.Error("rows err on players by userid ", "error", err.Error())
 	}

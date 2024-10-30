@@ -419,3 +419,19 @@ func (a MainApi) DeleteStageNextEncounter(w http.ResponseWriter, r *http.Request
 	msg := fmt.Sprintf("next encounter id %v deleted", id)
 	a.s.JSON(w, types.Msg{Msg: msg})
 }
+
+func (a MainApi) DeleteStageEncounterByID(w http.ResponseWriter, r *http.Request) {
+	idString := r.PathValue("id")
+	id, err := strconv.Atoi(idString)
+	if err != nil {
+		a.s.ErrJSON(w, http.StatusBadRequest, "id should be a integer")
+		return
+	}
+	err = a.db.DeleteStageEncounterByID(a.ctx, id)
+	if err != nil {
+		a.s.ErrJSON(w, http.StatusBadRequest, "stage database issue")
+		return
+	}
+	msg := fmt.Sprintf("encounter id %v deleted", id)
+	a.s.JSON(w, types.Msg{Msg: msg})
+}

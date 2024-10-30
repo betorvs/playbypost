@@ -37,6 +37,11 @@ tasks:
     cmds: 
       - golangci-lint run
 
+  querier-linter:
+    desc: "Run querier-linter"
+    cmds:
+      - go run core/tests/querier-linter/main.go dbparser --file core/sys/db/data/migrations/000001_create_base_tables.up.sql --dir core/sys/db/pg/
+
   stop_postgres:
     desc: "Stop a postgres container using docker"
     cmds:

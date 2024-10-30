@@ -50,5 +50,24 @@ const FetchStory = async (
   }
 };
 
+const DeleteStoryByID = async (id: number): Promise<void> => {
+  const requestHeaders: HeadersInit = new Headers();
+  requestHeaders.set("Content-Type", "application/json");
+  requestHeaders.set("X-Username", GetUsername());
+  requestHeaders.set("X-Access-Token", GetToken());
+  const apiURL = UseLocation();
+  const urlAPI = new URL("api/v1/story/" + id, apiURL);
+  const response = await fetch(urlAPI, {
+    method: "DELETE",
+    headers: requestHeaders,
+  });
+  if (response.ok) {
+    console.log("Story deleted");
+  } else if (response.status === 403) {
+    console.log("Not authorized");
+    CleanSession();
+  }
+}
+
 export default FetchStory;
-export { FetchStory, FetchStoriesByUserID };
+export { FetchStory, FetchStoriesByUserID, DeleteStoryByID };

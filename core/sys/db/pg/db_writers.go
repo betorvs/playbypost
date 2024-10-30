@@ -7,7 +7,7 @@ import (
 )
 
 func (db *DBX) CreateWriters(ctx context.Context, username, password string) (int, error) {
-	query := "INSERT INTO writers(username, password) VALUES($1, $2) RETURNING id"
+	query := "INSERT INTO writers(username, password) VALUES($1, $2) RETURNING id" // dev:finder+query
 	stmt, err := db.Conn.PrepareContext(ctx, query)
 	if err != nil {
 		db.Logger.Error("prepare insert into writers failed", "error", err.Error())
@@ -24,9 +24,9 @@ func (db *DBX) CreateWriters(ctx context.Context, username, password string) (in
 }
 
 func (db *DBX) GetWriters(ctx context.Context, active bool) ([]types.Writer, error) {
-	query := "SELECT id, username FROM writers"
+	query := "SELECT id, username FROM writers" // dev:finder+query
 	if active {
-		query = "SELECT id, username FROM writers WHERE active = true"
+		query = "SELECT id, username FROM writers WHERE active = true" // dev:finder+query
 	}
 	users := []types.Writer{}
 	rows, err := db.Conn.QueryContext(ctx, query)
@@ -42,7 +42,7 @@ func (db *DBX) GetWriters(ctx context.Context, active bool) ([]types.Writer, err
 		}
 		users = append(users, user)
 	}
-	// Check for errors from iterating over rows.
+	// Check for errors FROM iterating over rows.
 	if err := rows.Err(); err != nil {
 		db.Logger.Error("rows error on writers", "error", err.Error())
 	}
@@ -52,7 +52,8 @@ func (db *DBX) GetWriters(ctx context.Context, active bool) ([]types.Writer, err
 func (db *DBX) GetWriterByID(ctx context.Context, id int) (types.Writer, error) {
 	user := types.Writer{}
 	keys := make(map[int]string)
-	rows, err := db.Conn.QueryContext(ctx, "SELECT w.id, w.username, k.story_id, k.encoding_key FROM writers AS w JOIN access_story_keys AS a ON w.id = a.writer_id JOIN story_keys AS k ON a.story_keys_id = k.id WHERE w.id = $1", id)
+	query := "SELECT w.id, w.username, k.story_id, k.encoding_key FROM writers AS w JOIN access_story_keys AS a ON w.id = a.writer_id JOIN story_keys AS k ON a.story_keys_id = k.id WHERE w.id = $1" // dev:finder+query
+	rows, err := db.Conn.QueryContext(ctx, query, id)
 	if err != nil {
 		db.Logger.Error("query on writers by id failed", "error", err.Error())
 		return user, err
@@ -71,7 +72,7 @@ func (db *DBX) GetWriterByID(ctx context.Context, id int) (types.Writer, error) 
 		}
 		// users = append(users, user)
 	}
-	// Check for errors from iterating over rows.
+	// Check for errors FROM iterating over rows.
 	if err := rows.Err(); err != nil {
 		db.Logger.Error("rows error on writers by id", "error", err.Error())
 	}
@@ -81,7 +82,8 @@ func (db *DBX) GetWriterByID(ctx context.Context, id int) (types.Writer, error) 
 
 func (db *DBX) GetWriterByUsername(ctx context.Context, username string) (types.Writer, error) {
 	user := types.Writer{}
-	rows, err := db.Conn.QueryContext(ctx, "SELECT id, username, password FROM writers WHERE username = $1", username)
+	query := "SELECT id, username, password FROM writers WHERE username = $1" // dev:finder+query
+	rows, err := db.Conn.QueryContext(ctx, query, username)
 	if err != nil {
 		db.Logger.Error("query on writers by username failed", "error", err.Error())
 		return user, err
@@ -94,7 +96,7 @@ func (db *DBX) GetWriterByUsername(ctx context.Context, username string) (types.
 		}
 		// users = append(users, user)
 	}
-	// Check for errors from iterating over rows.
+	// Check for errors FROM iterating over rows.
 	if err := rows.Err(); err != nil {
 		db.Logger.Error("rows error on writers by username", "error", err.Error())
 	}

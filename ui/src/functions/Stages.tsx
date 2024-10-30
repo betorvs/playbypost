@@ -166,6 +166,27 @@ const DeleteStageNextEncounter = async (
   }
 }
 
+const DeleteStageEncounterByID = async (
+  id: number,
+): Promise<void> => {
+  const requestHeaders: HeadersInit = new Headers();
+  requestHeaders.set("Content-Type", "application/json");
+  requestHeaders.set("X-Username", GetUsername());
+  requestHeaders.set("X-Access-Token", GetToken());
+  const apiURL = UseLocation();
+  const urlAPI = new URL("api/v1/stage/encounter/" + id, apiURL);
+  const response = await fetch(urlAPI, {
+    method: "DELETE",
+    headers: requestHeaders,
+  });
+  if (response.ok) {
+    console.log("Stage Encounter deleted");
+  } else if (response.status === 403) {
+    console.log("Not authorized");
+    CleanSession();
+  }
+}
+
 const CloseStage = async (
   id: number,
 ): Promise<void> => {
@@ -188,4 +209,4 @@ const CloseStage = async (
 }
 
 export default FetchStages;
-export { FetchStage, FetchStageByStoryID, FetchStageEncountersByID, FetchStageEncounterByEncounterID, FetchEncounterListStage,DeleteStageNextEncounter, CloseStage };
+export { FetchStage, FetchStageByStoryID, FetchStageEncountersByID, FetchStageEncounterByEncounterID, FetchEncounterListStage,DeleteStageNextEncounter, DeleteStageEncounterByID, CloseStage };

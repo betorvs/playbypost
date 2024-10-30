@@ -27,6 +27,29 @@ const HomePublicPage = () => {
         <li>{t("home.list-item-9", {ns: ['main', 'home']})}: {t("home.item-9-description", {ns: ['main', 'home']})}</li>
       </ul>
       <hr />
+      <h4>{t("home.sub-header-2", {ns: ['main', 'home']})}</h4>
+      <ol>
+        <li>{t("home.list-item-10", {ns: ['main', 'home']})}</li>
+        <li>{t("home.list-item-11", {ns: ['main', 'home']})}</li>
+        <li>{t("home.list-item-12", {ns: ['main', 'home']})}</li>
+          <ul>
+            <li>{t("home.list-item-13", {ns: ['main', 'home']})}</li>
+            <li>{t("home.list-item-14", {ns: ['main', 'home']})}</li>
+          </ul>
+        <li>{t("home.list-item-15", {ns: ['main', 'home']})}</li>
+      </ol>
+      <p>{t("home.notes-1", {ns: ['main', 'home']})}</p>
+      <h6>{t("home.sub-header-3", {ns: ['main', 'home']})}</h6>
+      <ol>
+        <li>{t("home.list-item-16", {ns: ['main', 'home']})}</li>
+        <li>{t("home.list-item-17", {ns: ['main', 'home']})}</li>
+        <li>{t("home.list-item-18", {ns: ['main', 'home']})}</li>
+        <li>{t("home.list-item-19", {ns: ['main', 'home']})}</li>
+        <li>{t("home.list-item-20", {ns: ['main', 'home']})}</li>
+        <li>{t("home.list-item-21", {ns: ['main', 'home']})}</li>
+      </ol>
+      <hr />
+      <p>{t("home.sub-header-4", {ns: ['main', 'home']})}</p>
     </div>
   );
 };

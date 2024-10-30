@@ -10,7 +10,7 @@ import (
 
 func (db *DBX) GetUser(ctx context.Context) ([]types.User, error) {
 	users := []types.User{}
-	query := "SELECT id, userid, active FROM users"
+	query := "SELECT id, userid, active FROM users" // dev:finder+query
 	rows, err := db.Conn.QueryContext(ctx, query)
 	if err != nil {
 		db.Logger.Error("query on users failed", "error", err.Error())
@@ -24,7 +24,7 @@ func (db *DBX) GetUser(ctx context.Context) ([]types.User, error) {
 		}
 		users = append(users, u)
 	}
-	// Check for errors from iterating over rows.
+	// Check for errors FROM iterating over rows.
 	if err := rows.Err(); err != nil {
 		db.Logger.Error("rows err on users", "error", err.Error())
 	}
@@ -33,7 +33,7 @@ func (db *DBX) GetUser(ctx context.Context) ([]types.User, error) {
 
 func (db *DBX) GetUserByUserID(ctx context.Context, id string) (types.User, error) {
 	user := types.User{}
-	query := "SELECT id, userid, active FROM users WHERE userid = $1"
+	query := "SELECT id, userid, active FROM users WHERE userid = $1" // dev:finder+query
 	rows, err := db.Conn.QueryContext(ctx, query, id)
 	if err != nil {
 		db.Logger.Error("query on users by userid failed", "error", err.Error())
@@ -49,7 +49,7 @@ func (db *DBX) GetUserByUserID(ctx context.Context, id string) (types.User, erro
 			user = u
 		}
 	}
-	// Check for errors from iterating over rows.
+	// Check for errors FROM iterating over rows.
 	if err := rows.Err(); err != nil {
 		db.Logger.Error("rows err on users by userid", "error", err.Error())
 	}
@@ -71,7 +71,7 @@ func (db *DBX) CreateUserTx(ctx context.Context, userid string) (int, error) {
 		}
 	}()
 	// check user exist
-	queryUser := "SELECT id FROM users WHERE userid = $1"
+	queryUser := "SELECT id FROM users WHERE userid = $1" // dev:finder+query
 	stmtQueryUser, err := db.Conn.PrepareContext(ctx, queryUser)
 	if err != nil {
 		db.Logger.Error("tx prepare on queryUser failed", "error", err.Error())
@@ -105,7 +105,7 @@ func (db *DBX) CreateUserTx(ctx context.Context, userid string) (int, error) {
 
 func (db *DBX) createUser(ctx context.Context, userid string, tx *sql.Tx) (int, error) {
 	var userID int
-	queryInsertUser := "INSERT INTO users(userid) VALUES($1) RETURNING id"
+	queryInsertUser := "INSERT INTO users(userid) VALUES($1) RETURNING id" // dev:finder+query
 	stmtInsertUser, err := db.Conn.PrepareContext(ctx, queryInsertUser)
 	if err != nil {
 		db.Logger.Error("tx prepare on story_keys failed", "error", err.Error())

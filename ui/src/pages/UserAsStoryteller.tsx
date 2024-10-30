@@ -11,6 +11,8 @@ import UseLocation from "../context/UseLocation";
 import Story from "../types/Story";
 import { FetchStoriesByUserID } from "../functions/Stories";
 import { useTranslation } from "react-i18next";
+import { RunningChannels } from "../types/Channel";
+import { FetchRunningChannel } from "../functions/Channels";
 
 const UserAsStoryteller = () => {
   const { Logoff } = useContext(AuthContext);
@@ -18,11 +20,13 @@ const UserAsStoryteller = () => {
   const [stories, setStory] = useState<Story[]>([]);
   const [text, setText] = useState("");
   const [storyID, setStoryID] = useState(0);
+  const [runningChannels, setRunningChannels] = useState<RunningChannels[]>([]);
   const user_id = GetUserID();
   const { t } = useTranslation(['home', 'main']);
 
   useEffect(() => {
     FetchStoriesByUserID(user_id, setStory);
+    FetchRunningChannel("stage", setRunningChannels);
   }, []);
   const navigate = useNavigate();
 
@@ -61,6 +65,19 @@ const UserAsStoryteller = () => {
         <Layout Logoff={Logoff} />
         <h2>{t("user.add-as-storyteller", {ns: ['main', 'home']})}</h2>
         <h3>{t("user.add-as-storyteller-description", {ns: ['main', 'home']})}</h3>
+        <hr />
+        <h4>{t("common.channel-header", {ns: ['main', 'home']})}</h4>
+        {
+          runningChannels.length !== 0 ? (
+            runningChannels.map((channel, index) => (
+              <div key={index}>
+                <p>{channel.title} - {channel.channel}</p>
+              </div>
+            ))
+          ) : (
+            <p>{t("common.channel-not-running", {ns: ['main', 'home']})}</p>
+          )
+        }
         <hr />
       </div>
       <div className="container mt-3" key="2">
