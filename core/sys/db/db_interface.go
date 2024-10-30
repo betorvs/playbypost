@@ -60,7 +60,6 @@ type DBClient interface {
 	AddParticipants(ctx context.Context, encounterID int, npc bool, players []int) error
 	AddNextEncounter(ctx context.Context, next []types.Next) error
 	AddRunningTask(ctx context.Context, text string, stageID, taskID, StorytellerID, encounterID int) error
-	AddEncounterActivities(ctx context.Context, text string, stageID, encounterID int) error
 	RegisterActivities(ctx context.Context, stageID, encounterID int, actions types.Actions) error
 	UpdateProcessedActivities(ctx context.Context, id int, processed bool, actions types.Actions) error
 	CloseStage(ctx context.Context, id int) error

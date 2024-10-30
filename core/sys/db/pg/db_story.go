@@ -10,7 +10,7 @@ import (
 
 func (db *DBX) GetStory(ctx context.Context) ([]types.Story, error) {
 	story := []types.Story{}
-	query := "SELECT id, title, announcement, notes, writer_id FROM story"
+	query := "SELECT id, title, announcement, notes, writer_id FROM story" // dev:finder+query
 	rows, err := db.Conn.QueryContext(ctx, query)
 	if err != nil {
 		db.Logger.Error("query on story failed", "error", err.Error())
@@ -46,7 +46,7 @@ func (db *DBX) CreateStoryTx(ctx context.Context, title, announcement, notes, en
 		}
 	}()
 	// insert story
-	queryStory := "INSERT INTO story(title, notes, announcement, writer_id) VALUES($1, $2, $3, $4) RETURNING id"
+	queryStory := "INSERT INTO story(title, notes, announcement, writer_id) VALUES($1, $2, $3, $4) RETURNING id" // dev:finder+query
 	stmtStory, err := db.Conn.PrepareContext(ctx, queryStory)
 	if err != nil {
 		db.Logger.Error("tx prepare on story_keys failed", "error", err.Error())
@@ -60,7 +60,7 @@ func (db *DBX) CreateStoryTx(ctx context.Context, title, announcement, notes, en
 		return -1, err
 	}
 	// insert story key
-	queryKey := "INSERT INTO story_keys(encoding_key, story_id) VALUES($1, $2) RETURNING id"
+	queryKey := "INSERT INTO story_keys(encoding_key, story_id) VALUES($1, $2) RETURNING id" // dev:finder+query
 	stmtStoryKeys, err := db.Conn.PrepareContext(ctx, queryKey)
 	if err != nil {
 		db.Logger.Error("tx prepare on story_keys failed", "error", err.Error())
@@ -74,7 +74,7 @@ func (db *DBX) CreateStoryTx(ctx context.Context, title, announcement, notes, en
 		return -1, err
 	}
 	// grant access to Writer to story_key
-	queryAccess := "INSERT INTO access_story_keys(writer_id, story_keys_id) VALUES($1, $2) RETURNING id"
+	queryAccess := "INSERT INTO access_story_keys(writer_id, story_keys_id) VALUES($1, $2) RETURNING id" // dev:finder+query
 	stmtAccessStoryKeys, err := db.Conn.PrepareContext(ctx, queryAccess)
 	if err != nil {
 		db.Logger.Error("tx prepare on story_keys failed", "error", err.Error())
@@ -111,7 +111,7 @@ func (db *DBX) UpdateStoryTx(ctx context.Context, title, announcement, notes str
 		}
 	}()
 	// insert story
-	queryStory := "UPDATE story SET title = $1, notes = $2, announcement = $3 WHERE id = $4 RETURNING id"
+	queryStory := "UPDATE story SET title = $1, notes = $2, announcement = $3 WHERE id = $4 RETURNING id" // dev:finder+query
 	stmtStory, err := db.Conn.PrepareContext(ctx, queryStory)
 	if err != nil {
 		db.Logger.Error("tx prepare on story_keys failed", "error", err.Error())
@@ -155,7 +155,8 @@ func (db *DBX) GetStoryIDByTitle(ctx context.Context, title string) (int, error)
 
 func (db *DBX) GetStoryByID(ctx context.Context, id int) (types.Story, error) {
 	story := types.Story{}
-	rows, err := db.Conn.QueryContext(ctx, "SELECT id, title, announcement, notes, writer_id FROM story WHERE id = $1", id)
+	query := "SELECT id, title, announcement, notes, writer_id FROM story WHERE id = $1" // dev:finder+query
+	rows, err := db.Conn.QueryContext(ctx, query, id)
 	if err != nil {
 		db.Logger.Error("query on story by id failed", "error", err.Error())
 		return story, err
@@ -175,7 +176,8 @@ func (db *DBX) GetStoryByID(ctx context.Context, id int) (types.Story, error) {
 
 func (db *DBX) GetStoriesByWriterID(ctx context.Context, id int) ([]types.Story, error) {
 	stories := []types.Story{}
-	rows, err := db.Conn.QueryContext(ctx, "SELECT id, title, announcement, notes, writer_id FROM story WHERE writer_id = $1", id)
+	query := "SELECT id, title, announcement, notes, writer_id FROM story WHERE writer_id = $1" // dev:finder+query
+	rows, err := db.Conn.QueryContext(ctx, query, id)
 	if err != nil {
 		db.Logger.Error("query on story by writer_id failed", "error", err.Error())
 		return stories, err
@@ -211,7 +213,7 @@ func (db *DBX) DeleteStoryByID(ctx context.Context, id int) error {
 	}()
 	// check if this have an encounter
 	var countEncounters int
-	queryCheckEncounter := "SELECT COUNT(*) FROM encounters WHERE story_id = $1"
+	queryCheckEncounter := "SELECT COUNT(*) FROM encounters WHERE story_id = $1" // dev:finder+query
 	if err = tx.QueryRowContext(ctx, queryCheckEncounter, id).Scan(&countEncounters); err != nil {
 		if err != sql.ErrNoRows {
 			db.Logger.Error("no rows passed", "err", err.Error())
@@ -223,7 +225,7 @@ func (db *DBX) DeleteStoryByID(ctx context.Context, id int) error {
 		return fmt.Errorf("found encounters with this story")
 	}
 	// delete story
-	queryStory := "DELETE FROM story WHERE id = $1"
+	queryStory := "DELETE FROM story WHERE id = $1" // dev:finder+query
 	stmtStory, err := db.Conn.PrepareContext(ctx, queryStory)
 	if err != nil {
 		db.Logger.Error("tx prepare on story failed", "error", err.Error())

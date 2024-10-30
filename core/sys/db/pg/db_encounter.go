@@ -10,7 +10,7 @@ import (
 
 func (db *DBX) GetEncounters(ctx context.Context) ([]types.Encounter, error) {
 	list := []types.Encounter{}
-	query := "SELECT id, title, notes, announcement, story_id, writer_id, first_encounter, last_encounter FROM encounters"
+	query := "SELECT id, title, notes, announcement, story_id, writer_id, first_encounter, last_encounter FROM encounters" // dev:finder+query
 	rows, err := db.Conn.QueryContext(ctx, query)
 	if err != nil {
 		db.Logger.Error("query on encounters failed", "error", err.Error())
@@ -33,7 +33,7 @@ func (db *DBX) GetEncounters(ctx context.Context) ([]types.Encounter, error) {
 
 func (db *DBX) GetEncounterByStoryID(ctx context.Context, storyID int) ([]types.Encounter, error) {
 	encounters := []types.Encounter{}
-	query := "SELECT id, title, notes, announcement, story_id, writer_id, first_encounter, last_encounter FROM encounters WHERE story_id = $1"
+	query := "SELECT id, title, notes, announcement, story_id, writer_id, first_encounter, last_encounter FROM encounters WHERE story_id = $1" // dev:finder+query
 	rows, err := db.Conn.QueryContext(ctx, query, storyID)
 	if err != nil {
 		db.Logger.Error("query on encounters by id failed", "error", err.Error())
@@ -56,7 +56,7 @@ func (db *DBX) GetEncounterByStoryID(ctx context.Context, storyID int) ([]types.
 
 func (db *DBX) GetEncounterByID(ctx context.Context, id int) (types.Encounter, error) {
 	enc := types.Encounter{}
-	query := "SELECT id, title, announcement, notes, story_id, writer_id, first_encounter, last_encounter FROM encounters WHERE id = $1"
+	query := "SELECT id, title, announcement, notes, story_id, writer_id, first_encounter, last_encounter FROM encounters WHERE id = $1" // dev:finder+query
 	rows, err := db.Conn.QueryContext(ctx, query, id)
 	if err != nil {
 		db.Logger.Error("query on encounters by id failed", "error", err.Error())
@@ -92,7 +92,7 @@ func (db *DBX) CreateEncounterTx(ctx context.Context, title, announcement, notes
 	// last can have multiple
 	if first {
 		var count int
-		queryCheck := "SELECT COUNT(*) FROM encounters WHERE story_id = $1 AND first_encounter = true"
+		queryCheck := "SELECT COUNT(*) FROM encounters WHERE story_id = $1 AND first_encounter = true" // dev:finder+query
 		if err = tx.QueryRowContext(ctx, queryCheck, storyID).Scan(&count); err != nil {
 			if err != sql.ErrNoRows {
 				db.Logger.Error("no rows passed", "err", err.Error())
@@ -106,7 +106,7 @@ func (db *DBX) CreateEncounterTx(ctx context.Context, title, announcement, notes
 	}
 
 	// Prepare the statement.
-	query := "INSERT INTO encounters(title, announcement, notes, story_id, writer_id, first_encounter, last_encounter) VALUES($1, $2, $3, $4, $5, $6, $7) RETURNING id"
+	query := "INSERT INTO encounters(title, announcement, notes, story_id, writer_id, first_encounter, last_encounter) VALUES($1, $2, $3, $4, $5, $6, $7) RETURNING id" // dev:finder+query
 	stmtInsert, err := db.Conn.PrepareContext(ctx, query)
 	if err != nil {
 		db.Logger.Error("tx prepare on stmtInsert failed", "error", err.Error())
@@ -144,7 +144,7 @@ func (db *DBX) UpdateEncounterTx(ctx context.Context, title, announcement, notes
 	// last can have multiple
 	if first {
 		var firstID int
-		queryCheck := "SELECT id FROM encounters WHERE story_id = $1 AND first_encounter = true"
+		queryCheck := "SELECT id FROM encounters WHERE story_id = $1 AND first_encounter = true" // dev:finder+query
 		if err = tx.QueryRowContext(ctx, queryCheck, storyID).Scan(&firstID); err != nil {
 			if err != sql.ErrNoRows {
 				db.Logger.Error("no rows passed", "err", err.Error())
@@ -158,7 +158,7 @@ func (db *DBX) UpdateEncounterTx(ctx context.Context, title, announcement, notes
 	}
 
 	// Prepare the statement.
-	query := "UPDATE encounters SET title = $1, announcement = $2, notes = $3, first_encounter = $4, last_encounter = $5 WHERE id = $6 RETURNING id"
+	query := "UPDATE encounters SET title = $1, announcement = $2, notes = $3, first_encounter = $4, last_encounter = $5 WHERE id = $6 RETURNING id" // dev:finder+query
 	stmtInsert, err := db.Conn.PrepareContext(ctx, query)
 	if err != nil {
 		db.Logger.Error("tx prepare on stmtInsert failed", "error", err.Error())
@@ -196,7 +196,7 @@ func (db *DBX) DeleteEncounterByID(ctx context.Context, id int) error {
 	}()
 	// check if this encounter is associated with a stage
 	var countStage int
-	queryCheckStage := "SELECT COUNT(*) FROM stage_encounters WHERE encounter_id = $1"
+	queryCheckStage := "SELECT COUNT(*) FROM stage_encounters WHERE encounter_id = $1" // dev:finder+query
 	if err = tx.QueryRowContext(ctx, queryCheckStage, id).Scan(&countStage); err != nil {
 		if err != sql.ErrNoRows {
 			db.Logger.Error("no rows passed", "err", err.Error())
@@ -209,7 +209,7 @@ func (db *DBX) DeleteEncounterByID(ctx context.Context, id int) error {
 	}
 	// check if this encounter is associated with a next encounter in auto play
 	var countNext int
-	queryCheckNext := "SELECT COUNT(*) FROM auto_play_next_encounter WHERE current_encounter_id = $1 OR next_encounter_id = $1"
+	queryCheckNext := "SELECT COUNT(*) FROM auto_play_next_encounter WHERE current_encounter_id = $1 OR next_encounter_id = $1" // dev:finder+query
 	if err = tx.QueryRowContext(ctx, queryCheckNext, id).Scan(&countNext); err != nil {
 		if err != sql.ErrNoRows {
 			db.Logger.Error("no rows passed", "err", err.Error())
@@ -221,7 +221,7 @@ func (db *DBX) DeleteEncounterByID(ctx context.Context, id int) error {
 		return fmt.Errorf("encounter is associated with a next encounter in auto play")
 	}
 	// Prepare the statement.
-	query := "DELETE FROM encounters WHERE id = $1"
+	query := "DELETE FROM encounters WHERE id = $1" // dev:finder+query
 	stmtInsert, err := db.Conn.PrepareContext(ctx, query)
 	if err != nil {
 		db.Logger.Error("tx prepare on stmtInsert failed", "error", err.Error())

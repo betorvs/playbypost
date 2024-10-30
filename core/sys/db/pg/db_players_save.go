@@ -23,7 +23,7 @@ func (db *DBX) SavePlayerTx(ctx context.Context, id, storyID int, creature *rule
 		}
 	}()
 
-	query := "INSERT INTO players(character_name, player_id, stage_id, destroyed, abilities, skills, extensions, rpg) VALUES($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id"
+	query := "INSERT INTO players(character_name, player_id, stage_id, destroyed, abilities, skills, extensions, rpg) VALUES($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id" // dev:finder+query
 	stmt, err := db.Conn.PrepareContext(ctx, query)
 	if err != nil {
 		db.Logger.Error("tx prepare on players failed", "error", err.Error())
@@ -44,7 +44,7 @@ func (db *DBX) SavePlayerTx(ctx context.Context, id, storyID int, creature *rule
 }
 
 func (db *DBX) UpdatePlayer(ctx context.Context, id int, creature *rules.Creature, destroyed bool) error {
-	query := "UPDATE players SET abilities = $1, skills = $2, extensions = $3, destroyed = $4 WHERE id = $5"
+	query := "UPDATE players SET abilities = $1, skills = $2, extensions = $3, destroyed = $4 WHERE id = $5" // dev:finder+query
 	stmt, err := db.Conn.PrepareContext(ctx, query)
 	if err != nil {
 		db.Logger.Error("update players prepare failed", "error", err.Error())

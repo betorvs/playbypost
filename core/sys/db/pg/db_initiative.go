@@ -8,7 +8,7 @@ import (
 )
 
 func (db *DBX) UpdateNextPlayer(ctx context.Context, id, nextPlayer int) error {
-	query := "UPDATE initiative SET next_player = $1 WHERE id = $2 RETURNING id"
+	query := "UPDATE initiative SET next_player = $1 WHERE id = $2 RETURNING id" // dev:finder+query
 	stmt, err := db.Conn.PrepareContext(ctx, query)
 	if err != nil {
 		db.Logger.Error("tx prepare on initiative failed", "error", err.Error())
@@ -36,7 +36,7 @@ func (db *DBX) SaveInitiativeTx(ctx context.Context, i initiative.Initiative, en
 		}
 	}()
 
-	query := "INSERT INTO initiative(title, stage_encounters_id, next_player) VALUES($1, $2, $3) RETURNING id"
+	query := "INSERT INTO initiative(title, stage_encounter_id, next_player) VALUES($1, $2, $3) RETURNING id" // dev:finder+query
 	stmt, err := db.Conn.PrepareContext(ctx, query)
 	if err != nil {
 		db.Logger.Error("tx prepare on initiative failed", "error", err.Error())
@@ -51,7 +51,7 @@ func (db *DBX) SaveInitiativeTx(ctx context.Context, i initiative.Initiative, en
 		return -1, err
 	}
 
-	queryParticipants := "INSERT INTO initiative_participants(initiative_id, participant_name, participant_bonus, participant_result, active) VALUES($1, $2, $3, $4, $5) RETURNING id"
+	queryParticipants := "INSERT INTO initiative_participants(initiative_id, participant_name, participant_bonus, participant_result, active) VALUES($1, $2, $3, $4, $5) RETURNING id" // dev:finder+query
 
 	for _, p := range i.Participants {
 		_, err = tx.ExecContext(ctx, queryParticipants, id, p.Name, p.Bonus, p.Result, true)
@@ -71,7 +71,7 @@ func (db *DBX) SaveInitiativeTx(ctx context.Context, i initiative.Initiative, en
 
 func (db *DBX) GetInitiativeByID(ctx context.Context, id int) (initiative.Initiative, error) {
 	obj := initiative.Initiative{}
-	query := "SELECT i.id, i.title, i.next_player, p.participant_name, p.participant_result FROM initiative AS i JOIN initiative_participants AS p ON i.id = p.initiative_id WHERE p.active = true AND i.id = $1"
+	query := "SELECT i.id, i.title, i.next_player, p.participant_name, p.participant_result FROM initiative AS i JOIN initiative_participants AS p ON i.id = p.initiative_id WHERE p.active = true AND i.id = $1" // dev:finder+query
 	rows, err := db.Conn.QueryContext(ctx, query, id)
 	if err != nil {
 		db.Logger.Error("query on users failed", "error", err.Error())
@@ -104,7 +104,8 @@ func (db *DBX) GetInitiativeByID(ctx context.Context, id int) (initiative.Initia
 func (db *DBX) GetRunningInitiativeByEncounterID(ctx context.Context, encounterID int) (initiative.Initiative, int, error) {
 	initiativeID := -1
 	obj := initiative.Initiative{}
-	rows, err := db.Conn.QueryContext(ctx, "SELECT i.id, i.title, i.next_player, p.participant_name, p.participant_result FROM initiative AS i JOIN initiative_participants AS p ON i.id = p.initiative_id JOIN stage_encounters AS se ON se.id = i.stage_encounters_id WHERE p.active = TRUE AND se.phase = 2 AND se.id = $1", encounterID)
+	query := "SELECT i.id, i.title, i.next_player, p.participant_name, p.participant_result FROM initiative AS i JOIN initiative_participants AS p ON i.id = p.initiative_id JOIN stage_encounters AS se ON se.id = i.stage_encounter_id WHERE p.active = TRUE AND se.phase = 2 AND se.id = $1" // dev:finder+query
+	rows, err := db.Conn.QueryContext(ctx, query, encounterID)
 	if err != nil {
 		db.Logger.Error("query on users failed", "error", err.Error())
 		return obj, initiativeID, err
@@ -135,7 +136,7 @@ func (db *DBX) GetRunningInitiativeByEncounterID(ctx context.Context, encounterI
 
 // deactivate part
 func (db *DBX) DeactivateParticipant(ctx context.Context, id int, name string) (int, error) {
-	query := "UPDATE initiative_participants SET active = FALSE WHERE initiative_id = $1 AND participant_name = $2 RETURNING id"
+	query := "UPDATE initiative_participants SET active = false WHERE initiative_id = $1 AND participant_name = $2 RETURNING id" // dev:finder+query
 	stmt, err := db.Conn.PrepareContext(ctx, query)
 	if err != nil {
 		db.Logger.Error("tx prepare on initiative_participants failed", "error", err.Error())

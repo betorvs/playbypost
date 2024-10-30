@@ -9,7 +9,7 @@ import (
 
 func (db *DBX) GetNPCByStageID(ctx context.Context, id int) ([]types.Players, error) {
 	players := []types.Players{}
-	query := "SELECT id, npc_name, stage_id, storyteller_id, destroyed, abilities, skills, rpg FROM non_players WHERE stage_id = $1"
+	query := "SELECT id, npc_name, stage_id, storyteller_id, destroyed, abilities, skills, rpg FROM non_players WHERE stage_id = $1" // dev:finder+query
 	rows, err := db.Conn.QueryContext(ctx, query, id)
 	if err != nil {
 		db.Logger.Error("query on non_players by stage_id failed", "error", err.Error())
@@ -36,7 +36,7 @@ func (db *DBX) GetNPCByStageID(ctx context.Context, id int) ([]types.Players, er
 
 func (db *DBX) GenerateNPC(ctx context.Context, name string, stageID, storytellerID int, creature *rules.Creature) (int, error) {
 	npcID := 0
-	query := "INSERT INTO non_players (npc_name, stage_id, storyteller_id, abilities, skills, extensions, rpg) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id"
+	query := "INSERT INTO non_players (npc_name, stage_id, storyteller_id, abilities, skills, extensions, rpg) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id" // dev:finder+query
 	err := db.Conn.QueryRowContext(ctx, query, name, stageID, storytellerID, creature.Abilities, creature.Skills, creature.Extension, creature.RPG.Name).Scan(&npcID)
 	if err != nil {
 		db.Logger.Error("insert on non_players failed", "error", err.Error())
@@ -46,7 +46,7 @@ func (db *DBX) GenerateNPC(ctx context.Context, name string, stageID, storytelle
 }
 
 func (db *DBX) UpdateNPC(ctx context.Context, id int, creature *rules.Creature, destroyed bool) error {
-	query := "UPDATE non_players SET abilities = $1, skills = $2, extensions = $3, destroyed = $4 WHERE id = $5"
+	query := "UPDATE non_players SET abilities = $1, skills = $2, extensions = $3, destroyed = $4 WHERE id = $5" // dev:finder+query
 	stmt, err := db.Conn.PrepareContext(ctx, query)
 	if err != nil {
 		db.Logger.Error("update non_players prepare failed", "error", err.Error())

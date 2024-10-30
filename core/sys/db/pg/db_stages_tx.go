@@ -24,7 +24,7 @@ func (db *DBX) CreateStageTx(ctx context.Context, text, userid string, storyID i
 		}
 	}()
 	// check user exist
-	queryUser := "SELECT id FROM users WHERE userid = $1"
+	queryUser := "SELECT id FROM users WHERE userid = $1" // dev:finder+query
 	stmtQueryUser, err := db.Conn.PrepareContext(ctx, queryUser)
 	if err != nil {
 		db.Logger.Error("tx prepare on queryUser failed", "error", err.Error())
@@ -47,7 +47,7 @@ func (db *DBX) CreateStageTx(ctx context.Context, text, userid string, storyID i
 		userID = id
 	}
 
-	queryStoryKeys := "SELECT k.encoding_key FROM story AS s JOIN story_keys AS k ON s.id = k.story_id WHERE s.id = $1"
+	queryStoryKeys := "SELECT k.encoding_key FROM story AS s JOIN story_keys AS k ON s.id = k.story_id WHERE s.id = $1" // dev:finder+query
 	stmtStoryKeys, err := db.Conn.PrepareContext(ctx, queryStoryKeys)
 	if err != nil {
 		db.Logger.Error("tx prepare on story_keys failed", "error", err.Error())
@@ -62,7 +62,7 @@ func (db *DBX) CreateStageTx(ctx context.Context, text, userid string, storyID i
 	}
 
 	// create stage
-	queryInsertStage := "INSERT INTO stage(display_text, encoding_key, finished, storyteller_id, story_id) VALUES($1, $2, $3, $4, $5) RETURNING id"
+	queryInsertStage := "INSERT INTO stage(display_text, encoding_key, finished, storyteller_id, story_id) VALUES($1, $2, $3, $4, $5) RETURNING id" // dev:finder+query
 	stmtInsertStage, err := db.Conn.PrepareContext(ctx, queryInsertStage)
 	if err != nil {
 		db.Logger.Error("tx prepare on stmtInsertStage failed", "error", err.Error())
@@ -85,7 +85,7 @@ func (db *DBX) CreateStageTx(ctx context.Context, text, userid string, storyID i
 }
 
 func (db *DBX) AddChannelToStage(ctx context.Context, channel string, id int) (int, error) {
-	query := "INSERT INTO stage_channel(channel, upstream_id, active) VALUES($1, $2, $3) RETURNING id"
+	query := "INSERT INTO stage_channel(channel, upstream_id, active) VALUES($1, $2, $3) RETURNING id" // dev:finder+query
 	stmt, err := db.Conn.PrepareContext(ctx, query)
 	if err != nil {
 		db.Logger.Error("prepare insert into stage_channel failed", "error", err.Error())
@@ -102,7 +102,7 @@ func (db *DBX) AddChannelToStage(ctx context.Context, channel string, id int) (i
 }
 
 func (db *DBX) AddEncounterToStage(ctx context.Context, text string, stage_id, storyteller_id, encounter_id int) (int, error) {
-	query := "INSERT INTO stage_encounters(display_text, stage_id, storyteller_id, encounter_id) VALUES($1, $2, $3, $4) RETURNING id"
+	query := "INSERT INTO stage_encounters(display_text, stage_id, storyteller_id, encounter_id) VALUES($1, $2, $3, $4) RETURNING id" // dev:finder+query
 	stmt, err := db.Conn.PrepareContext(ctx, query)
 	if err != nil {
 		db.Logger.Error("prepare insert into stage_encounters failed", "error", err.Error())
@@ -135,7 +135,7 @@ func (db *DBX) UpdatePhase(ctx context.Context, id, phase int) error {
 	// check if phase is valid
 	if phase == int(types.Running) {
 		// check if on this stage we have any stage_encounter already in running stage
-		query := "SELECT (s.phase >= 0) FROM stage_encounters AS s JOIN stage_encounters AS se ON se.stage_id = s.stage_id WHERE se.id = $1 AND s.phase = $2"
+		query := "SELECT (s.phase >= 0) FROM stage_encounters AS s JOIN stage_encounters AS se ON se.stage_id = s.stage_id WHERE se.id = $1 AND s.phase = $2" // dev:finder+query
 		var running bool
 		p := int(types.Running)
 		if err = tx.QueryRowContext(ctx, query, id, p).Scan(&running); err != nil {
@@ -150,7 +150,7 @@ func (db *DBX) UpdatePhase(ctx context.Context, id, phase int) error {
 	}
 
 	// change state of stage_encounter
-	queryUpdateStageEncounter := "UPDATE stage_encounters SET phase = $1, updated_at = NOW() WHERE id = $2 RETURNING id"
+	queryUpdateStageEncounter := "UPDATE stage_encounters SET phase = $1, updated_at = NOW() WHERE id = $2 RETURNING id" // dev:finder+query
 	stmtUpdateStageEncounter, err := db.Conn.PrepareContext(ctx, queryUpdateStageEncounter)
 	if err != nil {
 		db.Logger.Error("tx prepare on stmtUpdateStageEncounter failed", "error", err.Error())
@@ -175,9 +175,9 @@ func (db *DBX) UpdatePhase(ctx context.Context, id, phase int) error {
 // AddParticipants func stage_encounters_participants_players
 func (db *DBX) AddParticipants(ctx context.Context, encounterID int, npc bool, players []int) error {
 
-	query := "INSERT INTO stage_encounters_participants_players (players_id, stage_encounters_id) VALUES ($1, $2)"
+	query := "INSERT INTO stage_encounters_participants_players (players_id, stage_encounter_id) VALUES ($1, $2)" // dev:finder+query
 	if npc {
-		query = "INSERT INTO stage_encounters_participants_non_players (non_players_id, stage_encounters_id) VALUES ($1, $2)"
+		query = "INSERT INTO stage_encounters_participants_non_players (non_players_id, stage_encounter_id) VALUES ($1, $2)" // dev:finder+query
 	}
 	tx, err := db.Conn.BeginTx(ctx, nil)
 	if err != nil {
@@ -219,7 +219,7 @@ func (db *DBX) AddNextEncounter(ctx context.Context, next []types.Next) error {
 		}
 	}()
 	for _, n := range next {
-		query := "INSERT INTO stage_next_encounter (display_text, upstream_id, current_encounter_id, next_encounter_id) VALUES ($1, $2, $3, $4) RETURNING id"
+		query := "INSERT INTO stage_next_encounter (display_text, upstream_id, current_encounter_id, next_encounter_id) VALUES ($1, $2, $3, $4) RETURNING id" // dev:finder+query
 		stmt, err := db.Conn.PrepareContext(ctx, query)
 		if err != nil {
 			db.Logger.Error("prepare insert into stage_next_encounter failed", "error", err.Error())
@@ -233,7 +233,7 @@ func (db *DBX) AddNextEncounter(ctx context.Context, next []types.Next) error {
 			return err
 		}
 		// insert into stage_next_objectives
-		queryObjectives := "INSERT INTO stage_next_objectives (upstream_id, kind, values) VALUES ($1, $2, $3) RETURNING id"
+		queryObjectives := "INSERT INTO stage_next_objectives (upstream_id, kind, values) VALUES ($1, $2, $3) RETURNING id" // dev:finder+query
 		stmtObjectives, err := db.Conn.PrepareContext(ctx, queryObjectives)
 		if err != nil {
 			db.Logger.Error("prepare insert into stage_next_objectives failed", "error", err.Error())
@@ -260,7 +260,7 @@ func (db *DBX) AddNextEncounter(ctx context.Context, next []types.Next) error {
 
 // stage_running_tasks
 func (db *DBX) AddRunningTask(ctx context.Context, text string, stageID, taskID, StorytellerID, encounterID int) error {
-	query := "INSERT INTO stage_running_tasks (display_text, stage_id, task_id, storyteller_id, stage_encounters_id) VALUES ($1, $2, $3, $4, $5)"
+	query := "INSERT INTO stage_running_tasks (display_text, stage_id, task_id, storyteller_id, stage_encounter_id) VALUES ($1, $2, $3, $4, $5)" // dev:finder+query
 	tx, err := db.Conn.BeginTx(ctx, nil)
 	if err != nil {
 		return err
@@ -286,36 +286,9 @@ func (db *DBX) AddRunningTask(ctx context.Context, text string, stageID, taskID,
 }
 
 // stage_encounter_activities
-func (db *DBX) AddEncounterActivities(ctx context.Context, text string, stageID, encounterID int) error {
-	query := "INSERT INTO stage_encounter_activities (notes, upstream_id, encounter_id) VALUES ($1, $2, $3)"
-	tx, err := db.Conn.BeginTx(ctx, nil)
-	if err != nil {
-		return err
-	}
-	// Defer a rollback in case anything fails.
-	defer func() {
-		rollback := tx.Rollback()
-		if err != nil && rollback != nil {
-			err = fmt.Errorf("rolling back transaction: %w", err)
-		}
-	}()
-
-	_, err = tx.ExecContext(ctx, query, text, stageID, encounterID)
-	if err != nil {
-		return err
-	}
-
-	// Commit the transaction.
-	if err = tx.Commit(); err != nil {
-		return err
-	}
-	return nil
-}
-
-// stage_encounter_activities
 func (db *DBX) RegisterActivities(ctx context.Context, stageID, encounterID int, actions types.Actions) error {
 	db.Logger.Debug("RegisterActivities", "stageID", stageID, "encounterID", encounterID, "actions", actions)
-	query := "INSERT INTO stage_encounter_activities (actions, upstream_id, encounter_id) VALUES ($1, $2, $3)"
+	query := "INSERT INTO stage_encounter_activities (actions, upstream_id, encounter_id) VALUES ($1, $2, $3)" // dev:finder+query
 	tx, err := db.Conn.BeginTx(ctx, nil)
 	if err != nil {
 		return err
@@ -341,7 +314,7 @@ func (db *DBX) RegisterActivities(ctx context.Context, stageID, encounterID int,
 }
 
 func (db *DBX) UpdateProcessedActivities(ctx context.Context, id int, processed bool, actions types.Actions) error {
-	query := "UPDATE stage_encounter_activities SET processed = $1, actions = $2 WHERE id = $3"
+	query := "UPDATE stage_encounter_activities SET processed = $1, actions = $2 WHERE id = $3" // dev:finder+query
 	tx, err := db.Conn.BeginTx(ctx, nil)
 	if err != nil {
 		return err
@@ -380,7 +353,7 @@ func (db *DBX) CloseStage(ctx context.Context, id int) error {
 	}()
 	// verify if all encounters are finished
 	// types.Running = 3
-	query := "SELECT (se.phase = 3), se.id, sc.channel, s.display_text FROM stage_encounters AS se JOIN stage_channel AS sc ON sc.upstream_id = se.stage_id JOIN stage AS s ON s.id = se.stage_id WHERE se.stage_id = $1"
+	query := "SELECT (se.phase = 3), se.id, sc.channel, s.display_text FROM stage_encounters AS se JOIN stage_channel AS sc ON sc.upstream_id = se.stage_id JOIN stage AS s ON s.id = se.stage_id WHERE se.stage_id = $1" // dev:finder+query
 	rows, err := tx.QueryContext(ctx, query, id)
 	if err != nil {
 		return err
@@ -405,7 +378,7 @@ func (db *DBX) CloseStage(ctx context.Context, id int) error {
 	}
 
 	// insert stage_encounter_activities
-	queryInsert := "INSERT INTO stage_encounter_activities (actions, upstream_id, encounter_id) VALUES ($1, $2, $3)"
+	queryInsert := "INSERT INTO stage_encounter_activities (actions, upstream_id, encounter_id) VALUES ($1, $2, $3)" // dev:finder+query
 	actions := types.NewActions()
 	actions["channel"] = channel
 	actions["text"] = "Stage is finished"
@@ -438,7 +411,7 @@ func (db *DBX) DeleteStageNextEncounter(ctx context.Context, id int) error {
 		}
 	}()
 	// SELECT ids
-	query := "SELECT s.id, o.id FROM stage_next_encounter AS s JOIN stage_next_objectives AS o ON s.id = o.upstream_id WHERE s.id = $1"
+	query := "SELECT s.id, o.id FROM stage_next_encounter AS s JOIN stage_next_objectives AS o ON s.id = o.upstream_id WHERE s.id = $1" // dev:finder+query
 	stmt, err := db.Conn.PrepareContext(ctx, query)
 	if err != nil {
 		db.Logger.Error("tx prepare on stage_next_encounter failed", "error", err.Error())
@@ -452,7 +425,7 @@ func (db *DBX) DeleteStageNextEncounter(ctx context.Context, id int) error {
 		return err
 	}
 	// delete FROM stage_next_objectives
-	query = "DELETE FROM stage_next_objectives WHERE id = $1"
+	query = "DELETE FROM stage_next_objectives WHERE id = $1" // dev:finder+query
 	stmt, err = db.Conn.PrepareContext(ctx, query)
 	if err != nil {
 		db.Logger.Error("tx prepare on stage_next_objectives failed", "error", err.Error())
@@ -465,7 +438,7 @@ func (db *DBX) DeleteStageNextEncounter(ctx context.Context, id int) error {
 		return err
 	}
 	// delete FROM stage_next_encounter
-	query = "DELETE FROM stage_next_encounter WHERE id = $1"
+	query = "DELETE FROM stage_next_encounter WHERE id = $1" // dev:finder+query
 	stmt, err = db.Conn.PrepareContext(ctx, query)
 	if err != nil {
 		db.Logger.Error("tx prepare on stage_next_encounter failed", "error", err.Error())
@@ -500,7 +473,7 @@ func (db *DBX) DeleteStageEncounterByID(ctx context.Context, id int) error {
 		}
 	}()
 	// delete FROM stage_encounters
-	query := "DELETE FROM stage_encounters WHERE id = $1"
+	query := "DELETE FROM stage_encounters WHERE id = $1" // dev:finder+query
 	stmt, err := db.Conn.PrepareContext(ctx, query)
 	if err != nil {
 		db.Logger.Error("tx prepare on stage_encounters failed", "error", err.Error())
