@@ -27,25 +27,30 @@ var (
 			// All commands and options must have a description
 			// Commands/options without description will fail the registration
 			// of the command.
-			Description: "Join to Play by Post",
+			Description: "Join to Play by Post to be a Storyteller or a Player",
 		},
 		{
 			Name: "play-by-post",
 			Options: []*discordgo.ApplicationCommandOption{
 				{
 					Type:        discordgo.ApplicationCommandOptionSubCommand,
+					Name:        "help",
+					Description: "show help message",
+				},
+				{
+					Type:        discordgo.ApplicationCommandOptionSubCommand,
 					Name:        "options",
-					Description: "Options select menu",
+					Description: "Options menu for play by post Story used by Storyteller and Players",
 				},
 				{
 					Type:        discordgo.ApplicationCommandOptionSubCommand,
 					Name:        "solo-start",
-					Description: "Solo list select menu",
+					Description: "Call it to to start a solo game",
 				},
 				{
 					Type:        discordgo.ApplicationCommandOptionSubCommand,
 					Name:        "solo-next",
-					Description: "Solo next select menu",
+					Description: "Get next select menu for your solo game",
 				},
 			},
 			Description: "Main Play by Post command",
@@ -168,14 +173,24 @@ func main() {
 }
 
 func (a *app) messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
-	a.logger.Info("message received", "message", m.Content)
 	if m.Author.ID == s.State.User.ID {
 		return
 	}
-	switch m.Content {
-	case "hello":
-		message := "Hello, I am Play by Post bot. How can I help you?"
+
+	a.logger.Info("message received", "message", m.Content)
+	switch {
+	case strings.Contains(strings.ToLower(m.Content), "hello"):
+		message := "Hello, I am Play by Post bot. How can I help you? Try `help` to get more options. ;)"
 		_, err := s.ChannelMessageSend(m.ChannelID, message)
+		if err != nil {
+			fmt.Println("Error sending message: ", err)
+		}
+	case strings.Contains(strings.ToLower(m.Content), "help"):
+		content, embed := helpMessage()
+		_, err := s.ChannelMessageSendComplex(m.ChannelID, &discordgo.MessageSend{
+			Content: content,
+			Embed:   embed[0],
+		})
 		if err != nil {
 			fmt.Println("Error sending message: ", err)
 		}
@@ -239,6 +254,22 @@ func (a *app) interactionCommand(s *discordgo.Session, i *discordgo.InteractionC
 		case "play-by-post":
 			var response *discordgo.InteractionResponse
 			switch i.ApplicationCommandData().Options[0].Name {
+			case "help":
+				content, embed := helpMessage()
+				response = &discordgo.InteractionResponse{
+					Type: discordgo.InteractionResponseChannelMessageWithSource,
+					Data: &discordgo.InteractionResponseData{
+						Title:      "Play by Post Help",
+						Content:    content,
+						Flags:      discordgo.MessageFlagsEphemeral,
+						Components: nil,
+						Embeds:     embed,
+					},
+				}
+				// err := s.InteractionRespond(i.Interaction, response)
+				// if err != nil {
+				// 	a.logger.Error("error responding to interaction", "error", err)
+				// }
 			case "options", "opt":
 				a.logger.Info("options")
 				// post command
@@ -389,9 +420,6 @@ func (a *app) interactionCommand(s *discordgo.Session, i *discordgo.InteractionC
 
 			}
 			// send response back to discord
-			if len(response.Data.Components) > 0 {
-				a.logger.Info("response", "content", fmt.Sprintf("%+v", response.Data.Components[0]))
-			}
 			err := s.InteractionRespond(i.Interaction, response)
 			if err != nil {
 				a.logger.Error("error responding to interaction", "error", err)
@@ -540,4 +568,41 @@ func (a *app) validate(w http.ResponseWriter, r *http.Request) {
 	}
 	w.WriteHeader(http.StatusOK)
 	fmt.Fprint(w, "{\"msg\":\"authenticated\"}")
+}
+
+func helpMessage() (string, []*discordgo.MessageEmbed) {
+	header := "help message from Play by Post Bot"
+	content := "Play by Post Bot helps you play roleplaying games using text messages here in Slack. You can play a shared table RPG session using the playbypost slash command, or you can play a solo adventure using the solo commands. Or, if you are a student, you can use the didatic command to play an interesting adventure and learn something special."
+	embed := &discordgo.MessageEmbed{
+		Title:       "Play by Post Help",
+		Description: content,
+		Fields: []*discordgo.MessageEmbedField{
+			{
+				Name:  "Join",
+				Value: "Use `/join` to register yourself to play as Storyteller or as Player",
+			},
+			{
+				Name:  "options",
+				Value: "Use `/play-by-post options` to get your options as a Player or Storyteller",
+			},
+			{
+				Name:  "solo-start",
+				Value: "Use `/play-by-post solo-start` to start a solo adventure",
+			},
+			{
+				Name:  "solo-next",
+				Value: "Use `/play-by-post solo-next` to get your options in your solo adventure",
+			},
+			{
+				Name:  "didatic-start",
+				Value: "Use `/play-by-post didatic-start` to start a didatic adventure",
+			},
+			{
+				Name:  "didatic-next",
+				Value: "Use `/play-by-post didatic-next` to get your options in your didatic adventure",
+			},
+		},
+	}
+	slice := []*discordgo.MessageEmbed{embed}
+	return header, slice
 }

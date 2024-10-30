@@ -166,7 +166,15 @@ func (a *app) middlewareEventsAPI(evt *socketmode.Event, client *socketmode.Clie
 			}
 			a.logger.Info(fmt.Sprintf("ID: %s, Fullname: %s, Email: %s\n", user.ID, user.Profile.RealName, user.Profile.Email))
 			attachment.Text = fmt.Sprintf("Hello %s", user.Profile.RealName)
-			if strings.Contains(ev.Text, "join") {
+			switch {
+			case strings.Contains(ev.Text, "help"):
+				payload := helpMessage()
+				_, _, err := client.PostMessage(ev.Channel, slack.MsgOptionBlocks(payload...)) // PostMessage(ev.Channel, slack.MsgOptionAttachments(attachment))
+				if err != nil {
+					a.logger.Error("failed to post message", "error", err.Error())
+				}
+
+			case strings.Contains(ev.Text, "join"):
 				body, err := a.web.AddChatInformation(user.ID, user.Profile.RealName, ev.Channel, types.Slack)
 				if err != nil {
 					a.logger.Error("error adding user info", "error", err.Error())
@@ -185,11 +193,11 @@ func (a *app) middlewareEventsAPI(evt *socketmode.Event, client *socketmode.Clie
 						attachment.Text = fmt.Sprintf("Let's play %s", user.Profile.RealName)
 					}
 				}
+				_, _, err = client.PostMessage(ev.Channel, slack.MsgOptionAttachments(attachment))
+				if err != nil {
+					a.logger.Error("failed to post message", "error", err.Error())
+				}
 
-			}
-			_, _, err = client.PostMessage(ev.Channel, slack.MsgOptionAttachments(attachment))
-			if err != nil {
-				a.logger.Error("failed to post message", "error", err.Error())
 			}
 
 		case *slackevents.MemberJoinedChannelEvent:
@@ -213,6 +221,13 @@ func (a *app) middlewareSlashCommand(evt *socketmode.Event, client *socketmode.C
 	a.logger.Info(fmt.Sprintf("slash command from %v by %s", cmd.ChannelID, cmd.UserID))
 	text := cmd.Text
 	switch text {
+	case "help":
+		payload := helpMessage()
+		payload2 := map[string]interface{}{
+			"blocks": payload,
+		}
+		client.Ack(*evt.Request, payload2)
+		return
 	case "opt":
 		msg, err := a.web.PostCommandComposed(cmd.UserID, "opt", cmd.ChannelID)
 		if err != nil {
@@ -441,6 +456,69 @@ func (a *app) middlewareInteractive(evt *socketmode.Event, client *socketmode.Cl
 	}
 
 	client.Ack(*evt.Request)
+}
+
+func helpMessage() []slack.Block {
+	h := []slack.Block{
+		slack.SectionBlock{
+			Type: "header",
+			Text: &slack.TextBlockObject{
+				Type: "plain_text",
+				Text: "Play by Post Help",
+			},
+		},
+		slack.SectionBlock{
+			Type: "section",
+			Text: &slack.TextBlockObject{
+				Type: "mrkdwn",
+				Text: "Play by Post Bot helps you play roleplaying games using text messages here in Slack. You can play a shared table RPG session using the playbypost slash command, or you can play a solo adventure using the solo commands. Or, if you are a student, you can use the didatic command to play an interesting adventure and learn something special.",
+			},
+		},
+		slack.SectionBlock{
+			Type: "section",
+			Text: &slack.TextBlockObject{
+				Type: "mrkdwn",
+				Text: "Use: `@playbypost join` to register yourself to play as Storyteller or as Player",
+			},
+		},
+		slack.SectionBlock{
+			Type: "section",
+			Text: &slack.TextBlockObject{
+				Type: "mrkdwn",
+				Text: "Use: `/playbypost options` to get your options as a Player or Storyteller",
+			},
+		},
+		slack.SectionBlock{
+			Type: "section",
+			Text: &slack.TextBlockObject{
+				Type: "mrkdwn",
+				Text: "Use: `/playbypost solo-start` to start a solo adventure",
+			},
+		},
+		slack.SectionBlock{
+			Type: "section",
+			Text: &slack.TextBlockObject{
+				Type: "mrkdwn",
+				Text: "Use: `/playbypost solo-next` to get your options in your solo adventure",
+			},
+		},
+		slack.SectionBlock{
+			Type: "section",
+			Text: &slack.TextBlockObject{
+				Type: "mrkdwn",
+				Text: "Use: `/playbypost didatic-start` to start a didatic adventure",
+			},
+		},
+		slack.SectionBlock{
+			Type: "section",
+			Text: &slack.TextBlockObject{
+				Type: "mrkdwn",
+				Text: "Use: `/playbypost didatic-next` to get your options in your didatic adventure",
+			},
+		},
+	}
+	// }
+	return h
 }
 
 func (a *app) events(w http.ResponseWriter, r *http.Request) {
