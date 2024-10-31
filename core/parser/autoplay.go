@@ -10,19 +10,39 @@ const (
 	StartSolo    = "start-solo"
 	NextSolo     = "next-solo"
 	DiceRollSolo = "dice-roll-solo"
+	StartDidatic = "didatic-start"
+	NextDidatic  = "didatic-next"
+	JoinDidatic  = "didatic-join"
 )
 
-func ParserAutoPlaysSolo(autoPlays []types.AutoPlay) []types.Options {
+func ParserAutoPlays(autoPlays []types.AutoPlay, kind string) []types.Options {
 	opts := []types.Options{}
+	cmd := StartSolo
+	solo := true
+	switch kind {
+	case StartDidatic:
+		cmd = StartDidatic
+		solo = false
+	case JoinDidatic:
+		cmd = JoinDidatic
+		solo = false
+	}
+
 	for _, v := range autoPlays {
-		opts = append(opts, types.Options{ID: v.ID, Name: v.Text, Value: fmt.Sprintf("%s-%s:%d", StartSolo, v.Text, v.ID)})
+		if v.Solo == solo {
+			opts = append(opts, types.Options{ID: v.ID, Name: v.Text, Value: fmt.Sprintf("%s-%s:%d", cmd, v.Text, v.ID)})
+		}
 	}
 	return opts
 }
 
-func ParserAutoPlaysNext(autoPlays []types.Next) ([]types.Options, bool) {
+func ParserAutoPlaysNext(autoPlays []types.Next, solo bool) ([]types.Options, bool) {
 	ok := false
 	opts := []types.Options{}
+	cmd := NextSolo
+	if !solo {
+		cmd = NextDidatic
+	}
 	for _, v := range autoPlays {
 		switch v.Objective.Kind {
 		case types.ObjectiveDiceRoll:
@@ -32,7 +52,7 @@ func ParserAutoPlaysNext(autoPlays []types.Next) ([]types.Options, bool) {
 				ok = true
 			}
 		case types.ObjectiveDefault:
-			opts = append(opts, types.Options{ID: v.UpstreamID, Name: v.Text, Value: fmt.Sprintf("%s-%s:%d", NextSolo, v.Text, v.NextEncounterID)})
+			opts = append(opts, types.Options{ID: v.UpstreamID, Name: v.Text, Value: fmt.Sprintf("%s-%s:%d", cmd, v.Text, v.NextEncounterID)})
 		}
 
 	}

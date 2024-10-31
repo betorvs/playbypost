@@ -94,6 +94,7 @@ const StageNextEncounter = () => {
           <div className="container mt-3" key="1">
               <Layout Logoff={Logoff} />
               <h2>{t("encounter.add-next-encounter", {ns: ['main', 'home']})}</h2>
+              <h4>{t("encounter.add-next-encounter-header", {ns: ['main', 'home']})}</h4>
           </div>
           <div className="container mt-3" key="2">
               <Form onSubmit={handleSubmit}>

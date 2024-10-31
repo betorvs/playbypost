@@ -29,7 +29,7 @@ func (a MainApi) ExecuteCommand(w http.ResponseWriter, r *http.Request) {
 	a.logger.Debug("command received", "command", text, "userid", headerUserID, "channel", headerStoryChannel)
 
 	switch {
-	case strings.HasPrefix(text, "solo-start"):
+	case strings.HasPrefix(text, types.SoloStart), strings.HasPrefix(text, types.DidaticStart): // solo-start
 		// solo mode: decide workflow
 		// list all available solo modes
 		// will return a list of auto_play entries
@@ -38,13 +38,27 @@ func (a MainApi) ExecuteCommand(w http.ResponseWriter, r *http.Request) {
 			a.s.ErrJSON(w, http.StatusBadRequest, "get auto play")
 			return
 		}
-		opts := parser.ParserAutoPlaysSolo(options)
-		composed := types.Composed{Msg: "Solo start options", Opts: opts}
-		a.logger.Debug("msg back", "composed", composed)
+		opts := parser.ParserAutoPlays(options, text)
+		composed := types.Composed{Msg: "options", Opts: opts}
+		a.logger.Info("msg back", "composed", composed)
 		a.s.JSON(w, composed)
 		return
 
-	case strings.HasPrefix(text, "solo-next"):
+	case strings.HasPrefix(text, types.DidaticJoin): // FIX
+		// didatic mode: decide workflow
+		// list all available didatic modes
+		// will return a list of auto_play entries
+		// headerStoryChannel, headerUserID
+		err := a.db.AddAutoPlayGroup(a.ctx, headerStoryChannel, headerUserID)
+		if err != nil {
+			a.s.ErrJSON(w, http.StatusBadRequest, "add auto play group")
+			return
+		}
+		composed := types.Composed{Msg: "Didatic join message received"}
+		a.s.JSON(w, composed)
+		return
+
+	case strings.HasPrefix(text, types.SoloNext), strings.HasPrefix(text, types.DidaticNext): // solo-next
 		// solo next mode: requires channel id and user id
 		opt, err := a.getAutoPlayOptByChannelID(headerStoryChannel, headerUserID)
 		if err != nil {
@@ -54,17 +68,17 @@ func (a MainApi) ExecuteCommand(w http.ResponseWriter, r *http.Request) {
 		}
 		a.logger.Debug("auto play found", "opt", opt)
 
-		composed := types.Composed{Msg: "Solo next options"}
+		composed := types.Composed{Msg: "next options"}
 		if len(opt.NextEncounters) > 0 {
-			opts, _ := parser.ParserAutoPlaysNext(opt.NextEncounters)
-			a.logger.Debug("auto play found", "opts", opts)
+			opts, _ := parser.ParserAutoPlaysNext(opt.NextEncounters, opt.AutoPlay.Solo)
+			a.logger.Info("auto play found", "opts", opts)
 			composed.Opts = opts
 		}
 
 		a.s.JSON(w, composed)
 		return
 
-	case strings.Contains(text, "opt"):
+	case strings.Contains(text, types.Opt): // opt
 		runningStage, storyteller, err := a.getRunningStageByChannelID(headerStoryChannel, headerUserID)
 		if err != nil {
 			a.s.ErrJSON(w, http.StatusBadRequest, "invalid userid")
@@ -81,7 +95,7 @@ func (a MainApi) ExecuteCommand(w http.ResponseWriter, r *http.Request) {
 		a.logger.Debug("msg back", "composed", composed)
 		a.s.JSON(w, composed)
 		return
-	case strings.HasPrefix(text, "cmd"):
+	case strings.HasPrefix(text, types.Cmd): //cmd
 		runningStage, storyteller, err := a.getRunningStageByChannelID(headerStoryChannel, headerUserID)
 		if err != nil {
 			a.s.ErrJSON(w, http.StatusBadRequest, "invalid userid")
@@ -142,11 +156,11 @@ func (a MainApi) ExecuteCommand(w http.ResponseWriter, r *http.Request) {
 		a.s.JSON(w, types.Msg{Msg: msg})
 		return
 
-	case strings.HasPrefix(text, "choice"):
+	case strings.HasPrefix(text, types.Choice), strings.HasPrefix(text, types.Decision): // choice, decision
 		// process solo choices for player
 		// start solo mode: requires channel id and user id
 		// next solo mode: requires channel id and user id
-		a.logger.Debug("choice command received", "text", text)
+		a.logger.Info("command received", "text", text)
 		actions := types.NewActions()
 		cmd, err := parser.TextToCommand(obj.Text)
 		if err != nil {
@@ -157,11 +171,11 @@ func (a MainApi) ExecuteCommand(w http.ResponseWriter, r *http.Request) {
 		actions["text"] = cmd.Text
 		actions["channel"] = headerStoryChannel
 		actions["userid"] = headerUserID
-		a.logger.Debug("choice command received", "cmd", cmd)
+		a.logger.Debug("command parsed", "cmd", cmd)
 		// command=choice;start-solo-solo-adventure-1:1;1 userid=1272952428379242611 channel=1275626175678517289
 		// err = a.db.RegisterActivitiesAutoPlay(a.ctx, cmd.ID, cmd.NF, actions)
 		switch {
-		case strings.HasPrefix(cmd.Act, parser.StartSolo):
+		case strings.HasPrefix(cmd.Act, parser.JoinDidatic): // join didatic
 			actions["auto_play_id"] = strconv.Itoa(cmd.ID)
 			// add auto play
 			encounterID, err := a.db.CreateAutoPlayChannelTx(a.ctx, headerStoryChannel, headerUserID, cmd.ID)
@@ -177,7 +191,23 @@ func (a MainApi) ExecuteCommand(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 
-		case strings.HasPrefix(cmd.Act, parser.NextSolo):
+		case strings.HasPrefix(cmd.Act, parser.StartSolo), strings.HasPrefix(cmd.Act, parser.StartDidatic): // solo-start
+			actions["auto_play_id"] = strconv.Itoa(cmd.ID)
+			// add auto play
+			encounterID, err := a.db.CreateAutoPlayChannelTx(a.ctx, headerStoryChannel, headerUserID, cmd.ID)
+			if err != nil {
+				a.s.ErrJSON(w, http.StatusBadRequest, "create auto play channel")
+				return
+			}
+			actions["encounter_id"] = strconv.Itoa(encounterID)
+			// create registry
+			err = a.db.RegisterActivitiesAutoPlay(a.ctx, cmd.ID, encounterID, actions)
+			if err != nil {
+				a.s.ErrJSON(w, http.StatusBadRequest, "register activities auto play")
+				return
+			}
+
+		case strings.HasPrefix(cmd.Act, parser.NextSolo), strings.HasPrefix(cmd.Act, parser.NextDidatic):
 			// {ID:8 Act:next-solo-for-A-go-enc-2 Text:choice;next-solo-for-A-go-enc-2:8;1 NF:1}"
 			actions["auto_play_id"] = strconv.Itoa(cmd.NF)
 			actions["encounter_id"] = strconv.Itoa(cmd.ID)
@@ -196,12 +226,20 @@ func (a MainApi) ExecuteCommand(w http.ResponseWriter, r *http.Request) {
 				a.s.ErrJSON(w, http.StatusBadRequest, "register activities auto play")
 				return
 			}
+			// end switch
 		}
 
 		msg := "command accepted"
 		a.s.JSON(w, types.Msg{Msg: msg})
 		return
 
+		// case strings.HasPrefix(text, types.Decision): // decision
+		// 	// process didatic commands
+		// 	a.logger.Info("decision command received", "text", text)
+		// 	msg := "command accepted"
+		// 	a.s.JSON(w, types.Msg{Msg: msg})
+		// 	return
+		// end switch case
 	}
 	// msg := fmt.Sprintf("player found '%s' and story id found '%d' ", player.Name, scene.Story.ID)
 	msg := "no options for you"

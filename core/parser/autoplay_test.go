@@ -8,7 +8,7 @@ import (
 
 func TestParserAutoPlaysSolo(t *testing.T) {
 	autoPlays := []types.AutoPlay{}
-	result := ParserAutoPlaysSolo(autoPlays)
+	result := ParserAutoPlays(autoPlays, "start-solo")
 	if len(result) != 0 {
 		t.Errorf("ParserAutoPlaysSolo failed, expected %v, got %v", 0, len(result))
 	}
@@ -16,7 +16,7 @@ func TestParserAutoPlaysSolo(t *testing.T) {
 
 func TestParserAutoPlaysNext(t *testing.T) {
 	autoPlays := []types.Next{}
-	result, _ := ParserAutoPlaysNext(autoPlays)
+	result, _ := ParserAutoPlaysNext(autoPlays, true)
 	if len(result) != 0 {
 		t.Errorf("ParserAutoPlaysNext failed, expected %v, got %v", 0, len(result))
 	}

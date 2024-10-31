@@ -2,6 +2,7 @@ package pg
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 	"slices"
 	"time"
@@ -189,8 +190,8 @@ func (db *DBX) CreateAutoPlayChannelTx(ctx context.Context, channelID, userID st
 		return -1, err
 	}
 	defer stmt.Close()
-	var autoPlayChannelid int
-	err = tx.StmtContext(ctx, stmt).QueryRow(channelID, apID).Scan(&autoPlayChannelid)
+	var autoPlayChannelID int
+	err = tx.StmtContext(ctx, stmt).QueryRow(channelID, apID).Scan(&autoPlayChannelID)
 	if err == nil {
 		return -1, fmt.Errorf("channel already in use")
 	}
@@ -222,7 +223,7 @@ func (db *DBX) CreateAutoPlayChannelTx(ctx context.Context, channelID, userID st
 		return -1, err
 	}
 	defer stmt.Close()
-	err = tx.StmtContext(ctx, stmt).QueryRow(channelID, apID, true).Scan(&autoPlayChannelid)
+	err = tx.StmtContext(ctx, stmt).QueryRow(channelID, apID, true).Scan(&autoPlayChannelID)
 	if err != nil {
 		db.Logger.Error("tx insert on auto_play_channel failed", "error", err.Error())
 		return -1, err
@@ -230,43 +231,12 @@ func (db *DBX) CreateAutoPlayChannelTx(ctx context.Context, channelID, userID st
 	// insert into users
 	// check if user exists
 	// check user exist
-	queryUser := "SELECT id FROM users WHERE userid = $1" // dev:finder+query
-	stmtQueryUser, err := db.Conn.PrepareContext(ctx, queryUser)
+	validUserID, err := db.addUserAndGroup(ctx, userID, autoPlayChannelID, tx)
 	if err != nil {
-		db.Logger.Error("tx prepare on queryUser failed", "error", err.Error())
+		db.Logger.Error("error on add user and group", "error", err.Error())
 		return -1, err
 	}
-	defer stmtQueryUser.Close()
-	var validUserID int
-	err = tx.StmtContext(ctx, stmtQueryUser).QueryRow(userID).Scan(&validUserID)
-	if err != nil {
-		db.Logger.Debug("user not found", "return", err.Error())
-		// just log this error
-		// return -1, err
-
-	}
-	if validUserID == 0 {
-		id, err := db.createUser(ctx, userID, tx)
-		if err != nil {
-			db.Logger.Error("insert into users failed", "error", err.Error())
-			return -1, err
-		}
-		validUserID = id
-	}
-
-	// add user id to auto_play_group
-	query = "INSERT INTO auto_play_group(user_id, upstream_id, last_update_at, active) VALUES($1, $2, $3, $4)" // dev:finder+query
-	stmt, err = db.Conn.PrepareContext(ctx, query)
-	if err != nil {
-		db.Logger.Error("tx prepare insert into auto_play_group failed", "error", err.Error())
-		return -1, err
-	}
-	defer stmt.Close()
-	_, err = tx.StmtContext(ctx, stmt).ExecContext(ctx, validUserID, autoPlayChannelid, time.Now(), true)
-	if err != nil {
-		db.Logger.Error("tx insert into auto_play_group failed", "error", err.Error())
-		return -1, err
-	}
+	db.Logger.Info("user added to auto play channel", "autoPlayChannelID", autoPlayChannelID, "validUserID", validUserID)
 
 	// commit if everything is okay
 	if err = tx.Commit(); err != nil {
@@ -274,6 +244,49 @@ func (db *DBX) CreateAutoPlayChannelTx(ctx context.Context, channelID, userID st
 		return -1, err
 	}
 	return encounterID, nil
+}
+
+// add auto_play_group
+func (db *DBX) AddAutoPlayGroup(ctx context.Context, channelID, userID string) error {
+	tx, err := db.Conn.BeginTx(ctx, nil)
+	if err != nil {
+		return err
+	}
+	// Defer a rollback in case anything fails.
+	defer func() {
+		rollback := tx.Rollback()
+		if err != nil && rollback != nil {
+			err = fmt.Errorf("rolling back transaction: %w", err)
+		}
+	}()
+	// check if channel already in use
+	query := "SELECT id FROM auto_play_channel WHERE active = true AND channel = $1" // dev:finder+query
+	stmt, err := db.Conn.PrepareContext(ctx, query)
+	if err != nil {
+		db.Logger.Error("tx prepare SELECT on auto_play_channel failed", "error", err.Error())
+		return err
+	}
+	defer stmt.Close()
+	var autoPlayChannelID int
+	err = tx.StmtContext(ctx, stmt).QueryRow(channelID).Scan(&autoPlayChannelID)
+	if err != nil {
+		db.Logger.Error("tx query on auto_play_channel failed", "error", err.Error())
+		return fmt.Errorf("channel not in use")
+	}
+
+	// add user id to auto_play_group
+	validUserID, err := db.addUserAndGroup(ctx, userID, autoPlayChannelID, tx)
+	if err != nil {
+		db.Logger.Error("error on add user and group", "error", err.Error())
+		return err
+	}
+	db.Logger.Info("user added to auto play group", "channelID", channelID, "validUserID", validUserID)
+	// commit if everything is okay
+	if err = tx.Commit(); err != nil {
+		db.Logger.Error("tx commit on AddAutoPlayGroup failed", "error", err.Error())
+		return err
+	}
+	return nil
 }
 
 // add registry to auto_play_encounter_activities
@@ -553,4 +566,64 @@ func (db *DBX) DeleteAutoPlayNextEncounter(ctx context.Context, id int) error {
 	}
 
 	return nil
+}
+
+func (db *DBX) addUserAndGroup(ctx context.Context, userID string, autoPlayChannelID int, tx *sql.Tx) (int, error) {
+	// check user exist
+	query := "SELECT id FROM users WHERE userid = $1" // dev:finder+query
+	stmt, err := db.Conn.PrepareContext(ctx, query)
+	if err != nil {
+		db.Logger.Error("tx prepare on queryUser failed", "error", err.Error())
+		return -1, err
+	}
+	defer stmt.Close()
+	var validUserID int
+	err = tx.StmtContext(ctx, stmt).QueryRow(userID).Scan(&validUserID)
+	if err != nil {
+		db.Logger.Debug("user not found", "return", err.Error())
+		// just log this error
+		// return -1, err
+
+	}
+	if validUserID == 0 {
+		id, err := db.createUser(ctx, userID, tx)
+		if err != nil {
+			db.Logger.Error("insert into users failed", "error", err.Error())
+			return -1, err
+		}
+		validUserID = id
+	}
+	// check user in auto_play_group
+	query = "SELECT id FROM auto_play_group WHERE user_id = $1 AND upstream_id = $2" // dev:finder+query
+	stmt, err = db.Conn.PrepareContext(ctx, query)
+	if err != nil {
+		db.Logger.Error("tx prepare on queryUser failed", "error", err.Error())
+		return -1, err
+	}
+	defer stmt.Close()
+	var groupID int
+	err = tx.StmtContext(ctx, stmt).QueryRow(validUserID, autoPlayChannelID).Scan(&groupID)
+	if err != nil {
+		db.Logger.Debug("user not found in auto_play_group", "return", err.Error())
+		return validUserID, nil
+	}
+	if groupID != 0 {
+		db.Logger.Debug("user already in auto_play_group", "auto_play_group_id", groupID)
+		return validUserID, nil
+	}
+
+	// add user id to auto_play_group
+	query = "INSERT INTO auto_play_group(user_id, upstream_id, last_update_at, active) VALUES($1, $2, $3, $4)" // dev:finder+query
+	stmt, err = db.Conn.PrepareContext(ctx, query)
+	if err != nil {
+		db.Logger.Error("tx prepare insert into auto_play_group failed", "error", err.Error())
+		return -1, err
+	}
+	defer stmt.Close()
+	_, err = tx.StmtContext(ctx, stmt).ExecContext(ctx, validUserID, autoPlayChannelID, time.Now(), true)
+	if err != nil {
+		db.Logger.Error("tx insert into auto_play_group failed", "error", err.Error())
+		return -1, err
+	}
+	return validUserID, nil
 }

@@ -73,8 +73,8 @@
         "list-item-19": "Encounters have 4 phases: waiting, started (players will receive a announce), running (can act) and finished",
         "list-item-20": "You cannot create a new Stage using the same Channel.",
         "list-item-21": "You cannot close a Stage if you do not finish all Encounters.",
-        "sub-header-4": "Now. Interact with our Chat Bot calling it 'playbypost help'",
-        "notes-1": "IMPORTANT: You can only delete emtpy Story. Encounters you can delete only if it's not associated with Stage or Auto Play."
+        "sub-header-4": "Now. Interact with our Chat Bot calling it '@play-by-post help'",
+        "notes-1": "IMPORTANT: You can only delete emtpy Story. Encounters you can delete only if it's not associated with Stage or Auto Play. You can run only one story (Stage or Auto Play) per channel."
     },
     "story": {
         "this": "Story",
@@ -109,6 +109,7 @@
         "select-encounter": "Select an Encounter",
         "not-found": "Encounter not found",
         "add-next-encounter": "Add Next Encounter",
+        "add-next-encounter-header": "You can add mutiple Encounters, but all Encounter field must refer to the same Encounter",
         "next-text1": "Choose an Encounter to be used",
         "next-text2": "It can be assigned multiple times, each of it will enable a option for player to choose his destiny. Keep name different per encounter.",
         "next-text3": "It should be different. Each pair of Next Encounter with Optional Name should be unique.",

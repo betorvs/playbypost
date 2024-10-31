@@ -52,6 +52,21 @@ var (
 					Name:        "solo-next",
 					Description: "Get next select menu for your solo game",
 				},
+				{
+					Type:        discordgo.ApplicationCommandOptionSubCommand,
+					Name:        "didatic-join",
+					Description: "Join to a Didatic Adventure",
+				},
+				{
+					Type:        discordgo.ApplicationCommandOptionSubCommand,
+					Name:        "didatic-start",
+					Description: "Call it to to start a didatic game",
+				},
+				{
+					Type:        discordgo.ApplicationCommandOptionSubCommand,
+					Name:        "didatic-next",
+					Description: "Get next select menu for your didatic game",
+				},
 			},
 			Description: "Main Play by Post command",
 		},
@@ -253,7 +268,8 @@ func (a *app) interactionCommand(s *discordgo.Session, i *discordgo.InteractionC
 
 		case "play-by-post":
 			var response *discordgo.InteractionResponse
-			switch i.ApplicationCommandData().Options[0].Name {
+			text := i.ApplicationCommandData().Options[0].Name
+			switch text {
 			case "help":
 				content, embed := helpMessage()
 				response = &discordgo.InteractionResponse{
@@ -266,14 +282,10 @@ func (a *app) interactionCommand(s *discordgo.Session, i *discordgo.InteractionC
 						Embeds:     embed,
 					},
 				}
-				// err := s.InteractionRespond(i.Interaction, response)
-				// if err != nil {
-				// 	a.logger.Error("error responding to interaction", "error", err)
-				// }
-			case "options", "opt":
+			case "options", types.Opt:
 				a.logger.Info("options")
 				// post command
-				msg, err := a.web.PostCommandComposed(userid, "opt", i.ChannelID)
+				msg, err := a.web.PostCommandComposed(userid, types.Opt, i.ChannelID)
 				if err != nil {
 					a.logger.Error("error posting to backend", "error", err.Error())
 				}
@@ -291,7 +303,7 @@ func (a *app) interactionCommand(s *discordgo.Session, i *discordgo.InteractionC
 						})
 					}
 					selectMenu := discordgo.SelectMenu{
-						CustomID:    "opt",
+						CustomID:    types.Opt,
 						Placeholder: textPickItem,
 						Options:     options,
 					}
@@ -319,10 +331,10 @@ func (a *app) interactionCommand(s *discordgo.Session, i *discordgo.InteractionC
 					}
 				}
 
-			case "solo-start":
-				a.logger.Info("solo-start")
+			case types.SoloStart, types.DidaticStart, types.DidaticJoin: // solo-start
+				a.logger.Info("start or join", "text", text)
 				// post command
-				msg, err := a.web.PostCommandComposed(userid, "solo-start", i.ChannelID)
+				msg, err := a.web.PostCommandComposed(userid, text, i.ChannelID)
 				if err != nil {
 					a.logger.Error("error posting to backend", "error", err.Error())
 				}
@@ -331,6 +343,10 @@ func (a *app) interactionCommand(s *discordgo.Session, i *discordgo.InteractionC
 					textPickItem = fmt.Sprintf("%s Pick an item", msg.Msg)
 				}
 				a.logger.Info("msg", "msg", msg)
+				startOpt := types.Choice
+				if strings.Contains(text, types.Didatic) {
+					startOpt = types.Decision
+				}
 				if len(msg.Opts) > 0 {
 					// create select menu
 					options := []discordgo.SelectMenuOption{}
@@ -341,7 +357,7 @@ func (a *app) interactionCommand(s *discordgo.Session, i *discordgo.InteractionC
 						})
 					}
 					selectMenu := discordgo.SelectMenu{
-						CustomID:    "choice",
+						CustomID:    startOpt,
 						Placeholder: textPickItem,
 						Options:     options,
 					}
@@ -359,26 +375,34 @@ func (a *app) interactionCommand(s *discordgo.Session, i *discordgo.InteractionC
 						},
 					}
 				} else {
+					noOptions := "No options available"
+					if msg.Msg != "" {
+						noOptions = msg.Msg
+					}
 					response = &discordgo.InteractionResponse{
 						Type: discordgo.InteractionResponseChannelMessageWithSource,
 						Data: &discordgo.InteractionResponseData{
-							Content:    "No options available",
+							Content:    noOptions,
 							Flags:      discordgo.MessageFlagsEphemeral,
 							Components: nil,
 						},
 					}
 				}
 
-			case "solo-next":
-				a.logger.Info("solo-next")
+			case types.SoloNext, types.DidaticNext: // solo-next
+				a.logger.Info("next", "text", text)
 				// post command
-				msg, err := a.web.PostCommandComposed(userid, "solo-next", i.ChannelID)
+				msg, err := a.web.PostCommandComposed(userid, text, i.ChannelID)
 				if err != nil {
 					a.logger.Error("error posting to backend", "error", err.Error())
 				}
 				textPickItem := "Pick an item "
 				if msg.Msg != "" {
 					textPickItem = fmt.Sprintf("%s Pick an item", msg.Msg)
+				}
+				startOpt := types.Choice
+				if strings.Contains(text, types.Didatic) {
+					startOpt = types.Decision
 				}
 				if len(msg.Opts) > 0 {
 					// create select menu
@@ -390,7 +414,7 @@ func (a *app) interactionCommand(s *discordgo.Session, i *discordgo.InteractionC
 						})
 					}
 					selectMenu := discordgo.SelectMenu{
-						CustomID:    "choice",
+						CustomID:    startOpt,
 						Placeholder: textPickItem,
 						Options:     options,
 					}
@@ -427,10 +451,11 @@ func (a *app) interactionCommand(s *discordgo.Session, i *discordgo.InteractionC
 
 		}
 	case discordgo.InteractionMessageComponent:
-		switch i.MessageComponentData().CustomID {
-		case "opt":
+		customID := i.MessageComponentData().CustomID
+		switch customID {
+		case types.Opt: // opt
 			data := i.MessageComponentData()
-			startOpt := "cmd"
+			startOpt := types.Cmd
 			var errorMessage, returnMessage string
 			channel, userid, text, display, err := cli.ParserValues(data.Values[0], startOpt)
 			if err != nil {
@@ -459,9 +484,12 @@ func (a *app) interactionCommand(s *discordgo.Session, i *discordgo.InteractionC
 				a.logger.Error("error responding to interaction", "error", err)
 			}
 
-		case "choice":
+		case types.Choice, types.Decision: // choice
 			data := i.MessageComponentData()
-			startOpt := "choice"
+			startOpt := types.Choice
+			if customID == types.Decision {
+				startOpt = types.Decision
+			}
 			var errorMessage, returnMessage string
 			channel, userid, text, display, err := cli.ParserValues(data.Values[0], startOpt)
 			if err != nil {
@@ -596,6 +624,10 @@ func helpMessage() (string, []*discordgo.MessageEmbed) {
 			{
 				Name:  "didatic-start",
 				Value: "Use `/play-by-post didatic-start` to start a didatic adventure",
+			},
+			{
+				Name:  "didatic-join",
+				Value: "Use `/play-by-post didatic-join` to join in a didatic adventure",
 			},
 			{
 				Name:  "didatic-next",
