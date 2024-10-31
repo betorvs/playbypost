@@ -44,7 +44,7 @@ func (a *WorkerAPI) parseAutoPlayCommand(cmd types.Activity) error {
 		}
 		// send message to chat
 		user := cmd.Actions["userid"]
-		if cmd.Actions["command"] == parser.StartDidatic {
+		if strings.HasPrefix(cmd.Actions["command"], parser.StartDidatic) {
 			user = "ALL"
 		}
 		announceStory := fmt.Sprintf("Starting: %s\n%s", title, storyAnnouncement)

@@ -3,6 +3,7 @@ package pg
 import (
 	"context"
 	"database/sql"
+	"slices"
 
 	"github.com/betorvs/playbypost/core/sys/web/types"
 	"github.com/betorvs/playbypost/core/utils"
@@ -109,7 +110,7 @@ func (db *DBX) GetAutoPlayOptionsByChannelID(ctx context.Context, channelID, use
 	JOIN users AS u ON apg.user_id = u.id 
 	JOIN auto_play_next_encounter AS apne ON apne.upstream_id = ap.id 
 	JOIN auto_play_next_objectives AS apno ON apno.upstream_id = apne.id
-	WHERE ac.active = 'true' AND apg.active = 'true' AND aps.active = 'true' AND apne.current_encounter_id = aps.encounter_id AND ac.channel = $1`
+	WHERE ac.active = true AND apg.active = true AND aps.active = true AND apne.current_encounter_id = aps.encounter_id AND ac.channel = $1`
 	// dev:finder+multiline+query
 	rows, err := db.Conn.QueryContext(ctx, query, channelID)
 	if err != nil {
@@ -133,8 +134,22 @@ func (db *DBX) GetAutoPlayOptionsByChannelID(ctx context.Context, channelID, use
 		}
 		if group.UserID == userID {
 			// only append userid group options
-			autoPlay.Group = append(autoPlay.Group, group)
-			autoPlay.NextEncounters = append(autoPlay.NextEncounters, next)
+			if !slices.Contains(autoPlay.Group, group) {
+				autoPlay.Group = append(autoPlay.Group, group)
+			}
+			// if !slices.Contains(autoPlay.NextEncounters, next) {
+			// 	autoPlay.NextEncounters = append(autoPlay.NextEncounters, next)
+			// }
+			found := false
+			for _, n := range autoPlay.NextEncounters {
+				if n.ID == next.ID && n.UpstreamID == next.UpstreamID && n.EncounterID == next.EncounterID && n.NextEncounterID == next.NextEncounterID && n.Text == next.Text && n.Objective.Kind == next.Objective.Kind && slices.Equal(n.Objective.Values, next.Objective.Values) {
+					found = true
+					break
+				}
+			}
+			if !found {
+				autoPlay.NextEncounters = append(autoPlay.NextEncounters, next)
+			}
 		}
 
 	}

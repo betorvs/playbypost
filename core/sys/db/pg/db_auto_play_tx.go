@@ -604,14 +604,14 @@ func (db *DBX) addUserAndGroup(ctx context.Context, userID string, autoPlayChann
 	var groupID int
 	err = tx.StmtContext(ctx, stmt).QueryRow(validUserID, autoPlayChannelID).Scan(&groupID)
 	if err != nil {
-		db.Logger.Debug("user not found in auto_play_group", "return", err.Error())
-		return validUserID, nil
+		db.Logger.Info("user not found in auto_play_group", "error", err.Error())
+		// return validUserID, err
 	}
 	if groupID != 0 {
-		db.Logger.Debug("user already in auto_play_group", "auto_play_group_id", groupID)
+		db.Logger.Info("user already in auto_play_group", "auto_play_group_id", groupID)
 		return validUserID, nil
 	}
-
+	db.Logger.Info("creating auto_play_group")
 	// add user id to auto_play_group
 	query = "INSERT INTO auto_play_group(user_id, upstream_id, last_update_at, active) VALUES($1, $2, $3, $4)" // dev:finder+query
 	stmt, err = db.Conn.PrepareContext(ctx, query)

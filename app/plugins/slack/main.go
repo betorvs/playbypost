@@ -220,6 +220,7 @@ func (a *app) middlewareSlashCommand(evt *socketmode.Event, client *socketmode.C
 
 	a.logger.Info(fmt.Sprintf("slash command from %v by %s", cmd.ChannelID, cmd.UserID))
 	text := strings.ToLower(cmd.Text)
+	noOptions := "No options for you"
 	switch text {
 	case "help":
 		payload := helpMessage()
@@ -330,6 +331,9 @@ func (a *app) middlewareSlashCommand(evt *socketmode.Event, client *socketmode.C
 			client.Ack(*evt.Request, payload)
 			return
 		}
+		if msg.Msg != "" && text == types.DidaticJoin {
+			noOptions = msg.Msg
+		}
 
 	case types.SoloNext, types.DidaticNext: // "solo-next"
 		a.logger.Info("game next", "text", text)
@@ -393,7 +397,7 @@ func (a *app) middlewareSlashCommand(evt *socketmode.Event, client *socketmode.C
 				Type: "section",
 				Text: &slack.TextBlockObject{
 					Type: "mrkdwn",
-					Text: "*No options for you*",
+					Text: noOptions,
 				},
 			},
 		},
