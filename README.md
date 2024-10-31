@@ -10,7 +10,7 @@
 
 ## For users
 
-- [Users Guide](./docs/UserGuide.md)
+- [Users Guide](./UserGuide.md)
 
 
 ## development instructions
