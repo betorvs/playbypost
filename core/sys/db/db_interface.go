@@ -98,11 +98,13 @@ type DBClient interface {
 	GetAutoPlayEncounterListByStoryID(ctx context.Context, storyID int) (types.EncounterList, error)
 	GetAutoPlayOptionsByChannelID(ctx context.Context, channelID, userID string) (types.AutoPlayOptions, error)
 	GetAutoPlayActivities(ctx context.Context) ([]types.Activity, error)
+	GetStoryAnnouncementByAutoPlayID(ctx context.Context, autoPlayID int) (string, string, error)
 	GetAnnounceByEncounterID(ctx context.Context, encounterID, autoPlayID int) (string, bool, error)
 	GetNextEncounterByAutoPlayID(ctx context.Context, autoPlayID int) ([]types.Next, error)
 	CreateAutoPlayTx(ctx context.Context, text string, storyID int, solo bool) (int, error)
 	AddAutoPlayNext(ctx context.Context, next []types.Next) error
 	CreateAutoPlayChannelTx(ctx context.Context, channelID, userID string, autoPlayID int) (int, error)
+	AddAutoPlayGroup(ctx context.Context, channelID, userID string) error
 	RegisterActivitiesAutoPlay(ctx context.Context, autoPlayID, encounterID int, actions types.Actions) error
 	UpdateProcessedAutoPlay(ctx context.Context, id int, processed bool, actions types.Actions) error
 	UpdateAutoPlayGroup(ctx context.Context, id, count int, date time.Time) error

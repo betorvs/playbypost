@@ -295,14 +295,14 @@ func TestIntegration(t *testing.T) {
 		playerAutoPlay := fmt.Sprintf("player-auto-play-%s", random)
 		channelAutoPlay := fmt.Sprintf("channel-auto-play-%s", random)
 		// a.postCommand(userid, "solo-start", i.ChannelID)
-		msgSoloStart, err14 := h.PostCommandComposed(playerAutoPlay, "solo-start", channelAutoPlay)
+		msgSoloStart, err14 := h.PostCommandComposed(playerAutoPlay, types.SoloStart, channelAutoPlay)
 		if err14 != nil {
 			t.Error("error post solo-start command")
 		}
 		// parse solo-start response
 		for _, m := range msgSoloStart.Opts {
 			if m.Name == autoPlay1.Text {
-				text := fmt.Sprintf("choice;%s;%d", m.Value, m.ID)
+				text := fmt.Sprintf("%s;%s;%d", types.Choice, m.Value, m.ID)
 				_, err16 := h.PostCommandComposed(playerAutoPlay, text, channelAutoPlay)
 				if err16 != nil {
 					t.Error("error post cmd to command")
@@ -315,7 +315,7 @@ func TestIntegration(t *testing.T) {
 		sleep := 11
 		t.Logf("waiting %d seconds to process solo-start command", sleep)
 		time.Sleep(time.Duration(sleep) * time.Second)
-		msgSoloNext, err16 := h.PostCommandComposed(playerAutoPlay, "solo-next", channelAutoPlay)
+		msgSoloNext, err16 := h.PostCommandComposed(playerAutoPlay, types.SoloNext, channelAutoPlay)
 		if err16 != nil {
 			t.Error("error post solo-next command")
 		}

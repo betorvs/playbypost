@@ -166,7 +166,15 @@ func (a *app) middlewareEventsAPI(evt *socketmode.Event, client *socketmode.Clie
 			}
 			a.logger.Info(fmt.Sprintf("ID: %s, Fullname: %s, Email: %s\n", user.ID, user.Profile.RealName, user.Profile.Email))
 			attachment.Text = fmt.Sprintf("Hello %s", user.Profile.RealName)
-			if strings.Contains(ev.Text, "join") {
+			switch {
+			case strings.Contains(ev.Text, "help"):
+				payload := helpMessage()
+				_, _, err := client.PostMessage(ev.Channel, slack.MsgOptionBlocks(payload...)) // PostMessage(ev.Channel, slack.MsgOptionAttachments(attachment))
+				if err != nil {
+					a.logger.Error("failed to post message", "error", err.Error())
+				}
+
+			case strings.Contains(ev.Text, "join"):
 				body, err := a.web.AddChatInformation(user.ID, user.Profile.RealName, ev.Channel, types.Slack)
 				if err != nil {
 					a.logger.Error("error adding user info", "error", err.Error())
@@ -185,11 +193,11 @@ func (a *app) middlewareEventsAPI(evt *socketmode.Event, client *socketmode.Clie
 						attachment.Text = fmt.Sprintf("Let's play %s", user.Profile.RealName)
 					}
 				}
+				_, _, err = client.PostMessage(ev.Channel, slack.MsgOptionAttachments(attachment))
+				if err != nil {
+					a.logger.Error("failed to post message", "error", err.Error())
+				}
 
-			}
-			_, _, err = client.PostMessage(ev.Channel, slack.MsgOptionAttachments(attachment))
-			if err != nil {
-				a.logger.Error("failed to post message", "error", err.Error())
 			}
 
 		case *slackevents.MemberJoinedChannelEvent:
@@ -211,10 +219,18 @@ func (a *app) middlewareSlashCommand(evt *socketmode.Event, client *socketmode.C
 	}
 
 	a.logger.Info(fmt.Sprintf("slash command from %v by %s", cmd.ChannelID, cmd.UserID))
-	text := cmd.Text
+	text := strings.ToLower(cmd.Text)
+	noOptions := "No options for you"
 	switch text {
-	case "opt":
-		msg, err := a.web.PostCommandComposed(cmd.UserID, "opt", cmd.ChannelID)
+	case "help":
+		payload := helpMessage()
+		payload2 := map[string]interface{}{
+			"blocks": payload,
+		}
+		client.Ack(*evt.Request, payload2)
+		return
+	case types.Opt: // opt
+		msg, err := a.web.PostCommandComposed(cmd.UserID, types.Opt, cmd.ChannelID)
 		if err != nil {
 			a.logger.Error("error posting to backend", "error", err.Error())
 		}
@@ -264,9 +280,9 @@ func (a *app) middlewareSlashCommand(evt *socketmode.Event, client *socketmode.C
 			return
 		}
 
-	case "solo-start":
-		a.logger.Info("Solo game start")
-		msg, err := a.web.PostCommandComposed(cmd.UserID, "solo-start", cmd.ChannelID)
+	case types.SoloStart, types.DidaticStart, types.DidaticJoin: // "solo-start"
+		a.logger.Info("start or join", "text", text)
+		msg, err := a.web.PostCommandComposed(cmd.UserID, text, cmd.ChannelID)
 		if err != nil {
 			a.logger.Error("error posting to backend", "error", err.Error())
 		}
@@ -315,10 +331,13 @@ func (a *app) middlewareSlashCommand(evt *socketmode.Event, client *socketmode.C
 			client.Ack(*evt.Request, payload)
 			return
 		}
+		if msg.Msg != "" && text == types.DidaticJoin {
+			noOptions = msg.Msg
+		}
 
-	case "solo-next":
-		a.logger.Info("Solo game next")
-		msg, err := a.web.PostCommandComposed(cmd.UserID, "solo-next", cmd.ChannelID)
+	case types.SoloNext, types.DidaticNext: // "solo-next"
+		a.logger.Info("game next", "text", text)
+		msg, err := a.web.PostCommandComposed(cmd.UserID, text, cmd.ChannelID)
 		if err != nil {
 			a.logger.Error("error posting to backend", "error", err.Error())
 		}
@@ -378,7 +397,7 @@ func (a *app) middlewareSlashCommand(evt *socketmode.Event, client *socketmode.C
 				Type: "section",
 				Text: &slack.TextBlockObject{
 					Type: "mrkdwn",
-					Text: "*No options for you*",
+					Text: noOptions,
 				},
 			},
 		},
@@ -405,9 +424,12 @@ func (a *app) middlewareInteractive(evt *socketmode.Event, client *socketmode.Cl
 
 	a.logger.Info("value received", "values", values)
 	// check if command or solo
-	startOpt := "cmd"
-	if strings.Contains(values, "solo") {
-		startOpt = "choice"
+	startOpt := types.Cmd
+	if strings.Contains(values, types.Solo) {
+		startOpt = types.Choice
+	}
+	if strings.Contains(values, types.Didatic) {
+		startOpt = types.Decision
 	}
 	var errorMessage, returnMessage string
 	channel, userid, text, display, err := cli.ParserValues(values, startOpt)
@@ -441,6 +463,76 @@ func (a *app) middlewareInteractive(evt *socketmode.Event, client *socketmode.Cl
 	}
 
 	client.Ack(*evt.Request)
+}
+
+func helpMessage() []slack.Block {
+	h := []slack.Block{
+		slack.SectionBlock{
+			Type: "header",
+			Text: &slack.TextBlockObject{
+				Type: "plain_text",
+				Text: "Play by Post Help",
+			},
+		},
+		slack.SectionBlock{
+			Type: "section",
+			Text: &slack.TextBlockObject{
+				Type: "mrkdwn",
+				Text: "Play by Post Bot helps you play roleplaying games using text messages here in Slack. You can play a shared table RPG session using the playbypost slash command, or you can play a solo adventure using the solo commands. Or, if you are a student, you can use the didatic command to play an interesting adventure and learn something special.",
+			},
+		},
+		slack.SectionBlock{
+			Type: "section",
+			Text: &slack.TextBlockObject{
+				Type: "mrkdwn",
+				Text: "Use: `@play-by-post join` to register yourself to play as Storyteller or as Player",
+			},
+		},
+		slack.SectionBlock{
+			Type: "section",
+			Text: &slack.TextBlockObject{
+				Type: "mrkdwn",
+				Text: "Use: `/play-by-post options` to get your options as a Player or Storyteller",
+			},
+		},
+		slack.SectionBlock{
+			Type: "section",
+			Text: &slack.TextBlockObject{
+				Type: "mrkdwn",
+				Text: "Use: `/play-by-post solo-start` to start a solo adventure",
+			},
+		},
+		slack.SectionBlock{
+			Type: "section",
+			Text: &slack.TextBlockObject{
+				Type: "mrkdwn",
+				Text: "Use: `/play-by-post solo-next` to get your options in your solo adventure",
+			},
+		},
+		slack.SectionBlock{
+			Type: "section",
+			Text: &slack.TextBlockObject{
+				Type: "mrkdwn",
+				Text: "Use: `/play-by-post didatic-start` to start a didatic adventure",
+			},
+		},
+		slack.SectionBlock{
+			Type: "section",
+			Text: &slack.TextBlockObject{
+				Type: "mrkdwn",
+				Text: "Use: `/play-by-post didatic-join` to join in a didatic adventure",
+			},
+		},
+		slack.SectionBlock{
+			Type: "section",
+			Text: &slack.TextBlockObject{
+				Type: "mrkdwn",
+				Text: "Use: `/play-by-post didatic-next` to get your options in your didatic adventure",
+			},
+		},
+	}
+	// }
+	return h
 }
 
 func (a *app) events(w http.ResponseWriter, r *http.Request) {
@@ -499,6 +591,7 @@ func (a *app) events(w http.ResponseWriter, r *http.Request) {
 	switch {
 	case strings.ToLower(obj.UserID) == "all":
 		// send message to all in channel
+		a.logger.Info("send message to all in channel", "channel", obj.Channel)
 		_, _, err := a.slack.PostMessage(obj.Channel, slack.MsgOptionAttachments(attachment))
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
@@ -507,6 +600,7 @@ func (a *app) events(w http.ResponseWriter, r *http.Request) {
 		}
 	default:
 		// send private message
+		a.logger.Info("send private message", "channel", obj.Channel, "user", obj.UserID)
 		_, err := a.slack.PostEphemeral(obj.Channel, obj.UserID, slack.MsgOptionAttachments(attachment))
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)

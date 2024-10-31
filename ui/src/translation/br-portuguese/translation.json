@@ -73,8 +73,8 @@
         "list-item-19": "Encontros tem 4 fases: em espera, iniciado (um anúncio é enviado ao canal), em execução (jogadores podem agir) e concluído",
         "list-item-20": "Você não pode inicar um novo Stage em um canel que já está rodando",
         "list-item-21": "Você não pode fechar um Stage que não tenha todos os encontros concluídos",
-        "sub-header-4": "Agora, interaja com o nosso Bot via Chat usando o 'playbypost help'",
-        "notes-1": "Importante: Story pode ser deletata caso não tenha Encounters. E Encounters podem ser deletados caso não tenham side associados com Stage ou Auto Play"
+        "sub-header-4": "Agora, interaja com o nosso Bot via Chat usando o '@play-by-post help'",
+        "notes-1": "Importante: Story pode ser deletata caso não tenha Encounters. E Encounters podem ser deletados caso não tenham side associados com Stage ou Auto Play. Você pode rodar somente uma história em um canal (sendo Stage ou Auto Play)."
     },
     "story": {
         "this": "História",
@@ -109,6 +109,7 @@
         "select-encounter": "Selecione um Encontro",
         "not-found": "Encontro não encontrado",
         "add-next-encounter": "Adicionar Próximo Encontro",
+        "add-next-encounter-header": "Você pode adicionar múltiplos encontros, porém o campo Encountro deve ser o mesmo",
         "next-text1": "Escolha um encontro para ser usado",
         "next-text2": "Este pode ser adicionado multiplas vezes. Mantenha o nome diferente para cada uma destas.",
         "next-text3": "Como este encontro será exposto para os jogadores. Cada nome tem que ser único.",

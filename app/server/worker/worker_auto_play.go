@@ -20,13 +20,44 @@ func (a *WorkerAPI) parseAutoPlayCommand(cmd types.Activity) error {
 	a.logger.Info("announce found", "announce", announce)
 	processed := false
 	switch {
-	case strings.HasPrefix(cmd.Actions["command"], parser.StartSolo):
+	// case strings.HasPrefix(cmd.Actions["command"], parser.JoinDidatic):
+	// 	// join didatic mode
+	// 	a.logger.Info("join mode", "command", cmd.Actions["command"])
+	// 	// send message to chat
+	// 	joinMessage := fmt.Sprintf("Joining didatic: %s. Wait all collegues to join and then call: didatic-start", cmd.Actions["userid"])
+	// 	body, err := a.client.PostEvent(cmd.Actions["channel"], "ALL", joinMessage, types.EventInformation)
+	// 	if err != nil {
+	// 		a.logger.Error("error posting event join didatic mode", "error", err.Error(), "body", string(body))
+	// 		return err
+	// 	}
+	// 	cmd.Actions["result"] = joinMessage
+	// 	processed = true
+
+	case strings.HasPrefix(cmd.Actions["command"], parser.StartSolo), strings.HasPrefix(cmd.Actions["command"], parser.StartDidatic):
 		// start solo mode
-		a.logger.Info("start solo mode")
-		// send message to chat
-		body, err := a.client.PostEvent(cmd.Actions["channel"], cmd.Actions["userid"], announce, types.EventInformation)
+		a.logger.Info("start mode", "command", cmd.Actions["command"])
+		// send announce from story too
+		title, storyAnnouncement, err := a.db.GetStoryAnnouncementByAutoPlayID(a.ctx, cmd.UpstreamID)
 		if err != nil {
-			a.logger.Error("error posting event start solo mode", "error", err.Error(), "body", string(body))
+			a.logger.Error("error getting story announcement by auto play id", "error", err.Error())
+			return err
+		}
+		// send message to chat
+		user := cmd.Actions["userid"]
+		if strings.HasPrefix(cmd.Actions["command"], parser.StartDidatic) {
+			user = "ALL"
+		}
+		announceStory := fmt.Sprintf("Starting: %s\n%s", title, storyAnnouncement)
+		body, err := a.client.PostEvent(cmd.Actions["channel"], user, announceStory, types.EventInformation)
+		if err != nil {
+			a.logger.Error("error posting event start auto play mode", "error", err.Error(), "body", string(body))
+			return err
+		}
+		cmd.Actions["story_announcement"] = announceStory
+		// send message to chat
+		body, err = a.client.PostEvent(cmd.Actions["channel"], user, announce, types.EventInformation)
+		if err != nil {
+			a.logger.Error("error posting event start auto play mode", "error", err.Error(), "body", string(body))
 			return err
 		}
 
@@ -37,12 +68,17 @@ func (a *WorkerAPI) parseAutoPlayCommand(cmd types.Activity) error {
 			return err
 		}
 		cmd.Actions["result"] = announce
+
 		processed = true
 
-	case strings.HasPrefix(cmd.Actions["command"], parser.NextSolo):
+	case strings.HasPrefix(cmd.Actions["command"], parser.NextSolo), strings.HasPrefix(cmd.Actions["command"], parser.NextDidatic):
 		// next solo mode
-		a.logger.Info("next solo mode")
-		body, err := a.client.PostEvent(cmd.Actions["channel"], cmd.Actions["userid"], announce, types.EventInformation)
+		a.logger.Info("next mode", "command", cmd.Actions["command"])
+		user := cmd.Actions["userid"]
+		if strings.HasPrefix(cmd.Actions["command"], parser.NextDidatic) {
+			user = "ALL"
+		}
+		body, err := a.client.PostEvent(cmd.Actions["channel"], user, announce, types.EventInformation)
 		if err != nil {
 			a.logger.Error("error posting event start solo mode", "error", err.Error(), "body", string(body))
 			return err
@@ -59,7 +95,7 @@ func (a *WorkerAPI) parseAutoPlayCommand(cmd types.Activity) error {
 			// finish auto play
 			a.logger.Info("finish auto play")
 			// send message to chat
-			body, err := a.client.PostEvent(cmd.Actions["channel"], cmd.Actions["userid"], "End of solo game. Congratulations", types.EventEnd)
+			body, err := a.client.PostEvent(cmd.Actions["channel"], user, "End of this game. Congratulations", types.EventEnd)
 			if err != nil {
 				a.logger.Error("error posting event end solo mode", "error", err.Error(), "body", string(body))
 				return err

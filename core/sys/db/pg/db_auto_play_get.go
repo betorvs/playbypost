@@ -3,6 +3,7 @@ package pg
 import (
 	"context"
 	"database/sql"
+	"slices"
 
 	"github.com/betorvs/playbypost/core/sys/web/types"
 	"github.com/betorvs/playbypost/core/utils"
@@ -20,12 +21,10 @@ func (db *DBX) GetAutoPlay(ctx context.Context) ([]types.AutoPlay, error) {
 	defer rows.Close()
 	for rows.Next() {
 		var auto types.AutoPlay
-
 		if err := rows.Scan(&auto.ID, &auto.Text, &auto.StoryID, &auto.Solo); err != nil {
 			db.Logger.Error("scan error on auto_play ", "error", err.Error())
 		}
 		autoPlay = append(autoPlay, auto)
-
 	}
 	// Check for errors FROM iterating over rows.
 	if err := rows.Err(); err != nil {
@@ -101,16 +100,17 @@ func (db *DBX) GetAutoPlayOptionsByChannelID(ctx context.Context, channelID, use
 	// dev:finder+multiline+query
 	query := `SELECT ap.id, ap.display_text, ap.story_id, ap.solo, ap.encoding_key, 
 	ac.id AS auto_play_channel_id, ac.channel AS channel_id, 
-	apg.id, apg.user_id, apg.last_update_at, apg.interactions, apne.id, 
+	apg.id, u.userid, apg.last_update_at, apg.interactions, apne.id, 
 	apne.upstream_id, apne.display_text, apne.current_encounter_id, apne.next_encounter_id,
 	apno.kind, apno.values 
 	FROM auto_play_channel AS ac 
 	JOIN auto_play AS ap ON ap.id = ac.upstream_id 
 	JOIN auto_play_state AS aps ON aps.upstream_id = ac.id 
 	JOIN auto_play_group AS apg ON apg.upstream_id = ac.id 
+	JOIN users AS u ON apg.user_id = u.id 
 	JOIN auto_play_next_encounter AS apne ON apne.upstream_id = ap.id 
 	JOIN auto_play_next_objectives AS apno ON apno.upstream_id = apne.id
-	WHERE ac.active = 'true' AND apg.active = 'true' AND aps.active = 'true' AND apne.current_encounter_id = aps.encounter_id AND ac.channel = $1`
+	WHERE ac.active = true AND apg.active = true AND aps.active = true AND apne.current_encounter_id = aps.encounter_id AND ac.channel = $1`
 	// dev:finder+multiline+query
 	rows, err := db.Conn.QueryContext(ctx, query, channelID)
 	if err != nil {
@@ -133,11 +133,27 @@ func (db *DBX) GetAutoPlayOptionsByChannelID(ctx context.Context, channelID, use
 			}
 		}
 		if group.UserID == userID {
-			autoPlay.Group = append(autoPlay.Group, group)
+			// only append userid group options
+			if !slices.Contains(autoPlay.Group, group) {
+				autoPlay.Group = append(autoPlay.Group, group)
+			}
+			// if !slices.Contains(autoPlay.NextEncounters, next) {
+			// 	autoPlay.NextEncounters = append(autoPlay.NextEncounters, next)
+			// }
+			found := false
+			for _, n := range autoPlay.NextEncounters {
+				if n.ID == next.ID && n.UpstreamID == next.UpstreamID && n.EncounterID == next.EncounterID && n.NextEncounterID == next.NextEncounterID && n.Text == next.Text && n.Objective.Kind == next.Objective.Kind && slices.Equal(n.Objective.Values, next.Objective.Values) {
+					found = true
+					break
+				}
+			}
+			if !found {
+				autoPlay.NextEncounters = append(autoPlay.NextEncounters, next)
+			}
 		}
-		autoPlay.NextEncounters = append(autoPlay.NextEncounters, next)
 
 	}
+	db.Logger.Info("GetAutoPlayOptionsByChannelID after loop", "channelID", channelID, "userID", userID, "autoPlay", autoPlay)
 	// Check for errors FROM iterating over rows.
 	if err := rows.Err(); err != nil {
 		db.Logger.Error("rows err on auto_play_channel by channel_id", "error", err.Error())
@@ -184,6 +200,23 @@ func (db *DBX) GetAnnounceByEncounterID(ctx context.Context, encounterID, autoPl
 		return "", false, err
 	}
 	return text, last, nil
+}
+
+// get story annouce by auto_play_id
+func (db *DBX) GetStoryAnnouncementByAutoPlayID(ctx context.Context, autoPlayID int) (string, string, error) {
+	query := "SELECT a.display_text, a.encoding_key, s.announcement FROM auto_play AS a JOIN story AS s ON a.story_id = s.id WHERE a.id = $1" // dev:finder+query
+	var title, encodingKey, announce string
+	err := db.Conn.QueryRowContext(ctx, query, autoPlayID).Scan(&title, &encodingKey, &announce)
+	if err != nil {
+		db.Logger.Error("query row SELECT auto_play failed", "error", err.Error())
+		return "", "", err
+	}
+	announcement, err := utils.DecryptText(announce, encodingKey)
+	if err != nil {
+		db.Logger.Error("error on decrypt text", "error", err.Error())
+		return "", "", err
+	}
+	return title, announcement, nil
 }
 
 // func GetNextEncounterByAutoPlayID

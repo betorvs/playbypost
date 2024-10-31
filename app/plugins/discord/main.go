@@ -27,25 +27,45 @@ var (
 			// All commands and options must have a description
 			// Commands/options without description will fail the registration
 			// of the command.
-			Description: "Join to Play by Post",
+			Description: "Join to Play by Post to be a Storyteller or a Player",
 		},
 		{
 			Name: "play-by-post",
 			Options: []*discordgo.ApplicationCommandOption{
 				{
 					Type:        discordgo.ApplicationCommandOptionSubCommand,
+					Name:        "help",
+					Description: "show help message",
+				},
+				{
+					Type:        discordgo.ApplicationCommandOptionSubCommand,
 					Name:        "options",
-					Description: "Options select menu",
+					Description: "Options menu for play by post Story used by Storyteller and Players",
 				},
 				{
 					Type:        discordgo.ApplicationCommandOptionSubCommand,
 					Name:        "solo-start",
-					Description: "Solo list select menu",
+					Description: "Call it to to start a solo game",
 				},
 				{
 					Type:        discordgo.ApplicationCommandOptionSubCommand,
 					Name:        "solo-next",
-					Description: "Solo next select menu",
+					Description: "Get next select menu for your solo game",
+				},
+				{
+					Type:        discordgo.ApplicationCommandOptionSubCommand,
+					Name:        "didatic-join",
+					Description: "Join to a Didatic Adventure",
+				},
+				{
+					Type:        discordgo.ApplicationCommandOptionSubCommand,
+					Name:        "didatic-start",
+					Description: "Call it to to start a didatic game",
+				},
+				{
+					Type:        discordgo.ApplicationCommandOptionSubCommand,
+					Name:        "didatic-next",
+					Description: "Get next select menu for your didatic game",
 				},
 			},
 			Description: "Main Play by Post command",
@@ -168,14 +188,24 @@ func main() {
 }
 
 func (a *app) messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
-	a.logger.Info("message received", "message", m.Content)
 	if m.Author.ID == s.State.User.ID {
 		return
 	}
-	switch m.Content {
-	case "hello":
-		message := "Hello, I am Play by Post bot. How can I help you?"
+
+	a.logger.Info("message received", "message", m.Content)
+	switch {
+	case strings.Contains(strings.ToLower(m.Content), "hello"):
+		message := "Hello, I am Play by Post bot. How can I help you? Try `help` to get more options. ;)"
 		_, err := s.ChannelMessageSend(m.ChannelID, message)
+		if err != nil {
+			fmt.Println("Error sending message: ", err)
+		}
+	case strings.Contains(strings.ToLower(m.Content), "help"):
+		content, embed := helpMessage()
+		_, err := s.ChannelMessageSendComplex(m.ChannelID, &discordgo.MessageSend{
+			Content: content,
+			Embed:   embed[0],
+		})
 		if err != nil {
 			fmt.Println("Error sending message: ", err)
 		}
@@ -238,11 +268,24 @@ func (a *app) interactionCommand(s *discordgo.Session, i *discordgo.InteractionC
 
 		case "play-by-post":
 			var response *discordgo.InteractionResponse
-			switch i.ApplicationCommandData().Options[0].Name {
-			case "options", "opt":
+			text := i.ApplicationCommandData().Options[0].Name
+			switch text {
+			case "help":
+				content, embed := helpMessage()
+				response = &discordgo.InteractionResponse{
+					Type: discordgo.InteractionResponseChannelMessageWithSource,
+					Data: &discordgo.InteractionResponseData{
+						Title:      "Play by Post Help",
+						Content:    content,
+						Flags:      discordgo.MessageFlagsEphemeral,
+						Components: nil,
+						Embeds:     embed,
+					},
+				}
+			case "options", types.Opt:
 				a.logger.Info("options")
 				// post command
-				msg, err := a.web.PostCommandComposed(userid, "opt", i.ChannelID)
+				msg, err := a.web.PostCommandComposed(userid, types.Opt, i.ChannelID)
 				if err != nil {
 					a.logger.Error("error posting to backend", "error", err.Error())
 				}
@@ -260,7 +303,7 @@ func (a *app) interactionCommand(s *discordgo.Session, i *discordgo.InteractionC
 						})
 					}
 					selectMenu := discordgo.SelectMenu{
-						CustomID:    "opt",
+						CustomID:    types.Opt,
 						Placeholder: textPickItem,
 						Options:     options,
 					}
@@ -288,10 +331,10 @@ func (a *app) interactionCommand(s *discordgo.Session, i *discordgo.InteractionC
 					}
 				}
 
-			case "solo-start":
-				a.logger.Info("solo-start")
+			case types.SoloStart, types.DidaticStart, types.DidaticJoin: // solo-start
+				a.logger.Info("start or join", "text", text)
 				// post command
-				msg, err := a.web.PostCommandComposed(userid, "solo-start", i.ChannelID)
+				msg, err := a.web.PostCommandComposed(userid, text, i.ChannelID)
 				if err != nil {
 					a.logger.Error("error posting to backend", "error", err.Error())
 				}
@@ -300,6 +343,10 @@ func (a *app) interactionCommand(s *discordgo.Session, i *discordgo.InteractionC
 					textPickItem = fmt.Sprintf("%s Pick an item", msg.Msg)
 				}
 				a.logger.Info("msg", "msg", msg)
+				startOpt := types.Choice
+				if strings.Contains(text, types.Didatic) {
+					startOpt = types.Decision
+				}
 				if len(msg.Opts) > 0 {
 					// create select menu
 					options := []discordgo.SelectMenuOption{}
@@ -310,7 +357,7 @@ func (a *app) interactionCommand(s *discordgo.Session, i *discordgo.InteractionC
 						})
 					}
 					selectMenu := discordgo.SelectMenu{
-						CustomID:    "choice",
+						CustomID:    startOpt,
 						Placeholder: textPickItem,
 						Options:     options,
 					}
@@ -328,26 +375,34 @@ func (a *app) interactionCommand(s *discordgo.Session, i *discordgo.InteractionC
 						},
 					}
 				} else {
+					noOptions := "No options available"
+					if msg.Msg != "" {
+						noOptions = msg.Msg
+					}
 					response = &discordgo.InteractionResponse{
 						Type: discordgo.InteractionResponseChannelMessageWithSource,
 						Data: &discordgo.InteractionResponseData{
-							Content:    "No options available",
+							Content:    noOptions,
 							Flags:      discordgo.MessageFlagsEphemeral,
 							Components: nil,
 						},
 					}
 				}
 
-			case "solo-next":
-				a.logger.Info("solo-next")
+			case types.SoloNext, types.DidaticNext: // solo-next
+				a.logger.Info("next", "text", text)
 				// post command
-				msg, err := a.web.PostCommandComposed(userid, "solo-next", i.ChannelID)
+				msg, err := a.web.PostCommandComposed(userid, text, i.ChannelID)
 				if err != nil {
 					a.logger.Error("error posting to backend", "error", err.Error())
 				}
 				textPickItem := "Pick an item "
 				if msg.Msg != "" {
 					textPickItem = fmt.Sprintf("%s Pick an item", msg.Msg)
+				}
+				startOpt := types.Choice
+				if strings.Contains(text, types.Didatic) {
+					startOpt = types.Decision
 				}
 				if len(msg.Opts) > 0 {
 					// create select menu
@@ -359,7 +414,7 @@ func (a *app) interactionCommand(s *discordgo.Session, i *discordgo.InteractionC
 						})
 					}
 					selectMenu := discordgo.SelectMenu{
-						CustomID:    "choice",
+						CustomID:    startOpt,
 						Placeholder: textPickItem,
 						Options:     options,
 					}
@@ -389,9 +444,6 @@ func (a *app) interactionCommand(s *discordgo.Session, i *discordgo.InteractionC
 
 			}
 			// send response back to discord
-			if len(response.Data.Components) > 0 {
-				a.logger.Info("response", "content", fmt.Sprintf("%+v", response.Data.Components[0]))
-			}
 			err := s.InteractionRespond(i.Interaction, response)
 			if err != nil {
 				a.logger.Error("error responding to interaction", "error", err)
@@ -399,10 +451,11 @@ func (a *app) interactionCommand(s *discordgo.Session, i *discordgo.InteractionC
 
 		}
 	case discordgo.InteractionMessageComponent:
-		switch i.MessageComponentData().CustomID {
-		case "opt":
+		customID := i.MessageComponentData().CustomID
+		switch customID {
+		case types.Opt: // opt
 			data := i.MessageComponentData()
-			startOpt := "cmd"
+			startOpt := types.Cmd
 			var errorMessage, returnMessage string
 			channel, userid, text, display, err := cli.ParserValues(data.Values[0], startOpt)
 			if err != nil {
@@ -431,9 +484,12 @@ func (a *app) interactionCommand(s *discordgo.Session, i *discordgo.InteractionC
 				a.logger.Error("error responding to interaction", "error", err)
 			}
 
-		case "choice":
+		case types.Choice, types.Decision: // choice
 			data := i.MessageComponentData()
-			startOpt := "choice"
+			startOpt := types.Choice
+			if customID == types.Decision {
+				startOpt = types.Decision
+			}
 			var errorMessage, returnMessage string
 			channel, userid, text, display, err := cli.ParserValues(data.Values[0], startOpt)
 			if err != nil {
@@ -540,4 +596,45 @@ func (a *app) validate(w http.ResponseWriter, r *http.Request) {
 	}
 	w.WriteHeader(http.StatusOK)
 	fmt.Fprint(w, "{\"msg\":\"authenticated\"}")
+}
+
+func helpMessage() (string, []*discordgo.MessageEmbed) {
+	header := "help message from Play by Post Bot"
+	content := "Play by Post Bot helps you play roleplaying games using text messages here in Slack. You can play a shared table RPG session using the playbypost slash command, or you can play a solo adventure using the solo commands. Or, if you are a student, you can use the didatic command to play an interesting adventure and learn something special."
+	embed := &discordgo.MessageEmbed{
+		Title:       "Play by Post Help",
+		Description: content,
+		Fields: []*discordgo.MessageEmbedField{
+			{
+				Name:  "Join",
+				Value: "Use `/join` to register yourself to play as Storyteller or as Player",
+			},
+			{
+				Name:  "options",
+				Value: "Use `/play-by-post options` to get your options as a Player or Storyteller",
+			},
+			{
+				Name:  "solo-start",
+				Value: "Use `/play-by-post solo-start` to start a solo adventure",
+			},
+			{
+				Name:  "solo-next",
+				Value: "Use `/play-by-post solo-next` to get your options in your solo adventure",
+			},
+			{
+				Name:  "didatic-start",
+				Value: "Use `/play-by-post didatic-start` to start a didatic adventure",
+			},
+			{
+				Name:  "didatic-join",
+				Value: "Use `/play-by-post didatic-join` to join in a didatic adventure",
+			},
+			{
+				Name:  "didatic-next",
+				Value: "Use `/play-by-post didatic-next` to get your options in your didatic adventure",
+			},
+		},
+	}
+	slice := []*discordgo.MessageEmbed{embed}
+	return header, slice
 }
