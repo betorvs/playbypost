@@ -29,7 +29,8 @@ func ParserAutoPlays(autoPlays []types.AutoPlay, kind string) []types.Options {
 	}
 
 	for _, v := range autoPlays {
-		if v.Solo == solo {
+		// filter by solo related with kind and publish: true
+		if v.Solo == solo && v.Publish {
 			opts = append(opts, types.Options{ID: v.ID, Name: v.Text, Value: fmt.Sprintf("%s-%s:%d", cmd, v.Text, v.ID)})
 		}
 	}
@@ -57,4 +58,13 @@ func ParserAutoPlaysNext(autoPlays []types.Next, solo bool) ([]types.Options, bo
 
 	}
 	return opts, ok
+}
+
+func ParseAutoPlayDescribe(describe []types.AutoPlayDescribed) []types.Options {
+	opts := []types.Options{}
+	for k, v := range describe {
+		name := fmt.Sprintf("Title: %s, Writer: %s", v.DisplayText, v.Writer)
+		opts = append(opts, types.Options{ID: k, Name: name, Value: v.Announcement})
+	}
+	return opts
 }

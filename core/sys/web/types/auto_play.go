@@ -18,6 +18,7 @@ type AutoPlay struct {
 	StoryID int    `json:"story_id"`
 	Text    string `json:"text"`
 	Solo    bool   `json:"solo"`
+	Publish bool   `json:"publish"`
 }
 
 type AutoPlayGroup struct {
@@ -39,19 +40,6 @@ func (a *AutoPlayGroup) Scan(value interface{}) error {
 
 	return json.Unmarshal(b, &a)
 }
-
-// type AutoPlayEncounterList struct {
-// 	EncounterList []Options                   `json:"encounter_list"`
-// 	Link          []AutoPlayEncounterWithNext `json:"link"`
-// }
-
-// type AutoPlayEncounterWithNext struct {
-// 	ID            int    `json:"id"`
-// 	EncounterID   int    `json:"encounter_id"`
-// 	NextID        int    `json:"next_id"`
-// 	Encounter     string `json:"encounter"`
-// 	NextEncounter string `json:"next_encounter"`
-// }
 
 type AutoPlayOptions struct {
 	AutoPlay
@@ -121,4 +109,10 @@ func SplitDiceNextObjctive(loop, size int) []int {
 		}
 	}
 	return nil
+}
+
+type AutoPlayDescribed struct {
+	DisplayText  string `json:"display_text"`
+	Announcement string `json:"announcement"`
+	Writer       string `json:"writer"`
 }

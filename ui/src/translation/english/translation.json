@@ -64,7 +64,7 @@
         "list-item-11": "Create many Encounters you want",
         "list-item-12": "Choose you want to use Stage or Auto Play",
         "list-item-13": "For Stage, go to your Chat (integrated with this system) and run a join command",
-        "list-item-14": "For Auto Play, you need to link all encounters under Auto Play using Add Next Encounter and make sure you have a first encounter and at least one last encounter",
+        "list-item-14": "For Auto Play, you need to link all encounters under Auto Play using Add Next Encounter and make sure you have a first encounter and at least one last encounter. Then click on Publish in Details.",
         "list-item-15": "Use Validator button to check if you are missing something. Mainly for Auto Play.",
         "sub-header-3": "For Stage",
         "list-item-16": "Add tasks if you need",
@@ -80,7 +80,7 @@
         "this": "Story",
         "header": "Stories",
         "back-button": "Back to Stories",
-        "error": "Error loading stories",
+        "error": "Story not found",
         "not-found": "Story not found",
         "detail": "Story Detail",
         "button": "New Story",
@@ -207,7 +207,11 @@
         "solo": "This is a Solo Adventure",
         "didatic": "This is a Didatic Adventure",
         "back-button": "Back to Auto Play",
-        "not-found": "Auto Play not found"
+        "not-found": "Auto Play not found",
+        "publish": "Publish Auto Play",
+        "not-publish": "Auto Play not published",
+        "publish-button": "Publish",
+        "unpublish-button": "Unpublish"
     }, 
     "alert": {
         "player-add": "Players added! Have a great session with your friends!",

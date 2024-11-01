@@ -40,6 +40,14 @@ interface Props {
               <p>{t("auto-play.didatic", {ns: ['main', 'home']})}</p>
             )
           }
+          <br />
+          {
+            autoPlay.publish ? (
+              <p>{t("auto-play.publish", {ns: ['main', 'home']})}</p>
+            ) : (
+              <p>{t("auto-play.not-publish", {ns: ['main', 'home']})}</p>
+            )
+          }
         </div>
       </div>
     );

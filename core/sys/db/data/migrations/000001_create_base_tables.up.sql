@@ -182,7 +182,8 @@ CREATE TABLE auto_play (
   display_text VARCHAR(100) NOT NULL,
   encoding_key VARCHAR(16) NOT NULL,
   story_id int NOT NULL REFERENCES story(id),
-  solo BOOLEAN NOT NULL DEFAULT TRUE
+  solo BOOLEAN NOT NULL DEFAULT TRUE,
+  publish BOOLEAN NOT NULL DEFAULT FALSE
 );
 
 CREATE TABLE auto_play_next_encounter (

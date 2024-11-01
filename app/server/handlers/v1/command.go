@@ -29,6 +29,23 @@ func (a MainApi) ExecuteCommand(w http.ResponseWriter, r *http.Request) {
 	a.logger.Debug("command received", "command", text, "userid", headerUserID, "channel", headerStoryChannel)
 
 	switch {
+	case strings.HasPrefix(text, types.SoloDescribe), strings.HasPrefix(text, types.DidaticDescribe): // describe
+		solo := true
+		if strings.HasPrefix(text, types.DidaticDescribe) {
+			solo = false
+		}
+
+		options, err := a.db.DescribeAutoPlayPublished(a.ctx, solo)
+		if err != nil {
+			a.s.ErrJSON(w, http.StatusBadRequest, "describe auto play")
+			return
+		}
+		opts := parser.ParseAutoPlayDescribe(options)
+		composed := types.Composed{Msg: "options", Opts: opts}
+		a.logger.Info("msg back", "composed", composed)
+		a.s.JSON(w, composed)
+		return
+
 	case strings.HasPrefix(text, types.SoloStart), strings.HasPrefix(text, types.DidaticStart): // solo-start
 		// solo mode: decide workflow
 		// list all available solo modes

@@ -100,12 +100,14 @@ func (a MainApi) AddAutoPlayNext(w http.ResponseWriter, r *http.Request) {
 	}
 	valid, err := types.ValidateNextSlice(obj, types.UpstreamKindAutoPlay)
 	if err != nil {
+		a.logger.Error("error validating next encounter", "error", err.Error())
 		a.s.ErrJSON(w, http.StatusBadRequest, err.Error())
 		return
 	}
 	a.logger.Info("add auto play next", "obj", valid)
 	err = a.db.AddAutoPlayNext(a.ctx, valid)
 	if err != nil {
+		a.logger.Error("error adding next encounter to encounter on database", "error", err.Error())
 		a.s.ErrJSON(w, http.StatusBadRequest, "error adding next encounter to encounter on database")
 		return
 	}
@@ -130,6 +132,41 @@ func (a MainApi) GetAutoPlayNextEncounterByAutoPlayID(w http.ResponseWriter, r *
 		return
 	}
 	a.s.JSON(w, obj)
+}
+
+func (a MainApi) ChangePublishFlagAutoPlay(w http.ResponseWriter, r *http.Request) {
+	if a.Session.CheckAuth(r) {
+		a.s.ErrJSON(w, http.StatusForbidden, "required authentication headers")
+		return
+	}
+	idString := r.PathValue("id")
+	id, err := strconv.Atoi(idString)
+	if err != nil {
+		a.s.ErrJSON(w, http.StatusBadRequest, "id should be a integer")
+		return
+	}
+	// check auto play id
+	autoPlay, err := a.db.GetAutoPlayByID(a.ctx, id)
+	if err != nil {
+		a.s.ErrJSON(w, http.StatusBadRequest, "auto play database issue")
+		return
+	}
+	// auto play id not found
+	if autoPlay.ID == 0 {
+		a.s.ErrJSON(w, http.StatusBadRequest, "auto play id not found")
+		return
+	}
+	// update auto play to publish
+	// use the opposite value from DB
+	// default value in DB: false
+	value := !autoPlay.Publish
+	err = a.db.ChangePublishAutoPlay(a.ctx, id, value)
+	if err != nil {
+		a.s.ErrJSON(w, http.StatusBadRequest, "auto play database issue")
+		return
+	}
+	msg := fmt.Sprintf("auto play id %v publish %v", id, value)
+	a.s.JSON(w, types.Msg{Msg: msg})
 }
 
 func (a MainApi) DeleteAutoPlayNextEncounter(w http.ResponseWriter, r *http.Request) {

@@ -292,6 +292,11 @@ func TestIntegration(t *testing.T) {
 				}
 			}
 		}
+		// publish auto play
+		_, err14 := h.PublishAutoPlay(autoPlay1.ID)
+		if err14 != nil {
+			t.Error("error publishing auto play")
+		}
 		playerAutoPlay := fmt.Sprintf("player-auto-play-%s", random)
 		channelAutoPlay := fmt.Sprintf("channel-auto-play-%s", random)
 		// a.postCommand(userid, "solo-start", i.ChannelID)
@@ -335,10 +340,6 @@ func TestIntegration(t *testing.T) {
 			t.Error("error creating writer")
 		}
 		writers, err3 := h.GetWriter()
-		if err3 != nil {
-			t.Error("error getting writers")
-		}
-		writers, err3 = h.GetWriter()
 		if err3 != nil {
 			t.Error("error getting writers")
 		}

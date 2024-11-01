@@ -75,6 +75,27 @@ const FetchEncounterListAutoPlay = async (
   }
 };
 
+const ChangePublishAutoPlay = async (
+  id: number,
+): Promise<void> => {
+  const requestHeaders: HeadersInit = new Headers();
+  requestHeaders.set("Content-Type", "application/json");
+  requestHeaders.set("X-Username", GetUsername());
+  requestHeaders.set("X-Access-Token", GetToken());
+  const apiURL = UseLocation();
+  const urlAPI = new URL("api/v1/autoplay/publish/" + id, apiURL);
+  const response = await fetch(urlAPI, {
+    method: "PUT",
+    headers: requestHeaders,
+  });
+  if (response.ok) {
+    console.log("Publish flag changed");
+  } else if (response.status === 403) {
+    console.log("Not authorized");
+    CleanSession();
+  }
+}
+
 const DeleteAutoPlayNextEncounter = async (
   id: number,
 ): Promise<void> => {
@@ -97,4 +118,4 @@ const DeleteAutoPlayNextEncounter = async (
 }
 
 export default FetchAutoPlay;
-export { FetchAutoPlayByID, FetchEncounterListAutoPlay, DeleteAutoPlayNextEncounter };
+export { FetchAutoPlayByID, FetchEncounterListAutoPlay, ChangePublishAutoPlay, DeleteAutoPlayNextEncounter };

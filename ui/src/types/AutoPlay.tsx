@@ -3,34 +3,7 @@ type AutoPlay = {
   text: string;
   story_id: number;
   solo: boolean;
+  publish: boolean;
 };
-
-// type AutoPlayEncounterWithNext = {
-//   id: number;
-// 	encounter_id: number;
-// 	next_id: number;
-//   encounter: string;
-//   next_encounter: string;
-// }
-
-// type AutoPlayEncounterList = {
-//   encounter_list: GenericIDName[];
-//   link: AutoPlayEncounterWithNext[];
-// }
-
-// type GenericIDName = {
-//   id: number;
-//   name: string;
-// }
-
-// require a nexted map of the next encounters
-// type NextEncounter = {
-//   id: number; 
-//   upstream_id: number;
-//   encounter_id: number;
-//   next_encounter_id: number;
-//   text: string;
-// };
   
 export default AutoPlay;
-// export type { AutoPlayEncounterList, AutoPlayEncounterWithNext, GenericIDName, NextEncounter };

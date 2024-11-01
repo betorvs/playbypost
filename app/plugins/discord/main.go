@@ -54,6 +54,11 @@ var (
 				},
 				{
 					Type:        discordgo.ApplicationCommandOptionSubCommand,
+					Name:        "solo-describe",
+					Description: "Describe your solo game options",
+				},
+				{
+					Type:        discordgo.ApplicationCommandOptionSubCommand,
 					Name:        "didatic-join",
 					Description: "Join to a Didatic Adventure",
 				},
@@ -66,6 +71,11 @@ var (
 					Type:        discordgo.ApplicationCommandOptionSubCommand,
 					Name:        "didatic-next",
 					Description: "Get next select menu for your didatic game",
+				},
+				{
+					Type:        discordgo.ApplicationCommandOptionSubCommand,
+					Name:        "didatic-describe",
+					Description: "Describe your didatic game options",
 				},
 			},
 			Description: "Main Play by Post command",
@@ -329,6 +339,48 @@ func (a *app) interactionCommand(s *discordgo.Session, i *discordgo.InteractionC
 							Components: nil,
 						},
 					}
+				}
+
+			case types.SoloDescribe, types.DidaticDescribe: // solo-describe
+				a.logger.Info("describe", "text", text)
+				title := "Play by Post Solo Adventures"
+				if strings.Contains(text, types.Didatic) {
+					title = "Play by Post Didatic Adventures"
+				}
+				// post command
+				msg, err := a.web.PostCommandComposed(userid, text, i.ChannelID)
+				if err != nil {
+					a.logger.Error("error posting to backend", "error", err.Error())
+				}
+
+				embed := discordgo.MessageEmbed{
+					Title:       title,
+					Description: "List all published adventures",
+				}
+				if len(msg.Opts) > 0 {
+					for _, v := range msg.Opts {
+						embed.Fields = append(embed.Fields, &discordgo.MessageEmbedField{
+							Name:  v.Name,
+							Value: v.Value,
+						})
+					}
+				} else {
+					embed.Fields = append(embed.Fields, &discordgo.MessageEmbedField{
+						Name:  "No adventures available",
+						Value: "-",
+					})
+				}
+				slice := []*discordgo.MessageEmbed{&embed}
+
+				response = &discordgo.InteractionResponse{
+					Type: discordgo.InteractionResponseChannelMessageWithSource,
+					Data: &discordgo.InteractionResponseData{
+						Title:      "Play by Post Describe",
+						Content:    "describe",
+						Flags:      discordgo.MessageFlagsEphemeral,
+						Components: nil,
+						Embeds:     slice,
+					},
 				}
 
 			case types.SoloStart, types.DidaticStart, types.DidaticJoin: // solo-start
@@ -622,6 +674,10 @@ func helpMessage() (string, []*discordgo.MessageEmbed) {
 				Value: "Use `/play-by-post solo-next` to get your options in your solo adventure",
 			},
 			{
+				Name:  "solo-describe",
+				Value: "Use `/play-by-post solo-describe` to get a list of solo adventure with a description",
+			},
+			{
 				Name:  "didatic-start",
 				Value: "Use `/play-by-post didatic-start` to start a didatic adventure",
 			},
@@ -632,6 +688,10 @@ func helpMessage() (string, []*discordgo.MessageEmbed) {
 			{
 				Name:  "didatic-next",
 				Value: "Use `/play-by-post didatic-next` to get your options in your didatic adventure",
+			},
+			{
+				Name:  "didatic-describe",
+				Value: "Use `/play-by-post didatic-describe` to get a list of didatic adventure with a description",
 			},
 		},
 	}

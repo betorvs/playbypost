@@ -146,6 +146,7 @@ func main() {
 	srv.Register("GET /api/v1/autoplay/{id}", app.GetAutoPlayByID)
 	srv.Register("GET /api/v1/autoplay/encounter/story/{id}", app.GetAutoPlayEncounterListByStoryID)
 	srv.Register("POST /api/v1/autoplay", app.CreateAutoPlay)
+	srv.Register("PUT /api/v1/autoplay/publish/{id}", app.ChangePublishFlagAutoPlay)
 	srv.Register("POST /api/v1/autoplay/next", app.AddAutoPlayNext)
 	srv.Register("GET /api/v1/autoplay/next/{id}", app.GetAutoPlayNextEncounterByAutoPlayID)
 	srv.Register("DELETE /api/v1/autoplay/next/{id}", app.DeleteAutoPlayNextEncounter)

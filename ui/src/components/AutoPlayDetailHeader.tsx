@@ -3,10 +3,11 @@
 import { useEffect, useState } from "react";
 import NavigateButton from "./Button/NavigateButton";
 import AutoPlay from "../types/AutoPlay";
-import { FetchAutoPlayByID } from "../functions/AutoPlay";
+import { ChangePublishAutoPlay, FetchAutoPlayByID } from "../functions/AutoPlay";
 import { useTranslation } from "react-i18next";
 import Validator from "../types/validator";
 import { FetchValidatorByIDKind } from "../functions/Validator";
+import { Button } from "react-bootstrap";
 
 interface props {
     id: string;
@@ -18,6 +19,11 @@ const AutoPlayDetailHeader = ({ id, storyID }: props) => {
   const { t } = useTranslation(['home', 'main']);
   const [validator, setValidator] = useState<Validator>();
   const kind = "autoplay";
+
+  const handlePublish = (id: number, publish: boolean) => {
+    console.log("Publish: ", id, publish);
+    ChangePublishAutoPlay(id);
+  };
 
   useEffect(() => {
     FetchAutoPlayByID(id, setAutoPLay);
@@ -46,6 +52,15 @@ const AutoPlayDetailHeader = ({ id, storyID }: props) => {
             )
           }
           </p>
+          <p>
+          {
+            autoPlay?.publish ? (
+              <p>{t("auto-play.publish", {ns: ['main', 'home']})}</p>
+            ) : (
+              <p>{t("auto-play.not-publish", {ns: ['main', 'home']})}</p>
+            )
+          }
+          </p>
           <br />
           <p>
             { 
@@ -69,6 +84,16 @@ const AutoPlayDetailHeader = ({ id, storyID }: props) => {
           <NavigateButton link={`/autoplay/${id}/story/${storyID}/next`} variant="primary">
             {t("encounter.add-next-encounter", {ns: ['main', 'home']})}
           </NavigateButton>{" "}
+
+          <span>
+            {
+              autoPlay?.publish ? (
+                <Button variant="warning" size="sm" onClick={() => handlePublish(autoPlay?.id || 0, false)}>{t("auto-play.unpublish-button", {ns: ['main', 'home']})}</Button>
+              ) : (
+                <Button variant="success" size="sm" onClick={() => handlePublish(autoPlay?.id || 0, true)}>{t("auto-play.publish-button", {ns: ['main', 'home']})}</Button>
+              )
+            }
+          </span>
 
         </div>
       </div>

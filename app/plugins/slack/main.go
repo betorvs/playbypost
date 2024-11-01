@@ -279,6 +279,49 @@ func (a *app) middlewareSlashCommand(evt *socketmode.Event, client *socketmode.C
 			client.Ack(*evt.Request, payload)
 			return
 		}
+	case types.SoloDescribe, types.DidaticDescribe: // "solo-describe"
+		a.logger.Info("describe", "text", text)
+		msg, err := a.web.PostCommandComposed(cmd.UserID, text, cmd.ChannelID)
+		if err != nil {
+			a.logger.Error("error posting to backend", "error", err.Error())
+		}
+		title := "Play by Post Solo Adventures"
+		if strings.Contains(text, types.Didatic) {
+			title = "Play by Post Didatic Adventures"
+		}
+		payload := []slack.Block{
+			slack.SectionBlock{
+				Type: "header",
+				Text: &slack.TextBlockObject{
+					Type: "plain_text",
+					Text: title,
+				},
+			},
+		}
+		if len(msg.Opts) > 0 {
+			for _, v := range msg.Opts {
+				payload = append(payload, slack.SectionBlock{
+					Type: "section",
+					Text: &slack.TextBlockObject{
+						Type: "mrkdwn",
+						Text: fmt.Sprintf("*%s*\n%s", v.Name, v.Value),
+					},
+				})
+			}
+		} else {
+			payload = append(payload, slack.SectionBlock{
+				Type: "section",
+				Text: &slack.TextBlockObject{
+					Type: "mrkdwn",
+					Text: "No adventures available",
+				},
+			})
+		}
+		payload2 := map[string]interface{}{
+			"blocks": payload,
+		}
+		client.Ack(*evt.Request, payload2)
+		return
 
 	case types.SoloStart, types.DidaticStart, types.DidaticJoin: // "solo-start"
 		a.logger.Info("start or join", "text", text)
@@ -513,6 +556,13 @@ func helpMessage() []slack.Block {
 			Type: "section",
 			Text: &slack.TextBlockObject{
 				Type: "mrkdwn",
+				Text: "Use: `/play-by-post solo-describe` to get a list of solo adventure with a description",
+			},
+		},
+		slack.SectionBlock{
+			Type: "section",
+			Text: &slack.TextBlockObject{
+				Type: "mrkdwn",
 				Text: "Use: `/play-by-post didatic-start` to start a didatic adventure",
 			},
 		},
@@ -528,6 +578,13 @@ func helpMessage() []slack.Block {
 			Text: &slack.TextBlockObject{
 				Type: "mrkdwn",
 				Text: "Use: `/play-by-post didatic-next` to get your options in your didatic adventure",
+			},
+		},
+		slack.SectionBlock{
+			Type: "section",
+			Text: &slack.TextBlockObject{
+				Type: "mrkdwn",
+				Text: "Use: `/play-by-post didatic-describe` to get a list of didatic adventure with a description",
 			},
 		},
 	}
