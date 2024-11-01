@@ -341,10 +341,6 @@ func TestIntegration(t *testing.T) {
 		if err3 != nil {
 			t.Error("error getting writers")
 		}
-		writers, err3 = h.GetWriter()
-		if err3 != nil {
-			t.Error("error getting writers")
-		}
 		writerStage := types.Writer{}
 		for _, w := range writers {
 			if w.Username == writerUsername {
