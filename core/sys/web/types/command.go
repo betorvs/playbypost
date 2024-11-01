@@ -13,13 +13,15 @@ const (
 	Didatic  string = "didatic"
 
 	// commands constants
-	Cmd          string = "cmd"
-	DidaticJoin  string = "didatic-join"
-	DidaticNext  string = "didatic-next"
-	DidaticStart string = "didatic-start"
-	SoloNext     string = "solo-next"
-	SoloStart    string = "solo-start"
-	Opt          string = "opt"
+	Cmd             string = "cmd"
+	DidaticDescribe string = "didatic-describe"
+	DidaticJoin     string = "didatic-join"
+	DidaticNext     string = "didatic-next"
+	DidaticStart    string = "didatic-start"
+	SoloDescribe    string = "solo-describe"
+	SoloNext        string = "solo-next"
+	SoloStart       string = "solo-start"
+	Opt             string = "opt"
 )
 
 type Command struct {

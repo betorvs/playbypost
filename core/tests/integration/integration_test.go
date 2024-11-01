@@ -1,8 +1,6 @@
-//go:build integration
-
 package integration_test
 
-//
+// //go:build integration
 
 import (
 	"encoding/json"
@@ -291,6 +289,11 @@ func TestIntegration(t *testing.T) {
 					t.Error("error adding next encounter")
 				}
 			}
+		}
+		// publish auto play
+		_, err14 := h.PublishAutoPlay(autoPlay1.ID)
+		if err14 != nil {
+			t.Error("error publishing auto play")
 		}
 		playerAutoPlay := fmt.Sprintf("player-auto-play-%s", random)
 		channelAutoPlay := fmt.Sprintf("channel-auto-play-%s", random)

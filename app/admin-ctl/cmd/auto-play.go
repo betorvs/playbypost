@@ -60,6 +60,7 @@ var autoPlayCmd = &cobra.Command{
 			app.Logger.Info(msg.Msg, "text", displayText)
 
 		case "next":
+			// TODO: if dice roll objective, require update input with array of values, it fails in validation
 			next := types.Next{
 				UpstreamID:      autoPlayID,
 				EncounterID:     encounterID,
@@ -86,6 +87,7 @@ var autoPlayCmd = &cobra.Command{
 			app.Logger.Info(msg.Msg, "text", displayText)
 
 		case "next-by-title":
+			// TODO: if dice roll objective, require update input with array of values, it fails in validation
 			encounters, err := app.getEncounters()
 			if err != nil {
 				os.Exit(1)
@@ -124,6 +126,20 @@ var autoPlayCmd = &cobra.Command{
 				os.Exit(1)
 			}
 			app.Logger.Info(msg.Msg, "text", displayText)
+
+		case "publish":
+			body, err := app.Web.PublishAutoPlay(autoPlayID)
+			if err != nil {
+				app.Logger.Error("autoPlay publish error", "error", err.Error())
+				os.Exit(1)
+			}
+			var msg types.Msg
+			err = json.Unmarshal(body, &msg)
+			if err != nil {
+				app.Logger.Error("json unmarsharl error", "error", err.Error())
+				os.Exit(1)
+			}
+			app.Logger.Info(msg.Msg, "id", autoPlayID)
 
 		}
 	},

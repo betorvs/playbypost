@@ -39,6 +39,7 @@ func (db *DBX) CreateAutoPlayTx(ctx context.Context, text string, storyID int, s
 		db.Logger.Error("query row SELECT story_keys and story failed", "error", err.Error())
 		return -1, err
 	}
+	// it creates auto_play using publish with default value: false
 	queryAutoPlay := "INSERT INTO auto_play(display_text, encoding_key, story_id, solo) VALUES($1, $2, $3, $4) RETURNING id" // dev:finder+query
 	stmtInsert, err := db.Conn.PrepareContext(ctx, queryAutoPlay)
 	if err != nil {
@@ -565,6 +566,16 @@ func (db *DBX) DeleteAutoPlayNextEncounter(ctx context.Context, id int) error {
 		return err
 	}
 
+	return nil
+}
+
+func (db *DBX) ChangePublishAutoPlay(ctx context.Context, autoPlayID int, publish bool) error {
+	query := "UPDATE auto_play SET publish = $1 WHERE id = $2" // dev:finder+query
+	_, err := db.Conn.ExecContext(ctx, query, publish, autoPlayID)
+	if err != nil {
+		db.Logger.Error("error on update auto_play", "error", err.Error())
+		return err
+	}
 	return nil
 }
 

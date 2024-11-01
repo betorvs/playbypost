@@ -48,3 +48,9 @@ func (c *Cli) AddNextEncounter(a types.Next) ([]byte, error) {
 	res, err := c.postGeneric(next, body)
 	return res, err
 }
+
+func (c *Cli) PublishAutoPlay(id int) ([]byte, error) {
+	publish := fmt.Sprintf("%s/publish/%d", autoPlay, id)
+	res, err := c.putEmptyBodyGeneric(publish)
+	return res, err
+}

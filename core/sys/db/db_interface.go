@@ -100,6 +100,7 @@ type DBClient interface {
 	GetAutoPlayActivities(ctx context.Context) ([]types.Activity, error)
 	GetStoryAnnouncementByAutoPlayID(ctx context.Context, autoPlayID int) (string, string, error)
 	GetAnnounceByEncounterID(ctx context.Context, encounterID, autoPlayID int) (string, bool, error)
+	DescribeAutoPlayPublished(ctx context.Context, solo bool) ([]types.AutoPlayDescribed, error)
 	GetNextEncounterByAutoPlayID(ctx context.Context, autoPlayID int) ([]types.Next, error)
 	CreateAutoPlayTx(ctx context.Context, text string, storyID int, solo bool) (int, error)
 	AddAutoPlayNext(ctx context.Context, next []types.Next) error
@@ -109,6 +110,7 @@ type DBClient interface {
 	UpdateProcessedAutoPlay(ctx context.Context, id int, processed bool, actions types.Actions) error
 	UpdateAutoPlayGroup(ctx context.Context, id, count int, date time.Time) error
 	UpdateAutoPlayState(ctx context.Context, autoPlayChannel string, encounterID int) error
+	ChangePublishAutoPlay(ctx context.Context, autoPlayID int, publish bool) error
 	CloseAutoPlayChannel(ctx context.Context, channelID string, autoPlayID int) error
 	DeleteAutoPlayNextEncounter(ctx context.Context, id int) error
 }

@@ -12,7 +12,7 @@ import (
 
 func (db *DBX) GetAutoPlay(ctx context.Context) ([]types.AutoPlay, error) {
 	autoPlay := []types.AutoPlay{}
-	query := "SELECT id, display_text, story_id, solo FROM auto_play" // dev:finder+query
+	query := "SELECT id, display_text, story_id, solo, publish FROM auto_play" // dev:finder+query
 	rows, err := db.Conn.QueryContext(ctx, query)
 	if err != nil {
 		db.Logger.Error("query on auto_play failed", "error", err.Error())
@@ -21,7 +21,7 @@ func (db *DBX) GetAutoPlay(ctx context.Context) ([]types.AutoPlay, error) {
 	defer rows.Close()
 	for rows.Next() {
 		var auto types.AutoPlay
-		if err := rows.Scan(&auto.ID, &auto.Text, &auto.StoryID, &auto.Solo); err != nil {
+		if err := rows.Scan(&auto.ID, &auto.Text, &auto.StoryID, &auto.Solo, &auto.Publish); err != nil {
 			db.Logger.Error("scan error on auto_play ", "error", err.Error())
 		}
 		autoPlay = append(autoPlay, auto)
@@ -35,7 +35,7 @@ func (db *DBX) GetAutoPlay(ctx context.Context) ([]types.AutoPlay, error) {
 
 func (db *DBX) GetAutoPlayByID(ctx context.Context, autoPlayID int) (types.AutoPlay, error) {
 	autoPlay := types.AutoPlay{}
-	query := "SELECT id, display_text, story_id, solo FROM auto_play WHERE id = $1" // dev:finder+query
+	query := "SELECT id, display_text, story_id, solo, publish FROM auto_play WHERE id = $1" // dev:finder+query
 	rows, err := db.Conn.QueryContext(ctx, query, autoPlayID)
 	if err != nil {
 		db.Logger.Error("query on auto_play by id failed", "error", err.Error())
@@ -43,7 +43,7 @@ func (db *DBX) GetAutoPlayByID(ctx context.Context, autoPlayID int) (types.AutoP
 	}
 	defer rows.Close()
 	for rows.Next() {
-		if err := rows.Scan(&autoPlay.ID, &autoPlay.Text, &autoPlay.StoryID, &autoPlay.Solo); err != nil {
+		if err := rows.Scan(&autoPlay.ID, &autoPlay.Text, &autoPlay.StoryID, &autoPlay.Solo, &autoPlay.Publish); err != nil {
 			db.Logger.Error("scan error on auto_play by id ", "error", err.Error())
 		}
 	}
@@ -110,7 +110,7 @@ func (db *DBX) GetAutoPlayOptionsByChannelID(ctx context.Context, channelID, use
 	JOIN users AS u ON apg.user_id = u.id 
 	JOIN auto_play_next_encounter AS apne ON apne.upstream_id = ap.id 
 	JOIN auto_play_next_objectives AS apno ON apno.upstream_id = apne.id
-	WHERE ac.active = true AND apg.active = true AND aps.active = true AND apne.current_encounter_id = aps.encounter_id AND ac.channel = $1`
+	WHERE ac.active = true AND apg.active = true AND aps.active = true AND apne.current_encounter_id = aps.encounter_id AND ap.publish = true AND ac.channel = $1`
 	// dev:finder+multiline+query
 	rows, err := db.Conn.QueryContext(ctx, query, channelID)
 	if err != nil {
@@ -191,12 +191,12 @@ func (db *DBX) GetAnnounceByEncounterID(ctx context.Context, encounterID, autoPl
 	var last bool
 	err := db.Conn.QueryRowContext(ctx, query, encounterID, autoPlayID).Scan(&encodingKey, &encAnnounce, &last)
 	if err != nil {
-		db.Logger.Error("query row SELECT auto_play_next_encounter failed", "error", err.Error())
+		db.Logger.Error("query row SELECT GetAnnounceByEncounterID failed", "error", err.Error())
 		return "", false, err
 	}
 	text, err := utils.DecryptText(encAnnounce, encodingKey)
 	if err != nil {
-		db.Logger.Error("error on decrypt text", "error", err.Error())
+		db.Logger.Error("error on decrypt text on GetAnnounceByEncounterID", "error", err.Error())
 		return "", false, err
 	}
 	return text, last, nil
@@ -208,15 +208,45 @@ func (db *DBX) GetStoryAnnouncementByAutoPlayID(ctx context.Context, autoPlayID 
 	var title, encodingKey, announce string
 	err := db.Conn.QueryRowContext(ctx, query, autoPlayID).Scan(&title, &encodingKey, &announce)
 	if err != nil {
-		db.Logger.Error("query row SELECT auto_play failed", "error", err.Error())
+		db.Logger.Error("query row SELECT on GetStoryAnnouncementByAutoPlayID failed", "error", err.Error())
 		return "", "", err
 	}
 	announcement, err := utils.DecryptText(announce, encodingKey)
 	if err != nil {
-		db.Logger.Error("error on decrypt text", "error", err.Error())
+		db.Logger.Error("error on decrypt text on GetStoryAnnouncementByAutoPlayID", "error", err.Error())
 		return "", "", err
 	}
 	return title, announcement, nil
+}
+
+// get describe auto play list
+func (db *DBX) DescribeAutoPlayPublished(ctx context.Context, solo bool) ([]types.AutoPlayDescribed, error) {
+	describe := []types.AutoPlayDescribed{}
+	query := "select a.display_text, a.encoding_key, s.announcement, w.username FROM auto_play AS a JOIN story AS s ON a.story_id = s.id JOIN writers AS w ON s.writer_id = w.id WHERE a.publish = true and a.solo = $1" // dev:finder+query
+	rows, err := db.Conn.QueryContext(ctx, query, solo)
+	if err != nil {
+		db.Logger.Error("query on DescribeAutoPlayPublished failed ", "error", err.Error())
+		return describe, err
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var d types.AutoPlayDescribed
+		var encodingKey string
+		if err := rows.Scan(&d.DisplayText, &encodingKey, &d.Announcement, &d.Writer); err != nil {
+			db.Logger.Error("scan error on DescribeAutoPlayPublished ", "error", err.Error())
+		}
+		announcement, err := utils.DecryptText(d.Announcement, encodingKey)
+		if err != nil {
+			db.Logger.Error("error on decrypt text on DescribeAutoPlayPublished", "error", err.Error())
+		}
+		d.Announcement = announcement
+		describe = append(describe, d)
+	}
+	// Check for errors FROM iterating over rows.
+	if err := rows.Err(); err != nil {
+		db.Logger.Error("rows err on DescribeAutoPlayPublished", "error", err.Error())
+	}
+	return describe, nil
 }
 
 // func GetNextEncounterByAutoPlayID

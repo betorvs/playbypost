@@ -309,8 +309,9 @@ tasks:
       - ./admin-ctl auto-play next-by-title --auto-play-id 1 --encounter "2 encounter on story 2" --next-encounter "4 encounter on story 2" --text "moving forward" --token {{.TOKEN}}
       - ./admin-ctl auto-play next-by-title --auto-play-id 1 --encounter "3 encounter on story 2" --next-encounter "bad end encounter on story 2" --text "moving forward" --token {{.TOKEN}}
       - ./admin-ctl auto-play next-by-title --auto-play-id 1 --encounter "4 encounter on story 2" --next-encounter "last encounter on story 2" --text "go to end notes" --token {{.TOKEN}}
-      - ./admin-ctl auto-play next-by-title --auto-play-id 2 --encounter "first encounter on story new solo" --next-encounter "2 encounter on story 22" --text "you rolled 1,3 or 5" --objective-kind "dice_roll" --objective-values "1,3,5" --token {{.TOKEN}}
-      - ./admin-ctl auto-play next-by-title --auto-play-id 2 --encounter "first encounter on story new solo" --next-encounter "3 encounter on story 22" --text "you rolled 2,4 or 6" --objective-kind "dice_roll" --objective-values "2,4,6" --token {{.TOKEN}}
+      # requires update cli with array of next encounters
+      # - ./admin-ctl auto-play next-by-title --auto-play-id 2 --encounter "first encounter on story new solo" --next-encounter "2 encounter on story 22" --text "you rolled 1,3 or 5" --objective-kind "dice_roll" --objective-values "1,3,5" --token {{.TOKEN}}
+      # - ./admin-ctl auto-play next-by-title --auto-play-id 2 --encounter "first encounter on story new solo" --next-encounter "3 encounter on story 22" --text "you rolled 2,4 or 6" --objective-kind "dice_roll" --objective-values "2,4,6" --token {{.TOKEN}}
     vars:
       TOKEN:
         sh: cat creds
