@@ -86,10 +86,16 @@ func (s *SvrWeb) ErrJSON(w http.ResponseWriter, code int, msg string) {
 	w.Header().Set("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization, X-Username, X-Access-Token")
 	w.Header().Set("Access-Control-Request-Methods", "GET, POST, DELETE, PUT, OPTIONS")
 	w.WriteHeader(code)
-
-	// message := fmt.Sprintf("{\"msg\":\"%s\"}", msg)
 	message := types.Msg{Msg: msg}
-	fmt.Fprint(w, message)
+	js, err := json.Marshal(message)
+	if err == nil {
+		_, err = w.Write(js)
+		if err != nil {
+			s.logger.Error("json write error", "error", err.Error())
+		}
+	} else {
+		fmt.Fprint(w, msg)
+	}
 }
 
 func (s *SvrWeb) Options(w http.ResponseWriter, r *http.Request) {

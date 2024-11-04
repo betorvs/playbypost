@@ -74,7 +74,19 @@
         "list-item-20": "You cannot create a new Stage using the same Channel.",
         "list-item-21": "You cannot close a Stage if you do not finish all Encounters.",
         "sub-header-4": "Now. Interact with our Chat Bot calling it '@play-by-post help'",
-        "notes-1": "IMPORTANT: You can only delete emtpy Story. Encounters you can delete only if it's not associated with Stage or Auto Play. You can run only one story (Stage or Auto Play) per channel."
+        "notes-1": "IMPORTANT: You can only delete emtpy Story. Encounters you can delete only if it's not associated with Stage or Auto Play. You can run only one story (Stage or Auto Play) per channel.",
+        "notes-2": "IMPORTANT: Storyteller should control encounters phases and NPCs using bot commands. Players can only interact with the bot using commands.",
+        "sub-header-5": "Limitations on Database by Design",
+        "sub-header-5-p": "We have added settings to the database to ensure data integrity and the best functioning of the application. There are some limitations.",
+        "list-item-22": "Story title needs to be unique per writer and limited to 50 characters",
+        "list-item-23": "Encounter title needs to be unique per story and limited to 50 characters",
+        "list-item-24": "Task title is limited to 50 characters",
+        "list-item-25": "Stage and Auto Play name title is limited to 100 characters",
+        "list-item-26": "Encounter associated with Stage should have unique title per Stage",
+        "list-item-27": "Adding a Next Encounter should have a unique combination of name, encounter ID and next encounter ID. Do not repeat.",
+        "list-item-28": "Tasks associated with Stage Encounter should have unique title per Encounter ID and task ID. Cannot associate the same task twice to the same encounter.",
+        "list-item-29": "Player name and NPC name is limited to 255 characters",
+        "notes-3": "Important: These limitations are to ensure data integrity. Common database errors can be related to these limitations."
     },
     "story": {
         "this": "Story",

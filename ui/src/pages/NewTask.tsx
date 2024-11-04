@@ -44,7 +44,10 @@ const NewTask = () => {
       alert(t("alert.task", {ns: ['main', 'home']}));
       navigate("/tasks");
     } else {
-      alert(t("alert.task-wrong", {ns: ['main', 'home']}));
+      const data = await response.text();
+      let error = JSON.parse(data);
+      console.log(error);
+      alert(t("alert.task-wrong", {ns: ['main', 'home']}) + "\n" + error.msg);
     }
   }
   return (

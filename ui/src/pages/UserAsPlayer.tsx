@@ -49,7 +49,10 @@ const UserAsPlayer = () => {
       alert(t("alert.player", {ns: ['main', 'home']}));
       navigate("/users");
     } else {
-      alert(t("alert.player-wrong", {ns: ['main', 'home']}));
+      const data = await response.text();
+      let error = JSON.parse(data);
+      console.log(error);
+      alert(t("alert.player-wrong", {ns: ['main', 'home']}) + "\n" + error.msg);
     }
   }
   return (

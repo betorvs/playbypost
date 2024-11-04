@@ -4,10 +4,9 @@ Copyright © 2024 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
-	"encoding/json"
 	"fmt"
 
-	"github.com/betorvs/playbypost/core/sys/web/types"
+	"github.com/betorvs/playbypost/core/utils"
 	"github.com/spf13/cobra"
 )
 
@@ -48,11 +47,11 @@ var validatorCmd = &cobra.Command{
 			}
 			body, err := app.Web.ValidatorPut(obj, objectID)
 			if err != nil {
-				app.Logger.Error("validator error", "error", err.Error())
+				msg, _ := utils.ParseMsgBody(body)
+				app.Logger.Error("validator error", "error", err.Error(), "msg", msg.Msg)
 				return
 			}
-			var msg types.Msg
-			err = json.Unmarshal(body, &msg)
+			msg, err := utils.ParseMsgBody(body)
 			if err != nil {
 				app.Logger.Error("json unmarsharl error", "error", err.Error())
 				return

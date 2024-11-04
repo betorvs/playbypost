@@ -55,7 +55,10 @@ const EncounterToStage = () => {
       alert(t("alert.encounter-associated", {ns: ['main', 'home']}));
       navigate(`/stories/${safeID}`);
     } else {
-      alert(t("alert.encounter-associated-wrong", {ns: ['main', 'home']}));
+      const data = await response.text();
+      let error = JSON.parse(data);
+      console.log(error);
+      alert(t("alert.encounter-associated-wrong", {ns: ['main', 'home']})+ "\n" + error.msg);
     }
   }
   return (

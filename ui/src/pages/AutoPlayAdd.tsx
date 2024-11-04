@@ -51,7 +51,10 @@ const AutoPlayAdd = () => {
       alert(t("alert.auto-play", {ns: ['main', 'home']}));
       navigate("/autoplay");
     } else {
-      alert(t("alert.auto-play-wrong", {ns: ['main', 'home']}));
+      const data = await response.text();
+      let error = JSON.parse(data);
+      console.log(error);
+      alert(t("alert.auto-play-wrong", {ns: ['main', 'home']})+ "\n" + error.msg);
     }
   }
   return (

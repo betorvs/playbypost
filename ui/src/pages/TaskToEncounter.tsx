@@ -52,7 +52,10 @@ const TaskToEncounter = () => {
           alert(t("alert.task-add", {ns: ['main', 'home']}));
           navigate(`/stages/${id}/story/${story}/encounter/${encounterid}`);
         } else {
-          alert(t("alert.task-add-wrong", {ns: ['main', 'home']}));
+          const data = await response.text();
+          let error = JSON.parse(data);
+          console.log(error);
+          alert(t("alert.task-add-wrong", {ns: ['main', 'home']})+ "\n" + error.msg);
         }
   };
   

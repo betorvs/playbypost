@@ -48,6 +48,20 @@ const HomePublicPage = () => {
         <li>{t("home.list-item-20", {ns: ['main', 'home']})}</li>
         <li>{t("home.list-item-21", {ns: ['main', 'home']})}</li>
       </ol>
+      <p>{t("home.notes-2", {ns: ['main', 'home']})}</p>
+      <hr />
+      <h4>{t("home.sub-header-5", {ns: ['main', 'home']})}</h4>
+      <p>{t("home.sub-header-5-p", {ns: ['main', 'home']})}</p>
+      <ul>
+        <li>{t("home.list-item-22", {ns: ['main', 'home']})}</li>
+        <li>{t("home.list-item-23", {ns: ['main', 'home']})}</li>
+        <li>{t("home.list-item-24", {ns: ['main', 'home']})}</li>
+        <li>{t("home.list-item-25", {ns: ['main', 'home']})}</li>
+        <li>{t("home.list-item-26", {ns: ['main', 'home']})}</li>
+        <li>{t("home.list-item-27", {ns: ['main', 'home']})}</li>
+        <li>{t("home.list-item-28", {ns: ['main', 'home']})}</li>
+      </ul>
+      <p>{t("home.notes-3", {ns: ['main', 'home']})}</p>
       <hr />
       <p>{t("home.sub-header-4", {ns: ['main', 'home']})}</p>
     </div>

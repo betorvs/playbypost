@@ -52,7 +52,10 @@ const StageStart = () => {
       alert(t("alert.stage-start", {ns: ['main', 'home']}));
       navigate(`/stages/${safeID}/story/${stage?.stage.story_id}`);
     } else {
-      alert(t("alert.stage-start-wrong", {ns: ['main', 'home']}));
+      const data = await response.text();
+      let error = JSON.parse(data);
+      console.log(error);
+      alert(t("alert.stage-start-wrong", {ns: ['main', 'home']})+ "\n" + error.msg);
     }
   }
 

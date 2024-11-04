@@ -8,7 +8,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/betorvs/playbypost/core/sys/web/types"
+	"github.com/betorvs/playbypost/core/utils"
 	"github.com/spf13/cobra"
 )
 
@@ -45,11 +45,11 @@ var stageCmd = &cobra.Command{
 		case "create":
 			body, err := app.Web.CreateStage(displayText, userID, storyID)
 			if err != nil {
-				app.Logger.Error("stage error", "error", err.Error())
+				msg, _ := utils.ParseMsgBody(body)
+				app.Logger.Error("stage error", "error", err.Error(), "msg", msg.Msg)
 				os.Exit(1)
 			}
-			var msg types.Msg
-			err = json.Unmarshal(body, &msg)
+			msg, err := utils.ParseMsgBody(body)
 			if err != nil {
 				app.Logger.Error("json unmarsharl error", "error", err.Error())
 				os.Exit(1)
@@ -68,11 +68,11 @@ var stageCmd = &cobra.Command{
 			}
 			body, err := app.Web.CreateStage(displayText, userID, storyID)
 			if err != nil {
-				app.Logger.Error("stage error", "error", err.Error())
+				msg, _ := utils.ParseMsgBody(body)
+				app.Logger.Error("stage error", "error", err.Error(), "msg", msg.Msg)
 				os.Exit(1)
 			}
-			var msg types.Msg
-			err = json.Unmarshal(body, &msg)
+			msg, err := utils.ParseMsgBody(body)
 			if err != nil {
 				app.Logger.Error("json unmarsharl error", "error", err.Error())
 				os.Exit(1)
@@ -117,11 +117,11 @@ var stageCmd = &cobra.Command{
 			}
 			body, err := app.Web.AddEncounterToStage(displayText, storyID, stageID, encounterID)
 			if err != nil {
-				app.Logger.Error("add encounter to stage error", "error", err.Error())
+				msg, _ := utils.ParseMsgBody(body)
+				app.Logger.Error("add encounter to stage error", "error", err.Error(), "msg", msg.Msg)
 				os.Exit(1)
 			}
-			var msg types.Msg
-			err = json.Unmarshal(body, &msg)
+			msg, err := utils.ParseMsgBody(body)
 			if err != nil {
 				app.Logger.Error("json unmarsharl error", "error", err.Error())
 				os.Exit(1)
@@ -142,11 +142,11 @@ var stageCmd = &cobra.Command{
 			}
 			body, err := app.Web.StartStage(stageID, chatChannelID)
 			if err != nil {
-				app.Logger.Error("start stage error", "error", err.Error())
+				msg, _ := utils.ParseMsgBody(body)
+				app.Logger.Error("start stage error", "error", err.Error(), "msg", msg.Msg)
 				os.Exit(1)
 			}
-			var msg types.Msg
-			err = json.Unmarshal(body, &msg)
+			msg, err := utils.ParseMsgBody(body)
 			if err != nil {
 				app.Logger.Error("json unmarsharl error", "error", err.Error())
 				os.Exit(1)

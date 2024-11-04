@@ -53,7 +53,10 @@ const AddPlayerToStageEncounter = () => {
           alert(t("alert.player-add", {ns: ['main', 'home']}));
           navigate(`/stages/${id}/story/${story}/encounter/${encounterid}`);
         } else {
-          alert(t("alert.player-add-wrong", {ns: ['main', 'home']}));
+          const data = await response.text();
+          let error = JSON.parse(data);
+          console.log(error);
+          alert(t("alert.player-add-wrong", {ns: ['main', 'home']}) + "\n" + error.msg);
         }
     }
     console.log("starting with values:", ids);

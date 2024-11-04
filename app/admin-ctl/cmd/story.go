@@ -8,7 +8,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/betorvs/playbypost/core/sys/web/types"
+	"github.com/betorvs/playbypost/core/utils"
 	"github.com/spf13/cobra"
 )
 
@@ -42,11 +42,11 @@ var storyCmd = &cobra.Command{
 		case "create":
 			body, err := app.Web.CreateStory(title, announcement, notes, writerID)
 			if err != nil {
-				app.Logger.Error("story error", "error", err.Error())
+				msg, _ := utils.ParseMsgBody(body)
+				app.Logger.Error("story error", "error", err.Error(), "msg", msg.Msg)
 				os.Exit(1)
 			}
-			var msg types.Msg
-			err = json.Unmarshal(body, &msg)
+			msg, err := utils.ParseMsgBody(body)
 			if err != nil {
 				app.Logger.Error("json unmarsharl error", "error", err.Error())
 				os.Exit(1)
@@ -56,11 +56,11 @@ var storyCmd = &cobra.Command{
 		case "update":
 			body, err := app.Web.UpdateStory(title, announcement, notes, storyID, writerID)
 			if err != nil {
-				app.Logger.Error("story update error", "error", err.Error())
+				msg, _ := utils.ParseMsgBody(body)
+				app.Logger.Error("story update error", "error", err.Error(), "msg", msg.Msg)
 				os.Exit(1)
 			}
-			var msg types.Msg
-			err = json.Unmarshal(body, &msg)
+			msg, err := utils.ParseMsgBody(body)
 			if err != nil {
 				app.Logger.Error("json unmarsharl error", "error", err.Error())
 				os.Exit(1)

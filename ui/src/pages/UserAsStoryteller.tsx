@@ -56,7 +56,10 @@ const UserAsStoryteller = () => {
       alert(t("alert.stage", {ns: ['main', 'home']}));
       navigate("/users");
     } else {
-      alert(t("alert.stage-wrong", {ns: ['main', 'home']}));
+      const data = await response.text();
+      let error = JSON.parse(data);
+      console.log(error);
+      alert(t("alert.stage-wrong", {ns: ['main', 'home']}) + "\n" + error.msg);
     }
   }
   return (
