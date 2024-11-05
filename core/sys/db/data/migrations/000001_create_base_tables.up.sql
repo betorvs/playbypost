@@ -68,6 +68,7 @@ CREATE TABLE stage (
   encoding_key VARCHAR(16) NOT NULL,
   finished BOOLEAN NOT NULL DEFAULT FALSE,
   storyteller_id int NOT NULL REFERENCES users(id),
+  creator_id int NOT NULL REFERENCES writers(id),
   story_id int NOT NULL REFERENCES story(id)
 );
 
@@ -182,6 +183,7 @@ CREATE TABLE auto_play (
   display_text VARCHAR(100) NOT NULL,
   encoding_key VARCHAR(16) NOT NULL,
   story_id int NOT NULL REFERENCES story(id),
+  creator_id int NOT NULL REFERENCES writers(id),
   solo BOOLEAN NOT NULL DEFAULT TRUE,
   publish BOOLEAN NOT NULL DEFAULT FALSE
 );

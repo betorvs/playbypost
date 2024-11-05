@@ -3,15 +3,19 @@ import { useParams } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 import Layout from "../components/Layout";
 import AutoPlayDetailHeader from "../components/AutoPlayDetailHeader";
-import { DeleteAutoPlayNextEncounter, FetchEncounterListAutoPlay } from "../functions/AutoPlay";
+import { DeleteAutoPlayNextEncounter, FetchAutoPlayByID, FetchEncounterListAutoPlay } from "../functions/AutoPlay";
 import { EncounterList } from "../types/Next";
 import { useTranslation } from "react-i18next";
 import { Button } from "react-bootstrap";
+import GetUserID from "../context/GetUserID";
+import AutoPlay from "../types/AutoPlay";
 
 const AutoPlayDetail = () => {
   const { id, story } = useParams();
+  const [autoPlay, setAutoPLay] = useState<AutoPlay>();
   const { Logoff } = useContext(AuthContext);
   const { t } = useTranslation(['home', 'main']);
+  const user_id = GetUserID();
   
   const safeID: string = id ?? "";
   
@@ -25,6 +29,7 @@ const AutoPlayDetail = () => {
   }
 
   useEffect(() => {
+    FetchAutoPlayByID(safeID, setAutoPLay);
     FetchEncounterListAutoPlay(storySafeID, setEncountersList);
   }, []);
   
@@ -32,7 +37,7 @@ const AutoPlayDetail = () => {
       <>
         <div className="container mt-3" key="1">
           <Layout Logoff={Logoff} />
-          {<AutoPlayDetailHeader id={safeID} storyID={storySafeID} />}
+          {autoPlay && <AutoPlayDetailHeader id={safeID} storyID={storySafeID} autoPlay={autoPlay} />}
         </div>
         <div className="container mt-3" key="3">
           <div className="card" >
@@ -49,7 +54,12 @@ const AutoPlayDetail = () => {
                         encountersList.link.filter((next) => next.encounter === encounter.name)
                         .map((next) => (
                           <ul key={next.id}>
-                            <li key={next.id}>{t("encounter.link", {ns: ['main', 'home']})}: {next.next_encounter} ({next.next_id}) <Button variant="danger" size="sm" onClick={() => handleDelete(next.id)}>{t("common.delete", {ns: ['main', 'home']})}</Button> </li>
+                            <li key={next.id}>{t("encounter.link", {ns: ['main', 'home']})}: {next.next_encounter} ({next.next_id}) 
+                              
+                              { user_id === autoPlay?.creator_id && (
+                                <Button variant="danger" size="sm" onClick={() => handleDelete(next.id)}>{t("common.delete", {ns: ['main', 'home']})}</Button> 
+                              )}
+                            </li>
                           </ul>
                         ))
                       ) : (

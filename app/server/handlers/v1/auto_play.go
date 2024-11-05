@@ -26,7 +26,7 @@ func (a MainApi) CreateAutoPlay(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// create auto play
-	res, err := a.db.CreateAutoPlayTx(a.ctx, obj.Text, obj.StoryID, obj.Solo)
+	res, err := a.db.CreateAutoPlayTx(a.ctx, obj.Text, obj.StoryID, obj.CreatorID, obj.Solo)
 	if err != nil {
 		a.logger.Error("error creating auto play", "error", err.Error())
 		a.s.ErrJSON(w, http.StatusInternalServerError, "error creating auto play")

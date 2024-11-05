@@ -43,7 +43,7 @@ var stageCmd = &cobra.Command{
 			}
 
 		case "create":
-			body, err := app.Web.CreateStage(displayText, userID, storyID)
+			body, err := app.Web.CreateStage(displayText, userID, storyID, writerID)
 			if err != nil {
 				msg, _ := utils.ParseMsgBody(body)
 				app.Logger.Error("stage error", "error", err.Error(), "msg", msg.Msg)
@@ -66,7 +66,7 @@ var stageCmd = &cobra.Command{
 				app.Logger.Error("story not found", "title", storyTitle)
 				os.Exit(1)
 			}
-			body, err := app.Web.CreateStage(displayText, userID, storyID)
+			body, err := app.Web.CreateStage(displayText, userID, storyID, writerID)
 			if err != nil {
 				msg, _ := utils.ParseMsgBody(body)
 				app.Logger.Error("stage error", "error", err.Error(), "msg", msg.Msg)
@@ -168,4 +168,5 @@ func init() {
 	stageCmd.Flags().StringVarP(&stageTitle, "stage-title", "s", "", "stage title from stage created")
 	stageCmd.Flags().StringVarP(&encounterTitle, "encounter-title", "e", "", "encounter title from encounter created")
 	stageCmd.Flags().StringVarP(&chatChannelID, "channel-id", "c", "", "channel id from chat integration")
+	stageCmd.Flags().IntVar(&writerID, "writer-id", 0, "master id equal user ID")
 }

@@ -189,7 +189,7 @@ func TestIntegration(t *testing.T) {
 		}
 		// create auto play
 		autoPlayText := fmt.Sprintf("auto play text %s", random)
-		_, err7 := h.CreateAutoPlay(autoPlayText, storyAutoPlay.ID, true)
+		_, err7 := h.CreateAutoPlay(autoPlayText, storyAutoPlay.ID, writerAutoPlay.ID, true)
 		if err7 != nil {
 			t.Error("error creating auto play")
 		}
@@ -392,7 +392,7 @@ func TestIntegration(t *testing.T) {
 		channelStage := fmt.Sprintf("channel-stage-%s", random)
 		// create stage
 		stageText := fmt.Sprintf("stage text %s", random)
-		_, err8 := h.CreateStage(stageText, storyteller, storyStage.ID)
+		_, err8 := h.CreateStage(stageText, storyteller, storyStage.ID, writerStage.ID)
 		if err8 != nil {
 			t.Error("error creating stage")
 		}

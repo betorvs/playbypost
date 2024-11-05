@@ -3,21 +3,24 @@
 import { useEffect, useState } from "react";
 import NavigateButton from "./Button/NavigateButton";
 import AutoPlay from "../types/AutoPlay";
-import { ChangePublishAutoPlay, FetchAutoPlayByID } from "../functions/AutoPlay";
+import { ChangePublishAutoPlay } from "../functions/AutoPlay";
 import { useTranslation } from "react-i18next";
 import Validator from "../types/validator";
 import { FetchValidatorByIDKind } from "../functions/Validator";
 import { Button } from "react-bootstrap";
+import GetUserID from "../context/GetUserID";
 
 interface props {
     id: string;
     storyID: string;
+    autoPlay: AutoPlay;
 }
 
-const AutoPlayDetailHeader = ({ id, storyID }: props) => {
-  const [autoPlay, setAutoPLay] = useState<AutoPlay>();
+const AutoPlayDetailHeader = ({ id, storyID, autoPlay }: props) => {
+  // const [autoPlay, setAutoPLay] = useState<AutoPlay>();
   const { t } = useTranslation(['home', 'main']);
   const [validator, setValidator] = useState<Validator>();
+  const user_id = GetUserID();
   const kind = "autoplay";
 
   const handlePublish = (id: number, publish: boolean) => {
@@ -25,8 +28,15 @@ const AutoPlayDetailHeader = ({ id, storyID }: props) => {
     ChangePublishAutoPlay(id);
   };
 
+  let publishButton = "success";
+  let publishText = t("auto-play.publish-button", {ns: ['main', 'home']});
+  if (autoPlay?.publish) {
+    publishButton = "warning";
+    publishText = t("auto-play.unpublish-button", {ns: ['main', 'home']});
+  }
+
   useEffect(() => {
-    FetchAutoPlayByID(id, setAutoPLay);
+    // FetchAutoPlayByID(id, setAutoPLay);
     FetchValidatorByIDKind(Number(id), kind, setValidator);
   }, []);
     return (
@@ -81,19 +91,22 @@ const AutoPlayDetailHeader = ({ id, storyID }: props) => {
           <NavigateButton link="/autoplay" variant="secondary">
             {t("auto-play.back-button", {ns: ['main', 'home']})}
           </NavigateButton>{" "}
-          <NavigateButton link={`/autoplay/${id}/story/${storyID}/next`} variant="primary">
-            {t("encounter.add-next-encounter", {ns: ['main', 'home']})}
-          </NavigateButton>{" "}
 
-          <span>
-            {
-              autoPlay?.publish ? (
-                <Button variant="warning" size="sm" onClick={() => handlePublish(autoPlay?.id || 0, false)}>{t("auto-play.unpublish-button", {ns: ['main', 'home']})}</Button>
-              ) : (
-                <Button variant="success" size="sm" onClick={() => handlePublish(autoPlay?.id || 0, true)}>{t("auto-play.publish-button", {ns: ['main', 'home']})}</Button>
-              )
-            }
-          </span>
+            { autoPlay?.creator_id === user_id && (
+              <>
+                <NavigateButton link={`/autoplay/${id}/story/${storyID}/next`} variant="primary">
+                  {t("encounter.add-next-encounter", {ns: ['main', 'home']})}
+                </NavigateButton>{" "}
+              
+                <span>
+                  <Button variant={publishButton} size="sm" onClick={() => handlePublish(autoPlay?.id || 0, false)}>{publishText}</Button>
+                </span>
+             </>
+
+            )}
+
+         
+          
 
         </div>
       </div>

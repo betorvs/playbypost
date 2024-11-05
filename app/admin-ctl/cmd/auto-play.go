@@ -47,7 +47,7 @@ var autoPlayCmd = &cobra.Command{
 			}
 
 		case "create":
-			body, err := app.Web.CreateAutoPlay(displayText, storyID, solo)
+			body, err := app.Web.CreateAutoPlay(displayText, storyID, writerID, solo)
 			if err != nil {
 				msg, _ := utils.ParseMsgBody(body)
 				app.Logger.Error("autoPlay error", "error", err.Error(), "msg", msg.Msg)
@@ -158,4 +158,5 @@ func init() {
 	autoPlayCmd.Flags().StringVar(&encounterTitle, "encounter", "", "next encounter title")
 	autoPlayCmd.Flags().StringVar(&objectiveKind, "objective-kind", "", fmt.Sprintf("objective kind: %v", types.Objectives()))
 	autoPlayCmd.Flags().IntSliceVar(&objectiveValues, "objective-values", []int{}, "objective values")
+	autoPlayCmd.Flags().IntVar(&writerID, "writer-id", 0, "master id equal user ID")
 }

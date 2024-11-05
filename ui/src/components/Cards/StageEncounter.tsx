@@ -3,16 +3,19 @@ import Encounter from "../../types/Encounter";
 import NavigateButton from "../Button/NavigateButton";
 import { useTranslation } from "react-i18next";
 import { DeleteStageEncounterByID } from "../../functions/Stages";
+import GetUserID from "../../context/GetUserID";
 
 interface props {
   encounter: Encounter;
   disable_footer?: boolean;
   stageID: string;
   storyId: string;
+  creator_id: number;
 }
 
-const StageEncounterCards = ({ encounter, disable_footer, stageID, storyId }: props) => {
+const StageEncounterCards = ({ encounter, disable_footer, stageID, storyId, creator_id }: props) => {
   const { t } = useTranslation(['home', 'main']);
+  const user_id = GetUserID();
 
   const handleDelete = (id: number) => {
     console.log("Deleting assigned encounter " + id);
@@ -41,16 +44,26 @@ const StageEncounterCards = ({ encounter, disable_footer, stageID, storyId }: pr
           <div className="card-body">
             <h5 className="card-title">{t("encounter.this", {ns: ['main', 'home']})} - {t("common.title", {ns: ['main', 'home']})}</h5>
             <p className="card-text">{encounter.title}</p>
-            <h6 className="card-title">{t("common.announce", {ns: ['main', 'home']})}</h6>
-            <p className="card-text">{encounter.announcement}</p>
-            <h6 className="card-title">{t("common.notes", {ns: ['main', 'home']})}</h6>
-            <p className="card-text">{encounter.notes}</p>
+            { user_id === creator_id && (
+              <>
+              <h6 className="card-title">{t("common.announce", {ns: ['main', 'home']})}</h6>
+              <p className="card-text">{encounter.announcement}</p>
+              <h6 className="card-title">{t("common.notes", {ns: ['main', 'home']})}</h6>
+              <p className="card-text">{encounter.notes}</p>
+              </>
+            )}
+            
           </div>
           <div className="card-footer text-body-secondary" hidden={disable_footer} >
-          <NavigateButton link={`/stages/${stageID}/story/${storyId}/encounter/${encounter.id}`} variant="primary">
-            {t("encounter.manage-button", {ns: ['main', 'home']})}
-          </NavigateButton>{" "}
-          <Button variant="warning" size="sm" onClick={() => handleDelete(encounter.id)}>{t("common.remove", {ns: ['main', 'home']})}</Button>
+          { user_id === creator_id && (
+            <>
+              <NavigateButton link={`/stages/${stageID}/story/${storyId}/encounter/${encounter.id}`} variant="primary">
+              {t("encounter.manage-button", {ns: ['main', 'home']})}
+              </NavigateButton>{" "}
+              <Button variant="warning" size="sm" onClick={() => handleDelete(encounter.id)}>{t("common.remove", {ns: ['main', 'home']})}</Button>
+            </>
+          )}
+          
           </div>
         </div>
       </div>

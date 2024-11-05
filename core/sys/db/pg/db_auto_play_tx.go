@@ -12,7 +12,7 @@ import (
 )
 
 // create auto play
-func (db *DBX) CreateAutoPlayTx(ctx context.Context, text string, storyID int, solo bool) (int, error) {
+func (db *DBX) CreateAutoPlayTx(ctx context.Context, text string, storyID, creatorID int, solo bool) (int, error) {
 	// TX
 	tx, err := db.Conn.BeginTx(ctx, nil)
 	if err != nil {
@@ -40,7 +40,7 @@ func (db *DBX) CreateAutoPlayTx(ctx context.Context, text string, storyID int, s
 		return -1, err
 	}
 	// it creates auto_play using publish with default value: false
-	queryAutoPlay := "INSERT INTO auto_play(display_text, encoding_key, story_id, solo) VALUES($1, $2, $3, $4) RETURNING id" // dev:finder+query
+	queryAutoPlay := "INSERT INTO auto_play(display_text, encoding_key, story_id, creator_id, solo) VALUES($1, $2, $3, $4, $5) RETURNING id" // dev:finder+query
 	stmtInsert, err := db.Conn.PrepareContext(ctx, queryAutoPlay)
 	if err != nil {
 		db.Logger.Error("tx prepare on stmtInsert failed", "error", err.Error())
@@ -48,7 +48,7 @@ func (db *DBX) CreateAutoPlayTx(ctx context.Context, text string, storyID int, s
 	}
 	defer stmtInsert.Close()
 	var autoPlayID int
-	err = tx.StmtContext(ctx, stmtInsert).QueryRow(text, encodingKey, storyID, solo).Scan(&autoPlayID)
+	err = tx.StmtContext(ctx, stmtInsert).QueryRow(text, encodingKey, storyID, creatorID, solo).Scan(&autoPlayID)
 	if err != nil {
 		db.Logger.Error("query row insert into auto_play failed", "error", err.Error())
 		return -1, err

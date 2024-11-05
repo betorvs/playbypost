@@ -9,7 +9,7 @@ import (
 	"github.com/lib/pq"
 )
 
-func (db *DBX) CreateStageTx(ctx context.Context, text, userid string, storyID int) (int, error) {
+func (db *DBX) CreateStageTx(ctx context.Context, text, userid string, storyID, creatorID int) (int, error) {
 	// TX
 	tx, err := db.Conn.BeginTx(ctx, nil)
 	if err != nil {
@@ -62,7 +62,7 @@ func (db *DBX) CreateStageTx(ctx context.Context, text, userid string, storyID i
 	}
 
 	// create stage
-	queryInsertStage := "INSERT INTO stage(display_text, encoding_key, finished, storyteller_id, story_id) VALUES($1, $2, $3, $4, $5) RETURNING id" // dev:finder+query
+	queryInsertStage := "INSERT INTO stage(display_text, encoding_key, finished, storyteller_id, story_id, creator_id) VALUES($1, $2, $3, $4, $5, $6) RETURNING id" // dev:finder+query
 	stmtInsertStage, err := db.Conn.PrepareContext(ctx, queryInsertStage)
 	if err != nil {
 		db.Logger.Error("tx prepare on stmtInsertStage failed", "error", err.Error())
@@ -70,7 +70,7 @@ func (db *DBX) CreateStageTx(ctx context.Context, text, userid string, storyID i
 	}
 	defer stmtInsertStage.Close()
 	var stageID int
-	err = tx.StmtContext(ctx, stmtInsertStage).QueryRow(text, encodingKey, false, userID, storyID).Scan(&stageID)
+	err = tx.StmtContext(ctx, stmtInsertStage).QueryRow(text, encodingKey, false, userID, storyID, creatorID).Scan(&stageID)
 	if err != nil {
 		db.Logger.Error("query row insert into stage failed", "error", err.Error())
 		return -1, err

@@ -24,11 +24,12 @@ func (c *Cli) GetStage() ([]types.Stage, error) {
 	return t, nil
 }
 
-func (c *Cli) CreateStage(text, userID string, storyID int) ([]byte, error) {
+func (c *Cli) CreateStage(text, userID string, storyID, creatorID int) ([]byte, error) {
 	s := types.Stage{
-		StoryID: storyID,
-		Text:    text,
-		UserID:  userID,
+		StoryID:   storyID,
+		CreatorID: creatorID,
+		Text:      text,
+		UserID:    userID,
 	}
 	body, err := json.Marshal(s)
 	if err != nil {

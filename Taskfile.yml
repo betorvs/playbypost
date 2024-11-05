@@ -295,8 +295,8 @@ tasks:
   load_auto_play:
     desc: "Load auto play"
     cmds:
-      - ./admin-ctl auto-play create --story-id 2 --solo --text "solo-adventure-1" --token {{.TOKEN}}
-      - ./admin-ctl auto-play create --story-id 3 --solo --text "test-solo-adventure-new-2" --token {{.TOKEN}}
+      - ./admin-ctl auto-play create --story-id 2 --solo --text "solo-adventure-1" --writer-id 2 --token {{.TOKEN}}
+      - ./admin-ctl auto-play create --story-id 3 --solo --text "test-solo-adventure-new-2" --writer-id 2 --token {{.TOKEN}}
     vars:
       TOKEN:
         sh: cat creds
@@ -327,7 +327,7 @@ tasks:
   load_stage:
     desc: "Load stage"
     cmds:
-      - ./admin-ctl stage create-by-title --display-text "adv-hero-1" --story-title "heroes save the world" --user-id "U947BLKME" --token {{.TOKEN}}
+      - ./admin-ctl stage create-by-title --display-text "adv-hero-1" --story-title "heroes save the world" --user-id "U947BLKME" --writer-id 1 --token {{.TOKEN}}
       - ./admin-ctl player add-player-stage-by-title --stage-title "adv-hero-1" --player-id "UMNL1CU1M" --token {{.TOKEN}}
       - ./admin-ctl stage add-encounter --stage-title "adv-hero-1" --encounter-title "first encounter on story 1" --story-title "heroes save the world" --display-text "enc-1" --token {{.TOKEN}}
       - ./admin-ctl stage add-encounter --stage-title "adv-hero-1" --encounter-title "2 encounter on story 1" --story-title "heroes save the world" --display-text "enc-2" --token {{.TOKEN}}

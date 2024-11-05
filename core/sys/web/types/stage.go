@@ -9,6 +9,7 @@ import (
 type Stage struct {
 	ID            int    `json:"id"`
 	StoryID       int    `json:"story_id"`
+	CreatorID     int    `json:"creator_id"`
 	Text          string `json:"text"`
 	UserID        string `json:"user_id,omitempty"`
 	StorytellerID int    `json:"storyteller_id,omitempty"`

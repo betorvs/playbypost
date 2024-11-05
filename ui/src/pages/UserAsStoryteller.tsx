@@ -49,6 +49,7 @@ const UserAsStoryteller = () => {
         story_id: storyID,
         text: text,
         user_id: id,
+        creator_id: user_id,
         storyteller_id: user_id,
       }),
     });

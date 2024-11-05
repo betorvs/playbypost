@@ -14,7 +14,7 @@ import (
 
 func (db *DBX) GetStage(ctx context.Context) ([]types.Stage, error) {
 	stages := []types.Stage{}
-	query := "SELECT id, display_text, story_id, storyteller_id FROM stage WHERE finished = false" // dev:finder+query
+	query := "SELECT id, display_text, story_id, creator_id, storyteller_id FROM stage WHERE finished = false" // dev:finder+query
 	rows, err := db.Conn.QueryContext(ctx, query)
 	if err != nil {
 		db.Logger.Error("query on stage failed", "error", err.Error())
@@ -23,7 +23,7 @@ func (db *DBX) GetStage(ctx context.Context) ([]types.Stage, error) {
 	defer rows.Close()
 	for rows.Next() {
 		var s types.Stage
-		if err := rows.Scan(&s.ID, &s.Text, &s.StoryID, &s.StorytellerID); err != nil {
+		if err := rows.Scan(&s.ID, &s.Text, &s.StoryID, &s.CreatorID, &s.StorytellerID); err != nil {
 			db.Logger.Error("scan error on stage", "error", err.Error())
 		}
 		stages = append(stages, s)
@@ -37,7 +37,7 @@ func (db *DBX) GetStage(ctx context.Context) ([]types.Stage, error) {
 
 func (db *DBX) GetStageByStoryID(ctx context.Context, id int) ([]types.Stage, error) {
 	stages := []types.Stage{}
-	query := "SELECT id, display_text, story_id, storyteller_id FROM stage WHERE story_id = $1 AND finished = false" // dev:finder+query
+	query := "SELECT id, display_text, story_id, creator_id, storyteller_id FROM stage WHERE story_id = $1 AND finished = false" // dev:finder+query
 	rows, err := db.Conn.QueryContext(ctx, query, id)
 	if err != nil {
 		db.Logger.Error("query on stage by story_id failed", "error", err.Error())
@@ -46,7 +46,7 @@ func (db *DBX) GetStageByStoryID(ctx context.Context, id int) ([]types.Stage, er
 	defer rows.Close()
 	for rows.Next() {
 		var s types.Stage
-		if err := rows.Scan(&s.ID, &s.Text, &s.StoryID, &s.StorytellerID); err != nil {
+		if err := rows.Scan(&s.ID, &s.Text, &s.StoryID, &s.CreatorID, &s.StorytellerID); err != nil {
 			db.Logger.Error("scan error on stage by story_id", "error", err.Error())
 		}
 		stages = append(stages, s)
@@ -60,7 +60,7 @@ func (db *DBX) GetStageByStoryID(ctx context.Context, id int) ([]types.Stage, er
 
 func (db *DBX) GetStageByStageID(ctx context.Context, id int) (types.StageAggregated, error) {
 	aggr := types.StageAggregated{}
-	query := "SELECT sa.id, sa.display_text, sa.story_id, sa.storyteller_id, sa.encoding_key, sy.title, sy.announcement, sy.notes, sy.writer_id, u.userid, sc.channel, sc.active FROM stage AS sa JOIN story AS sy ON sa.story_id = sy.id JOIN users AS u ON sa.storyteller_id = u.id LEFT JOIN stage_channel AS sc ON sc.upstream_id = sa.id WHERE sa.id = $1 AND sa.finished = false" // dev:finder+query
+	query := "SELECT sa.id, sa.display_text, sa.story_id, sa.creator_id, sa.storyteller_id, sa.encoding_key, sy.title, sy.announcement, sy.notes, sy.writer_id, u.userid, sc.channel, sc.active FROM stage AS sa JOIN story AS sy ON sa.story_id = sy.id JOIN users AS u ON sa.storyteller_id = u.id LEFT JOIN stage_channel AS sc ON sc.upstream_id = sa.id WHERE sa.id = $1 AND sa.finished = false" // dev:finder+query
 	rows, err := db.Conn.QueryContext(ctx, query, id)
 	if err != nil {
 		db.Logger.Error("query on stage failed", "error", err.Error())
@@ -73,7 +73,7 @@ func (db *DBX) GetStageByStageID(ctx context.Context, id int) (types.StageAggreg
 		var story types.Story
 		var channel sql.NullString
 		var channelActive sql.NullBool
-		if err := rows.Scan(&sa.ID, &sa.Text, &sa.StoryID, &sa.StorytellerID, &encodingKey, &story.Title, &announce, &notes, &story.WriterID, &sa.UserID, &channel, &channelActive); err != nil {
+		if err := rows.Scan(&sa.ID, &sa.Text, &sa.StoryID, &sa.CreatorID, &sa.StorytellerID, &encodingKey, &story.Title, &announce, &notes, &story.WriterID, &sa.UserID, &channel, &channelActive); err != nil {
 			db.Logger.Error("scan error on stage", "error", err.Error())
 		}
 		story.Announcement, _ = utils.DecryptText(announce, encodingKey)

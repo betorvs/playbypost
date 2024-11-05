@@ -19,6 +19,7 @@ const AutoPlayList = () => {
             key={autoplay.id}
             ID={autoplay.id}
             autoPlay={autoplay}
+            creator_id={autoplay.creator_id}
           />
         ))
       ) : (

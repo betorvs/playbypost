@@ -43,6 +43,7 @@ const AutoPlayAdd = () => {
       },
       body: JSON.stringify({
         story_id: storyID,
+        creator_id: user_id,
         text: text,
         solo: solo,
       }),

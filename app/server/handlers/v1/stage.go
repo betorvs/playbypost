@@ -40,7 +40,7 @@ func (a MainApi) CreateStage(w http.ResponseWriter, r *http.Request) {
 		a.s.ErrJSON(w, http.StatusBadRequest, "text and story_id cannot be empty")
 		return
 	}
-	res, err := a.db.CreateStageTx(a.ctx, obj.Text, obj.UserID, obj.StoryID)
+	res, err := a.db.CreateStageTx(a.ctx, obj.Text, obj.UserID, obj.StoryID, obj.CreatorID)
 	if err != nil {
 		a.logger.Error("error ", "story_id", obj.StoryID)
 		a.s.ErrJSON(w, http.StatusBadGateway, "error creating stage on database")
