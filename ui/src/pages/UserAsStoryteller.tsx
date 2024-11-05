@@ -49,6 +49,7 @@ const UserAsStoryteller = () => {
         story_id: storyID,
         text: text,
         user_id: id,
+        creator_id: user_id,
         storyteller_id: user_id,
       }),
     });
@@ -56,7 +57,10 @@ const UserAsStoryteller = () => {
       alert(t("alert.stage", {ns: ['main', 'home']}));
       navigate("/users");
     } else {
-      alert(t("alert.stage-wrong", {ns: ['main', 'home']}));
+      const data = await response.text();
+      let error = JSON.parse(data);
+      console.log(error);
+      alert(t("alert.stage-wrong", {ns: ['main', 'home']}) + "\n" + error.msg);
     }
   }
   return (

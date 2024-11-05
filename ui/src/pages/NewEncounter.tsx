@@ -56,7 +56,10 @@ const NewEncounter = () => {
       alert(t("alert.encounter", {ns: ['main', 'home']}));
       navigate(`/stories/${safeID}`);
     } else {
-      alert(t("alert.encounter-wrong", {ns: ['main', 'home']}));
+      const data = await response.text();
+      let error = JSON.parse(data);
+      console.log(error);
+      alert(t("alert.encounter-wrong", {ns: ['main', 'home']})+ "\n" + error.msg);
     }
   }
 

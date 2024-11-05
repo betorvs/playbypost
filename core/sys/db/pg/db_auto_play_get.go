@@ -12,7 +12,7 @@ import (
 
 func (db *DBX) GetAutoPlay(ctx context.Context) ([]types.AutoPlay, error) {
 	autoPlay := []types.AutoPlay{}
-	query := "SELECT id, display_text, story_id, solo, publish FROM auto_play" // dev:finder+query
+	query := "SELECT id, display_text, story_id, creator_id, solo, publish FROM auto_play" // dev:finder+query
 	rows, err := db.Conn.QueryContext(ctx, query)
 	if err != nil {
 		db.Logger.Error("query on auto_play failed", "error", err.Error())
@@ -21,7 +21,7 @@ func (db *DBX) GetAutoPlay(ctx context.Context) ([]types.AutoPlay, error) {
 	defer rows.Close()
 	for rows.Next() {
 		var auto types.AutoPlay
-		if err := rows.Scan(&auto.ID, &auto.Text, &auto.StoryID, &auto.Solo, &auto.Publish); err != nil {
+		if err := rows.Scan(&auto.ID, &auto.Text, &auto.StoryID, &auto.CreatorID, &auto.Solo, &auto.Publish); err != nil {
 			db.Logger.Error("scan error on auto_play ", "error", err.Error())
 		}
 		autoPlay = append(autoPlay, auto)
@@ -35,7 +35,7 @@ func (db *DBX) GetAutoPlay(ctx context.Context) ([]types.AutoPlay, error) {
 
 func (db *DBX) GetAutoPlayByID(ctx context.Context, autoPlayID int) (types.AutoPlay, error) {
 	autoPlay := types.AutoPlay{}
-	query := "SELECT id, display_text, story_id, solo, publish FROM auto_play WHERE id = $1" // dev:finder+query
+	query := "SELECT id, display_text, story_id, creator_id, solo, publish FROM auto_play WHERE id = $1" // dev:finder+query
 	rows, err := db.Conn.QueryContext(ctx, query, autoPlayID)
 	if err != nil {
 		db.Logger.Error("query on auto_play by id failed", "error", err.Error())
@@ -43,7 +43,7 @@ func (db *DBX) GetAutoPlayByID(ctx context.Context, autoPlayID int) (types.AutoP
 	}
 	defer rows.Close()
 	for rows.Next() {
-		if err := rows.Scan(&autoPlay.ID, &autoPlay.Text, &autoPlay.StoryID, &autoPlay.Solo, &autoPlay.Publish); err != nil {
+		if err := rows.Scan(&autoPlay.ID, &autoPlay.Text, &autoPlay.StoryID, &autoPlay.CreatorID, &autoPlay.Solo, &autoPlay.Publish); err != nil {
 			db.Logger.Error("scan error on auto_play by id ", "error", err.Error())
 		}
 	}

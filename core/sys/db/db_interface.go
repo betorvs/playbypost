@@ -53,7 +53,7 @@ type DBClient interface {
 	GetNextEncounterByEncounterID(ctx context.Context, id int) (types.Next, error)
 	GetNextEncounterByStageID(ctx context.Context, id int) ([]types.Next, error)
 	GetStageEncounterListByStoryID(ctx context.Context, storyID int) (types.EncounterList, error)
-	CreateStageTx(ctx context.Context, text, userid string, storyID int) (int, error)
+	CreateStageTx(ctx context.Context, text, userid string, storyID, creatorID int) (int, error)
 	AddChannelToStage(ctx context.Context, channel string, id int) (int, error)
 	AddEncounterToStage(ctx context.Context, text string, stage_id, storyteller_id, encounter_id int) (int, error)
 	UpdatePhase(ctx context.Context, id, phase int) error
@@ -102,7 +102,7 @@ type DBClient interface {
 	GetAnnounceByEncounterID(ctx context.Context, encounterID, autoPlayID int) (string, bool, error)
 	DescribeAutoPlayPublished(ctx context.Context, solo bool) ([]types.AutoPlayDescribed, error)
 	GetNextEncounterByAutoPlayID(ctx context.Context, autoPlayID int) ([]types.Next, error)
-	CreateAutoPlayTx(ctx context.Context, text string, storyID int, solo bool) (int, error)
+	CreateAutoPlayTx(ctx context.Context, text string, storyID, creatorID int, solo bool) (int, error)
 	AddAutoPlayNext(ctx context.Context, next []types.Next) error
 	CreateAutoPlayChannelTx(ctx context.Context, channelID, userID string, autoPlayID int) (int, error)
 	AddAutoPlayGroup(ctx context.Context, channelID, userID string) error

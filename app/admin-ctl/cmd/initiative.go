@@ -4,10 +4,9 @@ Copyright © 2024 Roberto Scudeller <beto.rvs@gmail.com>
 package cmd
 
 import (
-	"encoding/json"
 	"os"
 
-	"github.com/betorvs/playbypost/core/sys/web/types"
+	"github.com/betorvs/playbypost/core/utils"
 	"github.com/spf13/cobra"
 )
 
@@ -29,11 +28,11 @@ var initiativeCmd = &cobra.Command{
 		}
 		body, err := app.Web.CreateInitiative(userID, channel, encounterID)
 		if err != nil {
-			app.Logger.Error("initiative error", "error", err.Error())
+			msg, _ := utils.ParseMsgBody(body)
+			app.Logger.Error("initiative error", "error", err.Error(), "msg", msg.Msg)
 			os.Exit(1)
 		}
-		var msg types.Msg
-		err = json.Unmarshal(body, &msg)
+		msg, err := utils.ParseMsgBody(body)
 		if err != nil {
 			app.Logger.Error("initiative json unmarsharl error", "error", err.Error())
 			os.Exit(1)

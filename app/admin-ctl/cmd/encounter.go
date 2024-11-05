@@ -9,6 +9,7 @@ import (
 	"os"
 
 	"github.com/betorvs/playbypost/core/sys/web/types"
+	"github.com/betorvs/playbypost/core/utils"
 	"github.com/spf13/cobra"
 )
 
@@ -58,11 +59,11 @@ var encounterCmd = &cobra.Command{
 			}
 			body, err := app.Web.CreateEncounter(title, announcement, notes, storyID, writerID, firstEncounter, lastEncounter)
 			if err != nil {
-				app.Logger.Error("encounter error", "error", err.Error())
+				msg, _ := utils.ParseMsgBody(body)
+				app.Logger.Error("encounter error", "error", err.Error(), "msg", msg.Msg)
 				os.Exit(1)
 			}
-			var msg types.Msg
-			err = json.Unmarshal(body, &msg)
+			msg, err := utils.ParseMsgBody(body)
 			if err != nil {
 				app.Logger.Error("json unmarsharl error", "error", err.Error())
 				os.Exit(1)
@@ -76,11 +77,11 @@ var encounterCmd = &cobra.Command{
 			}
 			body, err := app.Web.UpdateEncounter(title, announcement, notes, encounterID, storyID, writerID, firstEncounter, lastEncounter)
 			if err != nil {
-				app.Logger.Error("encounter error", "error", err.Error())
+				msg, _ := utils.ParseMsgBody(body)
+				app.Logger.Error("encounter error", "error", err.Error(), "msg", msg.Msg)
 				os.Exit(1)
 			}
-			var msg types.Msg
-			err = json.Unmarshal(body, &msg)
+			msg, err := utils.ParseMsgBody(body)
 			if err != nil {
 				app.Logger.Error("json unmarsharl error", "error", err.Error())
 				os.Exit(1)

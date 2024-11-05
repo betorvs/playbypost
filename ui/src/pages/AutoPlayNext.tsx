@@ -85,7 +85,10 @@ const AutoPlayNext = () => {
         alert(t("alert.next-encounter", {ns: ['main', 'home']}));
         navigate(`/autoplay/${id}/story/${story}`);
       } else {
-        alert(t("alert.next-encounter-wrong", {ns: ['main', 'home']}));
+        const data = await response.text();
+        let error = JSON.parse(data);
+        console.log(error);
+        alert(t("alert.next-encounter-wrong", {ns: ['main', 'home']})+ "\n" + error.msg);
       };
     };
   

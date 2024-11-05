@@ -45,7 +45,10 @@ const NewStory = () => {
       alert(t("alert.story", {ns: ['main', 'home']}));
       navigate("/stories");
     } else {
-      alert(t("alert.story-wrong", {ns: ['main', 'home']}));
+      const data = await response.text();
+      let error = JSON.parse(data);
+      console.log(error);
+      alert(t("alert.story-wrong", {ns: ['main', 'home']}) + "\n" + error.msg);
     }
   }
   return (

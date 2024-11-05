@@ -117,7 +117,7 @@ func (db *DBX) CreateEncounterTx(ctx context.Context, title, announcement, notes
 	err = tx.StmtContext(ctx, stmtInsert).QueryRow(title, announcement, notes, storyID, storytellerID, first, last).Scan(&encounterID)
 	if err != nil {
 		db.Logger.Error("error on insert into encounters", "error", err.Error())
-		return -1, err
+		return -1, db.parsePostgresError(err)
 	}
 
 	// Commit the transaction.

@@ -8,7 +8,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/betorvs/playbypost/core/sys/web/types"
+	"github.com/betorvs/playbypost/core/utils"
 	"github.com/spf13/cobra"
 )
 
@@ -43,11 +43,11 @@ var writersCmd = &cobra.Command{
 		case "create":
 			body, err := app.Web.CreateWriter(username, password)
 			if err != nil {
-				app.Logger.Error("create writersCmd", "error", err.Error())
+				msg, _ := utils.ParseMsgBody(body)
+				app.Logger.Error("create writersCmd", "error", err.Error(), "msg", msg.Msg)
 				os.Exit(1)
 			}
-			var msg types.Msg
-			err = json.Unmarshal(body, &msg)
+			msg, err := utils.ParseMsgBody(body)
 			if err != nil {
 				app.Logger.Error("json unmarsharl error", "error", err.Error())
 				os.Exit(1)

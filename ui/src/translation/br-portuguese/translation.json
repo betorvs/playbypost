@@ -74,7 +74,19 @@
         "list-item-20": "Você não pode inicar um novo Stage em um canel que já está rodando",
         "list-item-21": "Você não pode fechar um Stage que não tenha todos os encontros concluídos",
         "sub-header-4": "Agora, interaja com o nosso Bot via Chat usando o '@play-by-post help'",
-        "notes-1": "Importante: Story pode ser deletata caso não tenha Encounters. E Encounters podem ser deletados caso não tenham side associados com Stage ou Auto Play. Você pode rodar somente uma história em um canal (sendo Stage ou Auto Play)."
+        "notes-1": "Importante: Story pode ser deletata caso não tenha Encounters. E Encounters podem ser deletados caso não tenham side associados com Stage ou Auto Play. Você pode rodar somente uma história em um canal (sendo Stage ou Auto Play).",
+        "notes-2": "Importante: Mestre de Jogo deve ser responsável por controlar as fases dos encontros e os NPCs via comandos do Bot. Jogadores podem interagir apenas via o Bot.",
+        "sub-header-5": "Limites no Banco de Dados (por definição)",
+        "sub-header-5-p": "Adicionamos no banco de dados configurações para garantir a integridade dos dados e o melhor funcionamento da aplicação. Com isso temos algumas limitações.",
+        "list-item-22": "Título da história tem que ser único por autor e ter no máximo 50 caracteres",
+        "list-item-23": "Título de encontro deve ser único dentro da mesma história tem que ter no máximo 50 caracteres",
+        "list-item-24": "Título de tarefa deve ter no máximo 50 caracteres",
+        "list-item-25": "Título de Stage e Auto Play deve ter no máximo 100 caracteres",
+        "list-item-26": "Encontros associados com um Stage deve ter título único por Stage.",
+        "list-item-27": "Adicionar um próximo encontro deve ter título único por encontro ID e próximo encontro ID. Não repita combinações.",
+        "list-item-28": "Tarefas associadas com encontros em Stage devem ter título único por encontro ID e tarefa ID. Não repita combinações.",
+        "list-item-29": "Nome de usuário e de NPC deve ter no máximo 255 caracteres",
+        "notes-3": "Importante: Estas limitações são para garantir a integridade dos dados. Erros comuns de database podem ser relacioinados com estas limitações. Erros do Backend podem ser apresentados em inglês."
     },
     "story": {
         "this": "História",

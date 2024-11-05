@@ -24,11 +24,12 @@ func (c *Cli) GetAutoPlay() ([]types.AutoPlay, error) {
 	return a, nil
 }
 
-func (c *Cli) CreateAutoPlay(text string, storyID int, solo bool) ([]byte, error) {
+func (c *Cli) CreateAutoPlay(text string, storyID, creatorID int, solo bool) ([]byte, error) {
 	a := types.AutoPlayStart{
-		StoryID: storyID,
-		Text:    text,
-		Solo:    solo,
+		StoryID:   storyID,
+		CreatorID: creatorID,
+		Text:      text,
+		Solo:      solo,
 	}
 	body, err := json.Marshal(a)
 	if err != nil {

@@ -40,7 +40,7 @@ func (db *DBX) GenerateNPC(ctx context.Context, name string, stageID, storytelle
 	err := db.Conn.QueryRowContext(ctx, query, name, stageID, storytellerID, creature.Abilities, creature.Skills, creature.Extension, creature.RPG.Name).Scan(&npcID)
 	if err != nil {
 		db.Logger.Error("insert on non_players failed", "error", err.Error())
-		return npcID, err
+		return npcID, db.parsePostgresError(err)
 	}
 	return npcID, nil
 }

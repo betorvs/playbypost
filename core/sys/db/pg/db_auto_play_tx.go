@@ -12,7 +12,7 @@ import (
 )
 
 // create auto play
-func (db *DBX) CreateAutoPlayTx(ctx context.Context, text string, storyID int, solo bool) (int, error) {
+func (db *DBX) CreateAutoPlayTx(ctx context.Context, text string, storyID, creatorID int, solo bool) (int, error) {
 	// TX
 	tx, err := db.Conn.BeginTx(ctx, nil)
 	if err != nil {
@@ -37,10 +37,10 @@ func (db *DBX) CreateAutoPlayTx(ctx context.Context, text string, storyID int, s
 	err = tx.StmtContext(ctx, stmtStoryKeys).QueryRow(storyID).Scan(&encodingKey)
 	if err != nil {
 		db.Logger.Error("query row SELECT story_keys and story failed", "error", err.Error())
-		return -1, err
+		return -1, db.parsePostgresError(err)
 	}
 	// it creates auto_play using publish with default value: false
-	queryAutoPlay := "INSERT INTO auto_play(display_text, encoding_key, story_id, solo) VALUES($1, $2, $3, $4) RETURNING id" // dev:finder+query
+	queryAutoPlay := "INSERT INTO auto_play(display_text, encoding_key, story_id, creator_id, solo) VALUES($1, $2, $3, $4, $5) RETURNING id" // dev:finder+query
 	stmtInsert, err := db.Conn.PrepareContext(ctx, queryAutoPlay)
 	if err != nil {
 		db.Logger.Error("tx prepare on stmtInsert failed", "error", err.Error())
@@ -48,10 +48,10 @@ func (db *DBX) CreateAutoPlayTx(ctx context.Context, text string, storyID int, s
 	}
 	defer stmtInsert.Close()
 	var autoPlayID int
-	err = tx.StmtContext(ctx, stmtInsert).QueryRow(text, encodingKey, storyID, solo).Scan(&autoPlayID)
+	err = tx.StmtContext(ctx, stmtInsert).QueryRow(text, encodingKey, storyID, creatorID, solo).Scan(&autoPlayID)
 	if err != nil {
 		db.Logger.Error("query row insert into auto_play failed", "error", err.Error())
-		return -1, err
+		return -1, db.parsePostgresError(err)
 	}
 	// commit if everything is okay
 	if err = tx.Commit(); err != nil {
@@ -123,7 +123,7 @@ func (db *DBX) AddAutoPlayNext(ctx context.Context, next []types.Next) error {
 		err = tx.StmtContext(ctx, stmt).QueryRow(n.Text, n.UpstreamID, n.EncounterID, n.NextEncounterID).Scan(&nextEncounterIDDB)
 		if err != nil {
 			db.Logger.Error("error on insert into auto_play_next_encounter", "error", err.Error())
-			return err
+			return db.parsePostgresError(err)
 		}
 		db.Logger.Debug("adding auto play objectives", "nextEncounterIDDB", nextEncounterIDDB, "values", n.Objective.Values)
 		// insert into auto_play_next_objectives
@@ -138,7 +138,7 @@ func (db *DBX) AddAutoPlayNext(ctx context.Context, next []types.Next) error {
 		err = tx.StmtContext(ctx, stmt).QueryRow(nextEncounterIDDB, n.Objective.Kind, pq.Array(n.Objective.Values)).Scan(&objectiveID)
 		if err != nil {
 			db.Logger.Error("error on insert into auto_play_next_objectives", "error", err.Error())
-			return err
+			return db.parsePostgresError(err)
 		}
 		db.Logger.Debug("auto play next objective added", "next_id", nextEncounterIDDB, "objective_id", objectiveID)
 	}
@@ -227,7 +227,7 @@ func (db *DBX) CreateAutoPlayChannelTx(ctx context.Context, channelID, userID st
 	err = tx.StmtContext(ctx, stmt).QueryRow(channelID, apID, true).Scan(&autoPlayChannelID)
 	if err != nil {
 		db.Logger.Error("tx insert on auto_play_channel failed", "error", err.Error())
-		return -1, err
+		return -1, db.parsePostgresError(err)
 	}
 	// insert into users
 	// check if user exists
@@ -296,7 +296,7 @@ func (db *DBX) RegisterActivitiesAutoPlay(ctx context.Context, autoPlayID, encou
 	_, err := db.Conn.ExecContext(ctx, query, autoPlayID, encounterID, actions)
 	if err != nil {
 		db.Logger.Error("error on insert into auto_play_encounter_activities", "error", err.Error(), "upstream_id", autoPlayID, "encounter_id", encounterID, "actions", actions)
-		return err
+		return db.parsePostgresError(err)
 	}
 	return nil
 }
@@ -402,7 +402,7 @@ func (db *DBX) UpdateAutoPlayState(ctx context.Context, autoPlayChannel string, 
 		_, err = tx.StmtContext(ctx, stmt).ExecContext(ctx, autoPlayChannelID, encounterID, true)
 		if err != nil {
 			db.Logger.Error("tx insert into auto_play_state failed", "error", err.Error())
-			return err
+			return db.parsePostgresError(err)
 		}
 
 	} else {

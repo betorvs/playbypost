@@ -8,17 +8,19 @@ import (
 )
 
 type AutoPlayStart struct {
-	StoryID int    `json:"story_id"`
-	Text    string `json:"text"`
-	Solo    bool   `json:"solo"`
+	StoryID   int    `json:"story_id"`
+	CreatorID int    `json:"creator_id"`
+	Text      string `json:"text"`
+	Solo      bool   `json:"solo"`
 }
 
 type AutoPlay struct {
-	ID      int    `json:"id"`
-	StoryID int    `json:"story_id"`
-	Text    string `json:"text"`
-	Solo    bool   `json:"solo"`
-	Publish bool   `json:"publish"`
+	ID        int    `json:"id"`
+	StoryID   int    `json:"story_id"`
+	CreatorID int    `json:"creator_id"`
+	Text      string `json:"text"`
+	Solo      bool   `json:"solo"`
+	Publish   bool   `json:"publish"`
 }
 
 type AutoPlayGroup struct {

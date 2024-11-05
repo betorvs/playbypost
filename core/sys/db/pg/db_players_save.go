@@ -33,7 +33,7 @@ func (db *DBX) SavePlayerTx(ctx context.Context, id, storyID int, creature *rule
 	err = tx.StmtContext(ctx, stmt).QueryRow(creature.Name, id, storyID, false, creature.Abilities, creature.Skills, creature.Extension, rpgSystem.Name).Scan(&playerID)
 	if err != nil {
 		db.Logger.Error("tx statement on players failed", "error", err.Error())
-		return -1, err
+		return -1, db.parsePostgresError(err)
 	}
 
 	if err = tx.Commit(); err != nil {

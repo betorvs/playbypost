@@ -88,7 +88,10 @@ const EditEncounter = () => {
       alert(t("alert.encounter-edit", {ns: ['main', 'home']}));
       navigate(`/stories/${storySafeID}`);
     } else {
-      alert(t("alert.encounter-edit-wrong", {ns: ['main', 'home']}));
+      const data = await response.text();
+      let error = JSON.parse(data);
+      console.log(error);
+      alert(t("alert.encounter-edit-wrong", {ns: ['main', 'home']})+ "\n" + error.msg);
     }
   }
 

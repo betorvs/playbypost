@@ -1,29 +1,30 @@
 import { useEffect, useState } from "react";
 import NavigateButton from "./Button/NavigateButton";
-import { CloseStage, FetchStage } from "../functions/Stages";
+import { CloseStage } from "../functions/Stages";
 import StageAggregated from "../types/StageAggregated";
 import { useTranslation } from "react-i18next";
 import Validator from "../types/validator";
 import { FetchValidatorByIDKind } from "../functions/Validator";
 import { Button } from "react-bootstrap";
+import GetUserID from "../context/GetUserID";
 
 interface props {
-  id: string;
-  storyID: string;
   backButtonLink: string;
   detail: boolean;
   disableManageNextEncounter?: boolean;
+  stage: StageAggregated;
 }
 
-const StageDetailHeader = ({ id, storyID, detail, disableManageNextEncounter, backButtonLink }: props) => {
-  const [stage, setStage] = useState<StageAggregated | undefined>();
+const StageDetailHeader = ({ detail, disableManageNextEncounter, backButtonLink, stage }: props) => {
   const [validator, setValidator] = useState<Validator>();
   const { t } = useTranslation(['home', 'main']);
+  const user_id = GetUserID();
   const kind = "stage";
 
+
   useEffect(() => {
-    FetchStage(id, setStage);
-    FetchValidatorByIDKind(Number(id), kind, setValidator);
+    // FetchStage(id, setStage);
+    FetchValidatorByIDKind(stage.stage.id, kind, setValidator);
   }, []);
   const handleClose = (id: number) => {
     if (id === 0) return;
@@ -66,21 +67,22 @@ const StageDetailHeader = ({ id, storyID, detail, disableManageNextEncounter, ba
         </NavigateButton>{" "}
         {detail === true ? (
           <>
-            
-            <NavigateButton link={`/stages/start/${id}`} disabled={stage?.channel.active} variant="primary" >
-            {t("stage.start", {ns: ['main', 'home']})}
-            </NavigateButton>{" "}
-            <NavigateButton link={`/stages/${id}/story/${storyID}/next`} disabled={disableManageNextEncounter} variant="primary">
-            {t("stage.manage-next-encounter", {ns: ['main', 'home']})}
-            </NavigateButton>{" "}
-            <NavigateButton link={`/stages/${id}/story/${storyID}/players`} variant="primary">
-            {t("player.list", {ns: ['main', 'home']})}
-            </NavigateButton>{" "}
-            
-
-            <span>
-              <Button variant="danger" size="sm" onClick={() => handleClose(stage?.stage.id || 0)}>{t("stage.close", {ns: ['main', 'home']})}</Button>
-            </span>
+            {user_id === stage?.stage.creator_id && (
+              <>
+                <NavigateButton link={`/stages/start/${stage.stage.id}`} disabled={stage?.channel.active} variant="primary" >
+                  {t("stage.start", {ns: ['main', 'home']})}
+                </NavigateButton>{" "}
+                <NavigateButton link={`/stages/${stage.stage.id}/story/${stage.story.id}/next`} disabled={disableManageNextEncounter} variant="primary">
+                  {t("stage.manage-next-encounter", {ns: ['main', 'home']})}
+                </NavigateButton>{" "}
+                <NavigateButton link={`/stages/${stage.stage.id}/story/${stage.story.id}/players`} variant="primary">
+                  {t("player.list", {ns: ['main', 'home']})}
+                </NavigateButton>{" "}
+                <span>
+                  <Button variant="danger" size="sm" onClick={() => handleClose(stage?.stage.id || 0)}>{t("stage.close", {ns: ['main', 'home']})}</Button>
+                </span>
+              </>
+            )}
           </>
         ) : (
           <>

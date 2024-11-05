@@ -75,7 +75,10 @@ const EditTask = () => {
       alert(t("alert.task-edit", {ns: ['main', 'home']}));
       navigate("/tasks");
     } else {
-      alert(t("alert.task-edit-wrong", {ns: ['main', 'home']}));
+      const data = await response.text();
+      let error = JSON.parse(data);
+      console.log(error);
+      alert(t("alert.task-edit-wrong", {ns: ['main', 'home']}) + "\n" + error.msg);
     }
   }
   return (

@@ -20,7 +20,7 @@ func (db *DBX) AddChatInformation(ctx context.Context, username, userid, channel
 	err = stmt.QueryRow(userid, channel, username, chat).Scan(&res)
 	if err != nil {
 		db.Logger.Error("query row insert into chat information failed", "error", err.Error())
-		return -1, err
+		return -1, db.parsePostgresError(err)
 	}
 	return res, nil
 }

@@ -8,8 +8,6 @@ const StageList = () => {
   const [stages, setStage] = useState<Stage[]>([]);
   const { t } = useTranslation(['home', 'main']);
 
-  
-
   useEffect(() => {
     FetchStages(setStage);
   }, []);
@@ -21,6 +19,7 @@ const StageList = () => {
             key={stage.id}
             ID={stage.id}
             stage={stage}
+            creator_id={stage.creator_id}
           />
         ))
       ) : (

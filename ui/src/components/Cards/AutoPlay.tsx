@@ -3,17 +3,24 @@ import NavigateButton from "../Button/NavigateButton";
 import { useTranslation } from "react-i18next";
 import { ValidatorPut } from "../../functions/Validator";
 import { Button } from "react-bootstrap";
+import GetUserID from "../../context/GetUserID";
 
 interface Props {
     ID: number;
     autoPlay: AutoPlay;
+    creator_id: number;
   }
   
-  const AutoPlayCards = ({ ID, autoPlay }: Props) => {
+  const AutoPlayCards = ({ ID, autoPlay, creator_id }: Props) => {
+    const user_id = GetUserID();
     const { t } = useTranslation(['home', 'main']);
     const validatorPut = (id: number) => {
       ValidatorPut(id, "autoplay");
     };
+    let isNotCreator = true;
+    if (creator_id === user_id) {
+      isNotCreator = false;
+    }
 
     return (
       <div className="card" key={ID}>
@@ -28,7 +35,7 @@ interface Props {
           <NavigateButton link={`/autoplay/${autoPlay.id}/story/${autoPlay.story_id}`} variant="primary">
             {t("common.details", {ns: ['main', 'home']})}
           </NavigateButton>{" "}
-          <Button variant="secondary" onClick={() => validatorPut(autoPlay.id)}>
+          <Button variant="secondary" disabled={isNotCreator} onClick={() => validatorPut(autoPlay.id)}>
           {t("common.validator", {ns: ['main', 'home']})}
           </Button>{" "}
         </div>
