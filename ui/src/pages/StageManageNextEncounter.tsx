@@ -5,13 +5,15 @@ import Layout from "../components/Layout";
 import StageDetailHeader from "../components/StageDetailHeader";
 import { EncounterList } from "../types/Next";
 import { useTranslation } from "react-i18next";
-import { DeleteStageNextEncounter, FetchEncounterListStage } from "../functions/Stages";
+import { DeleteStageNextEncounter, FetchEncounterListStage, FetchStage } from "../functions/Stages";
 import { Button } from "react-bootstrap";
 import NavigateButton from "../components/Button/NavigateButton";
+import StageAggregated from "../types/StageAggregated";
 
 const StageManageNextEncounter = () => {
   const { id, story } = useParams();
   const { Logoff } = useContext(AuthContext);
+  const [stage, setStage] = useState<StageAggregated>();
 
   const safeID: string = id ?? "";
 
@@ -27,6 +29,7 @@ const StageManageNextEncounter = () => {
   }
 
   useEffect(() => {
+    FetchStage(safeID, setStage);
     FetchEncounterListStage(safeID, setEncountersList);
   }, []);
 
@@ -34,7 +37,7 @@ const StageManageNextEncounter = () => {
     <>
       <div className="container mt-3" key="1">
         <Layout Logoff={Logoff} />
-        {<StageDetailHeader detail={true} id={safeID} storyID={storySafeID} disableManageNextEncounter={true} backButtonLink={`/stages/${safeID}/story/${storySafeID}`} />}
+        {stage && <StageDetailHeader detail={true} disableManageNextEncounter={true} backButtonLink={`/stages/${safeID}/story/${storySafeID}`} stage={stage} />}
         <div className="container mt-3" key="3">
           <div className="container mt-3" key="4">
             <hr/>

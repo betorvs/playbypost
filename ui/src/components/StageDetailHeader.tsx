@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import NavigateButton from "./Button/NavigateButton";
-import { CloseStage, FetchStage } from "../functions/Stages";
+import { CloseStage } from "../functions/Stages";
 import StageAggregated from "../types/StageAggregated";
 import { useTranslation } from "react-i18next";
 import Validator from "../types/validator";
