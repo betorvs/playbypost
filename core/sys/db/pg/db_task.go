@@ -20,7 +20,7 @@ func (db *DBX) CreateTask(ctx context.Context, description, ability, skill strin
 	err = stmt.QueryRow(description, kind, ability, skill, target).Scan(&res)
 	if err != nil {
 		db.Logger.Error("query row insert into tasks failed", "error", err.Error())
-		return -1, err
+		return -1, db.parsePostgresError(err)
 	}
 	return res, nil
 }

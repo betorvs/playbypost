@@ -115,7 +115,7 @@ func (db *DBX) createUser(ctx context.Context, userid string, tx *sql.Tx) (int, 
 	err = tx.StmtContext(ctx, stmtInsertUser).QueryRow(userid).Scan(&userID)
 	if err != nil {
 		db.Logger.Error("query row insert into users failed", "error", err.Error())
-		return -1, err
+		return -1, db.parsePostgresError(err)
 	}
 	return userID, nil
 }

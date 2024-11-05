@@ -48,7 +48,7 @@ func (db *DBX) SaveInitiativeTx(ctx context.Context, i initiative.Initiative, en
 	err = tx.StmtContext(ctx, stmt).QueryRow(i.Name, encounterID, i.Position).Scan(&id)
 	if err != nil {
 		db.Logger.Error("tx statement on initiative failed", "error", err.Error())
-		return -1, err
+		return -1, db.parsePostgresError(err)
 	}
 
 	queryParticipants := "INSERT INTO initiative_participants(initiative_id, participant_name, participant_bonus, participant_result, active) VALUES($1, $2, $3, $4, $5) RETURNING id" // dev:finder+query
@@ -57,7 +57,7 @@ func (db *DBX) SaveInitiativeTx(ctx context.Context, i initiative.Initiative, en
 		_, err = tx.ExecContext(ctx, queryParticipants, id, p.Name, p.Bonus, p.Result, true)
 		if err != nil {
 			db.Logger.Error("tx participants on initiative failed", "error", err.Error())
-			return -1, err
+			return -1, db.parsePostgresError(err)
 		}
 	}
 

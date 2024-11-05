@@ -42,8 +42,8 @@ func (a MainApi) CreateStage(w http.ResponseWriter, r *http.Request) {
 	}
 	res, err := a.db.CreateStageTx(a.ctx, obj.Text, obj.UserID, obj.StoryID, obj.CreatorID)
 	if err != nil {
-		a.logger.Error("error ", "story_id", obj.StoryID)
-		a.s.ErrJSON(w, http.StatusBadGateway, "error creating stage on database")
+		m := fmt.Sprintf("error creating stage on database\n%v", err)
+		a.s.ErrJSON(w, http.StatusBadGateway, m)
 		return
 	}
 	msg := fmt.Sprintf("stage id %v", res)
@@ -127,7 +127,8 @@ func (a MainApi) AddEncounterToStage(w http.ResponseWriter, r *http.Request) {
 	res, err := a.db.AddEncounterToStage(a.ctx, obj.Text, obj.StageID, stage.Stage.StorytellerID, obj.EncounterID)
 	if err != nil {
 		a.logger.Error("error ", "stage_id", obj.StageID)
-		a.s.ErrJSON(w, http.StatusBadGateway, "error adding encounter to stage on database")
+		m := fmt.Sprintf("error adding encounter to stage on database\n%v", err)
+		a.s.ErrJSON(w, http.StatusBadGateway, m)
 		return
 	}
 	msg := fmt.Sprintf("stage_encounter id %v", res)
@@ -158,8 +159,8 @@ func (a MainApi) AddChannelToStage(w http.ResponseWriter, r *http.Request) {
 
 	res, err := a.db.AddChannelToStage(a.ctx, obj.Channel, obj.StageID)
 	if err != nil {
-		a.logger.Error("error ", "stage_id", obj.StageID)
-		a.s.ErrJSON(w, http.StatusBadGateway, "error adding channel to stage on database")
+		m := fmt.Sprintf("error adding channel to stage on database\n%v", err)
+		a.s.ErrJSON(w, http.StatusBadGateway, m)
 		return
 	}
 	msg := fmt.Sprintf("stage_channel id %v", res)
@@ -283,7 +284,8 @@ func (a MainApi) AddNextEncounter(w http.ResponseWriter, r *http.Request) {
 	}
 	err = a.db.AddNextEncounter(a.ctx, valid)
 	if err != nil {
-		a.s.ErrJSON(w, http.StatusBadRequest, "error adding next encounter to encounter on database")
+		m := fmt.Sprintf("error adding next encounter to encounter on database\n%v", err)
+		a.s.ErrJSON(w, http.StatusBadRequest, m)
 		return
 	}
 	msg := fmt.Sprintf("encounter id %v next encounter updated", valid[0].EncounterID)
@@ -304,8 +306,8 @@ func (a MainApi) AddRunningTask(w http.ResponseWriter, r *http.Request) {
 	}
 	err = a.db.AddRunningTask(a.ctx, obj.Text, obj.StageID, obj.TaskID, obj.StorytellerID, obj.EncounterID)
 	if err != nil {
-		a.logger.Error("error adding running task", "error", err.Error())
-		a.s.ErrJSON(w, http.StatusBadRequest, "error adding running task to encounter on database")
+		m := fmt.Sprintf("error adding running task to encounter on database\n%v", err)
+		a.s.ErrJSON(w, http.StatusBadRequest, m)
 		return
 	}
 	msg := fmt.Sprintf("task id %v running task updated", obj.TaskID)

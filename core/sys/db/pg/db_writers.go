@@ -18,7 +18,7 @@ func (db *DBX) CreateWriters(ctx context.Context, username, password string) (in
 	err = stmt.QueryRow(username, password).Scan(&res)
 	if err != nil {
 		db.Logger.Error("query row insert into writers failed", "error", err.Error())
-		return -1, err
+		return -1, db.parsePostgresError(err)
 	}
 	return res, nil
 }

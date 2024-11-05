@@ -57,7 +57,7 @@ func (db *DBX) CreateStoryTx(ctx context.Context, title, announcement, notes, en
 	err = tx.StmtContext(ctx, stmtStory).QueryRow(title, notes, announcement, writerID).Scan(&storyID)
 	if err != nil {
 		db.Logger.Error("query row insert into story failed", "error", err.Error(), "title", title, "notes", notes, "announcement", announcement, "writerID", writerID)
-		return -1, err
+		return -1, db.parsePostgresError(err)
 	}
 	// insert story key
 	queryKey := "INSERT INTO story_keys(encoding_key, story_id) VALUES($1, $2) RETURNING id" // dev:finder+query
@@ -71,7 +71,7 @@ func (db *DBX) CreateStoryTx(ctx context.Context, title, announcement, notes, en
 	err = tx.StmtContext(ctx, stmtStoryKeys).QueryRow(encodingKey, storyID).Scan(&encodingKeyID)
 	if err != nil {
 		db.Logger.Error("query row insert into story_keys failed", "error", err.Error())
-		return -1, err
+		return -1, db.parsePostgresError(err)
 	}
 	// grant access to Writer to story_key
 	queryAccess := "INSERT INTO access_story_keys(writer_id, story_keys_id) VALUES($1, $2) RETURNING id" // dev:finder+query
@@ -85,7 +85,7 @@ func (db *DBX) CreateStoryTx(ctx context.Context, title, announcement, notes, en
 	err = tx.StmtContext(ctx, stmtAccessStoryKeys).QueryRow(writerID, encodingKeyID).Scan(&accessStoryID)
 	if err != nil {
 		db.Logger.Error("query row insert into access_story_keys failed", "error", err.Error())
-		return -1, err
+		return -1, db.parsePostgresError(err)
 	}
 	// commit if everything is okay
 	if err = tx.Commit(); err != nil {

@@ -73,7 +73,7 @@ func (db *DBX) CreateStageTx(ctx context.Context, text, userid string, storyID, 
 	err = tx.StmtContext(ctx, stmtInsertStage).QueryRow(text, encodingKey, false, userID, storyID, creatorID).Scan(&stageID)
 	if err != nil {
 		db.Logger.Error("query row insert into stage failed", "error", err.Error())
-		return -1, err
+		return -1, db.parsePostgresError(err)
 	}
 	// commit if everything is okay
 	if err = tx.Commit(); err != nil {
@@ -96,7 +96,7 @@ func (db *DBX) AddChannelToStage(ctx context.Context, channel string, id int) (i
 	err = stmt.QueryRow(channel, id, true).Scan(&res)
 	if err != nil {
 		db.Logger.Error("query row insert into stage_channel failed", "error", err.Error())
-		return -1, err
+		return -1, db.parsePostgresError(err)
 	}
 	return res, nil
 }
@@ -113,7 +113,7 @@ func (db *DBX) AddEncounterToStage(ctx context.Context, text string, stage_id, s
 	err = stmt.QueryRow(text, stage_id, storyteller_id, encounter_id).Scan(&res)
 	if err != nil {
 		db.Logger.Error("query row insert into stage_encounters failed", "error", err.Error())
-		return -1, err
+		return -1, db.parsePostgresError(err)
 	}
 	return res, nil
 }
@@ -194,7 +194,7 @@ func (db *DBX) AddParticipants(ctx context.Context, encounterID int, npc bool, p
 	for _, id := range players {
 		_, err = tx.ExecContext(ctx, query, id, encounterID)
 		if err != nil {
-			return err
+			return db.parsePostgresError(err)
 		}
 	}
 	// Commit the transaction.
@@ -230,7 +230,7 @@ func (db *DBX) AddNextEncounter(ctx context.Context, next []types.Next) error {
 		err = tx.StmtContext(ctx, stmt).QueryRow(n.Text, n.UpstreamID, n.EncounterID, n.NextEncounterID).Scan(&nextEncounterIDDB)
 		if err != nil {
 			db.Logger.Error("error on insert into stage_next_encounter", "error", err.Error())
-			return err
+			return db.parsePostgresError(err)
 		}
 		// insert into stage_next_objectives
 		queryObjectives := "INSERT INTO stage_next_objectives (upstream_id, kind, values) VALUES ($1, $2, $3) RETURNING id" // dev:finder+query
@@ -244,7 +244,7 @@ func (db *DBX) AddNextEncounter(ctx context.Context, next []types.Next) error {
 		err = tx.StmtContext(ctx, stmtObjectives).QueryRow(nextEncounterIDDB, n.Objective.Kind, pq.Array(n.Objective.Values)).Scan(&objectiveID)
 		if err != nil {
 			db.Logger.Error("error on insert into stage_next_objectives", "error", err.Error())
-			return err
+			return db.parsePostgresError(err)
 		}
 		db.Logger.Debug("stage next objective added", "next_id", nextEncounterIDDB, "objective_id", objectiveID)
 	}
@@ -275,7 +275,7 @@ func (db *DBX) AddRunningTask(ctx context.Context, text string, stageID, taskID,
 
 	_, err = tx.ExecContext(ctx, query, text, stageID, taskID, StorytellerID, encounterID)
 	if err != nil {
-		return err
+		return db.parsePostgresError(err)
 	}
 
 	// Commit the transaction.
@@ -303,7 +303,7 @@ func (db *DBX) RegisterActivities(ctx context.Context, stageID, encounterID int,
 
 	_, err = tx.ExecContext(ctx, query, actions, stageID, encounterID)
 	if err != nil {
-		return err
+		return db.parsePostgresError(err)
 	}
 
 	// Commit the transaction.
@@ -386,7 +386,7 @@ func (db *DBX) CloseStage(ctx context.Context, id int) error {
 	actions["display_text"] = displayText
 	_, err = tx.ExecContext(ctx, queryInsert, actions, id, lastEncounterID)
 	if err != nil {
-		return err
+		return db.parsePostgresError(err)
 	}
 
 	// Commit the transaction.

@@ -57,8 +57,8 @@ func (a MainApi) CreateStory(w http.ResponseWriter, r *http.Request) {
 	}
 	res, err := a.db.CreateStoryTx(a.ctx, obj.Title, announce, notes, newEncodingKey, obj.WriterID)
 	if err != nil {
-		a.logger.Error("error ", "writer_id", obj.WriterID)
-		a.s.ErrJSON(w, http.StatusBadGateway, "error creating story on database")
+		m := fmt.Sprintf("error creating story on database\n%v", err)
+		a.s.ErrJSON(w, http.StatusBadGateway, m)
 		return
 	}
 	msg := fmt.Sprintf("story id %v", res)

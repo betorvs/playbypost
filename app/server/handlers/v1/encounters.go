@@ -152,7 +152,8 @@ func (a MainApi) CreateEncounter(w http.ResponseWriter, r *http.Request) {
 	}
 	res, err := a.db.CreateEncounterTx(a.ctx, obj.Title, announce, notes, obj.StoryID, obj.WriterID, obj.FirstEncounter, obj.LastEncounter)
 	if err != nil {
-		a.s.ErrJSON(w, http.StatusBadRequest, "error creating encounter on database")
+		m := fmt.Sprintf("error creating encounter on database %v", err.Error())
+		a.s.ErrJSON(w, http.StatusBadRequest, m)
 		return
 	}
 	msg := fmt.Sprintf("encounter id %v", res)

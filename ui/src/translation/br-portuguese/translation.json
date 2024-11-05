@@ -86,7 +86,7 @@
         "list-item-27": "Adicionar um próximo encontro deve ter título único por encontro ID e próximo encontro ID. Não repita combinações.",
         "list-item-28": "Tarefas associadas com encontros em Stage devem ter título único por encontro ID e tarefa ID. Não repita combinações.",
         "list-item-29": "Nome de usuário e de NPC deve ter no máximo 255 caracteres",
-        "notes-3": "Importante: Estas limitações são para garantir a integridade dos dados. Erros comuns de database podem ser relacioinados com estas limitações."
+        "notes-3": "Importante: Estas limitações são para garantir a integridade dos dados. Erros comuns de database podem ser relacioinados com estas limitações. Erros do Backend podem ser apresentados em inglês."
     },
     "story": {
         "this": "História",

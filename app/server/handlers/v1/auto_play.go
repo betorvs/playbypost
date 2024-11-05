@@ -29,7 +29,8 @@ func (a MainApi) CreateAutoPlay(w http.ResponseWriter, r *http.Request) {
 	res, err := a.db.CreateAutoPlayTx(a.ctx, obj.Text, obj.StoryID, obj.CreatorID, obj.Solo)
 	if err != nil {
 		a.logger.Error("error creating auto play", "error", err.Error())
-		a.s.ErrJSON(w, http.StatusInternalServerError, "error creating auto play")
+		m := fmt.Sprintf("error creating auto play on database\n%v", err)
+		a.s.ErrJSON(w, http.StatusInternalServerError, m)
 		return
 	}
 	msg := fmt.Sprintf("auto_play_id %v", res)
