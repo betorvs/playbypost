@@ -9,29 +9,29 @@ package rules
 // 	Attack
 // }
 
-func (c *Creature) TotalDefense() {}
+// func (c *Creature) TotalDefense() {}
 
-// type Ability struct{}
+// // type Ability struct{}
 
-func (a *Ability) Check() {}
+// func (a *Ability) Check() {}
 
-// type Skill struct{}
+// // type Skill struct{}
 
-func (s *Skill) Check() {}
+// func (s *Skill) Check() {}
 
-type Spell struct{}
+// type Spell struct{}
 
-func (s *Spell) Cast() {}
+// func (s *Spell) Cast() {}
 
-type Gear struct{}
+// type Gear struct{}
 
-func (g *Gear) Wear() {}
+// func (g *Gear) Wear() {}
 
-func (g *Gear) Use() {}
+// func (g *Gear) Use() {}
 
-type SpecialAbility struct{}
+// type SpecialAbility struct{}
 
-func (s *SpecialAbility) Use() {}
+// func (s *SpecialAbility) Use() {}
 
 // type Attack struct{}
 
@@ -75,12 +75,12 @@ func (s *SpecialAbility) Use() {}
 
 //
 
-type Player struct {
-	Name, Username string
-	Creature
-}
+// type Player struct {
+// 	Name, Username string
+// 	Creature
+// }
 
-type NonPlayerCharacter struct {
-	Name, Master string
-	Creature
-}
+// type NonPlayerCharacter struct {
+// 	Name, Master string
+// 	Creature
+// }

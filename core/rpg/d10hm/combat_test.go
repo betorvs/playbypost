@@ -1,4 +1,4 @@
-package rules
+package d10hm
 
 import (
 	"encoding/json"
@@ -7,6 +7,8 @@ import (
 	"testing"
 
 	"github.com/betorvs/playbypost/core/rpg"
+	"github.com/betorvs/playbypost/core/rpg/base"
+	"github.com/betorvs/playbypost/core/rules"
 	"github.com/betorvs/playbypost/core/tests/mock"
 )
 
@@ -49,31 +51,31 @@ func TestCombatD10HM(t *testing.T) {
 	rpgSystem.AppendAbilities("strength")
 	rpgSystem.AppendSkills("weaponry")
 	dice := mock.NewRollMock("d10", rpg.D10HM)
-	person1 := NewCreature("test-combat-p1-d10hm-1", rpgSystem)
-	err := person1.AddAbility(Ability{Name: "strength", Value: 5})
+	person1 := New("test-combat-p1-d10hm-1", rpgSystem)
+	err := person1.AddAbility(base.Ability{Name: "strength", Value: 5})
 	if err != nil {
 		t.Errorf("error add ability %v", err)
 	}
-	err = person1.AddSkill(Skill{Name: "weaponry", Value: 5, Base: "strength"})
+	err = person1.AddSkill(base.Skill{Name: "weaponry", Value: 5, Base: "strength"})
 	if err != nil {
 		t.Errorf("error add skill %v", err)
 	}
-	extended := rpg.NewExtended()
-	_ = json.Unmarshal(rawData1, &extended)
-	person1.Extension = rpg.NewExtendedSystem(rpgSystem, extended)
-	evilperson1 := NewCreature("test-combat-ep1-d10hm-1", rpgSystem)
-	err = evilperson1.AddAbility(Ability{Name: "strength", Value: 5})
+	// extended := rpg.NewExtended()
+	_ = json.Unmarshal(rawData1, &person1.D10Extented)
+	// person1.Extension = rpg.NewExtendedSystem(rpgSystem, extended)
+	evilperson1 := New("test-combat-ep1-d10hm-1", rpgSystem)
+	err = evilperson1.AddAbility(base.Ability{Name: "strength", Value: 5})
 	if err != nil {
 		t.Errorf("error add ability %v", err)
 	}
-	err = evilperson1.AddSkill(Skill{Name: "weaponry", Value: 5, Base: "strength"})
+	err = evilperson1.AddSkill(base.Skill{Name: "weaponry", Value: 5, Base: "strength"})
 	if err != nil {
 		t.Errorf("error add skill %v", err)
 	}
-	extended2 := rpg.NewExtended()
-	_ = json.Unmarshal(rawData2, &extended2)
-	evilperson1.Extension = rpg.NewExtendedSystem(rpgSystem, extended2)
-	attack := NewAttack("test-combat-attack-1", "longsword", Melee, person1, evilperson1, dice, logger)
+	// extended2 := rpg.NewExtended()
+	_ = json.Unmarshal(rawData2, &evilperson1.D10Extented)
+	// evilperson1.Extension = rpg.NewExtendedSystem(rpgSystem, extended2)
+	attack := rules.NewAttack("test-combat-attack-1", "longsword", rules.Melee, person1, evilperson1, dice, logger)
 	attack.Call()
 	if attack.Response.Success != true {
 		t.Errorf("attack.Response.Success %v", attack.Response.Success)

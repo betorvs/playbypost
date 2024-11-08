@@ -11,6 +11,6 @@ func NewNPC() *Players {
 	return &Players{
 		Abilities:  make(map[string]int),
 		Skills:     make(map[string]int),
-		Extensions: map[string]int{},
+		Extensions: NewExtension(),
 	}
 }

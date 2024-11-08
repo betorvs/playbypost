@@ -1,0 +1,23 @@
+[
+    {
+        "name": "warrior",
+        "kind": "Background",
+        "system": "pfd20",
+        "abilities_boosts": [
+            {
+                "ability": "Strength",
+                "or": "Constitution",
+                "source": "Warrior"
+            },
+            {
+                "ability": "Free",
+                "source": "Warrior"
+            }
+        ],
+        "skill_training": [
+            "Intimidation",
+            "Warfare Lore"
+        ],
+        "skill_feat": "Intimidating Glare"
+    }
+]

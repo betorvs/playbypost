@@ -6,6 +6,7 @@ import (
 
 	"github.com/betorvs/playbypost/core/initiative"
 	"github.com/betorvs/playbypost/core/rpg"
+	"github.com/betorvs/playbypost/core/rpg/base"
 	"github.com/betorvs/playbypost/core/rules"
 	"github.com/betorvs/playbypost/core/sys/web/types"
 )
@@ -49,7 +50,7 @@ type DBClient interface {
 	GetStageEncounterActivitiesByEncounterID(ctx context.Context, id int) ([]types.Activity, error)
 	GetStageEncounterActivities(ctx context.Context) ([]types.Activity, error)
 	GetStageTaskFromRunningTaskID(ctx context.Context, taskID int) (types.Task, error)
-	GetCreatureFromParticipantsList(ctx context.Context, players []types.Options, npcs []types.Options, rpgSystem *rpg.RPGSystem) (map[int]*rules.Creature, map[int]*rules.Creature, error)
+	GetCreatureFromParticipantsList(ctx context.Context, players []types.Options, npcs []types.Options, rpgSystem *rpg.RPGSystem) (map[int]rules.RolePlaying, map[int]rules.RolePlaying, error)
 	GetNextEncounterByEncounterID(ctx context.Context, id int) (types.Next, error)
 	GetNextEncounterByStageID(ctx context.Context, id int) ([]types.Next, error)
 	GetStageEncounterListByStoryID(ctx context.Context, storyID int) (types.EncounterList, error)
@@ -67,8 +68,8 @@ type DBClient interface {
 	DeleteStageEncounterByID(ctx context.Context, id int) error
 	// NPC
 	GetNPCByStageID(ctx context.Context, id int) ([]types.Players, error)
-	GenerateNPC(ctx context.Context, name string, stageID, storytellerID int, creature *rules.Creature) (int, error)
-	UpdateNPC(ctx context.Context, id int, creature *rules.Creature, destroyed bool) error
+	GenerateNPC(ctx context.Context, stageID, storytellerID int, creature *base.Creature, extension map[string]interface{}) (int, error)
+	UpdateNPC(ctx context.Context, id int, creature *base.Creature, extension map[string]interface{}, destroyed bool) error
 	// users
 	GetUser(ctx context.Context) ([]types.User, error)
 	GetUserByUserID(ctx context.Context, id string) (types.User, error)
@@ -85,8 +86,8 @@ type DBClient interface {
 	GetPlayerByPlayerID(ctx context.Context, id int, rpgSystem *rpg.RPGSystem) (types.Players, error)
 	GetPlayerByStageID(ctx context.Context, id int, rpgSystem *rpg.RPGSystem) ([]types.Players, error)
 	GetPlayerByUserID(ctx context.Context, id, channel string, rpgSystem *rpg.RPGSystem) (types.Players, error)
-	SavePlayerTx(ctx context.Context, id, storyID int, creature *rules.Creature, rpgSystem *rpg.RPGSystem) (int, error)
-	UpdatePlayer(ctx context.Context, id int, creature *rules.Creature, destroyed bool) error
+	SavePlayerTx(ctx context.Context, id, storyID int, creature *base.Creature, extension map[string]interface{}) (int, error)
+	UpdatePlayer(ctx context.Context, id int, creature *base.Creature, extension map[string]interface{}, destroyed bool) error
 	// Chat
 	AddChatInformation(ctx context.Context, username, userid, channel, chat string) (int, error)
 	GetChatInformation(ctx context.Context) ([]types.ChatInfo, error)

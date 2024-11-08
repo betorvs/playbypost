@@ -1,0 +1,88 @@
+[
+    {
+        "name": "Warrior",
+        "kind": "Class",
+        "system": "pfd20",
+        "hit_points_per_level": 10,
+        "abilities_boosts": [
+            {
+                "ability": "Strength",
+                "or": "Dexterity",
+                "source": "Warrior"
+            }
+        ],
+        "free_skills": 3,
+        "proficiencies": [
+            {
+                "on": "Perception",
+                "rank": "Expert",
+                "source": "Warrior"
+            },
+            {
+                "on": "Fortitude",
+                "rank": "Expert",
+                "source": "Warrior"
+            },
+            {
+                "on": "Reflex",
+                "rank": "Expert",
+                "source": "Warrior"
+            },
+            {
+                "on": "Will",
+                "rank": "Trained",
+                "source": "Warrior"
+            },
+            {
+                "on": "Acrobatics",
+                "or": "Athletics",
+                "rank": "Trained",
+                "source": "Warrior"
+            },
+            {
+                "on": "Simple Weapons",
+                "rank": "Expert",
+                "source": "Warrior"
+            },
+            {
+                "on": "Martial Weapons",
+                "rank": "Expert",
+                "source": "Warrior"
+            },
+            {
+                "on": "Advanced Weapons",
+                "rank": "Trained",
+                "source": "Warrior"
+            },
+            {
+                "on": "All Armor",
+                "rank": "Trained",
+                "source": "Warrior"
+            },
+            {
+                "on": "Unarmed Attacks",
+                "rank": "Expert",
+                "source": "Warrior"
+            }
+        ],
+        "features": [
+            {
+                "name": "attack of opportunity",
+                "level": 1,
+                "description": "Ever watchful for weaknesses, you can quickly attack foes that leave an opening in their defenses. You gain the Attack of Opportunity reaction."
+            },
+            {
+                "name": "fighter feat",
+                "level": 1,
+                "kind": "feat",
+                "description": "At 1st level and every even-numbered level thereafter, you gain a fighter class feat."
+            },
+            {
+                "name": "shield block",
+                "level": 1,
+                "kind": "feat",
+                "description": "You gain the Shield Block general feat, a reaction that lets you reduce damage with your shield."
+            }
+        ]
+    }
+]

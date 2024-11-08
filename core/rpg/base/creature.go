@@ -1,23 +1,25 @@
-package rules
+package base
 
 import (
 	"database/sql/driver"
 	"encoding/json"
 	"errors"
+	"slices"
 
 	"github.com/betorvs/playbypost/core/rpg"
 )
 
 const (
 	DestroyedError string = "cannot destroy a creature that has been destroyed"
+	AbilityInvalid string = "ability not valid"
+	SkillInvalid   string = "skill not valid"
 )
 
 type Creature struct {
-	Name      string             `json:"name"`
-	Abilities Abilities          `json:"abilities"`
-	Skills    Skills             `json:"skills"`
-	RPG       *rpg.RPGSystem     `json:"rpg"`
-	Extension rpg.ExtendedSystem `json:"extension"`
+	Name      string         `json:"name"`
+	Abilities Abilities      `json:"abilities"`
+	Skills    Skills         `json:"skills"`
+	RPG       *rpg.RPGSystem `json:"rpg"`
 	destroyed bool
 }
 
@@ -94,52 +96,18 @@ func RestoreCreature() *Creature {
 	}
 }
 
-// func (c *Creature) UnmarshalJSON(b []byte) error {
-// 	fmt.Printf("Creature UnmarshalJSON: %s\n", b)
-// 	var v struct {
-// 		Name      string          `json:"name"`
-// 		Abilities Abilities       `json:"abilities"`
-// 		Skills    Skills          `json:"skills"`
-// 		RPG       *rpg.RPGSystem  `json:"rpg"`
-// 		Extension json.RawMessage `json:"extension"`
-// 		destroyed bool
-// 	}
-// 	err := json.Unmarshal(b, &v)
-// 	if err != nil {
-// 		return err
-// 	}
-// 	c.Name = v.Name
-// 	c.Abilities = v.Abilities
-// 	c.Skills = v.Skills
-// 	c.RPG = v.RPG
-// 	c.destroyed = v.destroyed
-// 	switch v.RPG.Name {
-// 	case rpg.D2035:
-// 		var f d20e35.D20Extended
+func (c *Creature) AddAbility(a Ability) error {
+	if slices.Contains(c.RPG.Ability.List, a.Name) {
+		c.Abilities[a.Name] = a
+		return nil
+	}
+	return errors.New(AbilityInvalid)
+}
 
-// 		if err := json.Unmarshal(v.Extension, &f); err != nil {
-// 			return err
-// 		}
-
-// 		c.Extension = &f
-// 	case rpg.D10HM:
-// 		var f d10hm.D10Extented
-
-// 		if err := json.Unmarshal(v.Extension, &f); err != nil {
-// 			return err
-// 		}
-
-// 		c.Extension = &f
-
-// 	case rpg.D10OS:
-// 		var f d10os.D10Extented
-
-// 		if err := json.Unmarshal(v.Extension, &f); err != nil {
-// 			return err
-// 		}
-
-// 		c.Extension = &f
-// 	}
-
-// 	return nil
-// }
+func (c *Creature) AddSkill(s Skill) error {
+	if slices.Contains(c.RPG.Skill.List, s.Name) {
+		c.Skills[s.Name] = s
+		return nil
+	}
+	return errors.New(SkillInvalid)
+}

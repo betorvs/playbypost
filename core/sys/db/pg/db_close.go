@@ -18,3 +18,16 @@ func (db *DBX) parsePostgresError(err error) error {
 	}
 	return err
 }
+
+func convertInterfaceInt(x interface{}) int {
+	switch v := x.(type) {
+	case int:
+		return v
+	case float64:
+		return int(v)
+	case string:
+		return 0
+	default:
+		return 0
+	}
+}

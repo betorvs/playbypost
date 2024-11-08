@@ -4,11 +4,11 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/betorvs/playbypost/core/rpg"
-	"github.com/betorvs/playbypost/core/rules"
+	"github.com/betorvs/playbypost/core/rpg/base"
+	"github.com/betorvs/playbypost/core/sys/web/types"
 )
 
-func (db *DBX) SavePlayerTx(ctx context.Context, id, storyID int, creature *rules.Creature, rpgSystem *rpg.RPGSystem) (int, error) {
+func (db *DBX) SavePlayerTx(ctx context.Context, id, storyID int, creature *base.Creature, extension map[string]interface{}) (int, error) {
 	var playerID int
 	tx, err := db.Conn.BeginTx(ctx, nil)
 	if err != nil {
@@ -22,6 +22,8 @@ func (db *DBX) SavePlayerTx(ctx context.Context, id, storyID int, creature *rule
 			err = fmt.Errorf("rolling back transaction: %w", err)
 		}
 	}()
+	ext := types.NewExtension()
+	ext.ConvertMap(extension)
 
 	query := "INSERT INTO players(character_name, player_id, stage_id, destroyed, abilities, skills, extensions, rpg) VALUES($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id" // dev:finder+query
 	stmt, err := db.Conn.PrepareContext(ctx, query)
@@ -30,7 +32,7 @@ func (db *DBX) SavePlayerTx(ctx context.Context, id, storyID int, creature *rule
 		return -1, err
 	}
 	defer stmt.Close()
-	err = tx.StmtContext(ctx, stmt).QueryRow(creature.Name, id, storyID, false, creature.Abilities, creature.Skills, creature.Extension, rpgSystem.Name).Scan(&playerID)
+	err = tx.StmtContext(ctx, stmt).QueryRow(creature.Name, id, storyID, false, creature.Abilities, creature.Skills, ext, creature.RPG.Name).Scan(&playerID)
 	if err != nil {
 		db.Logger.Error("tx statement on players failed", "error", err.Error())
 		return -1, db.parsePostgresError(err)
@@ -43,7 +45,9 @@ func (db *DBX) SavePlayerTx(ctx context.Context, id, storyID int, creature *rule
 	return playerID, nil
 }
 
-func (db *DBX) UpdatePlayer(ctx context.Context, id int, creature *rules.Creature, destroyed bool) error {
+func (db *DBX) UpdatePlayer(ctx context.Context, id int, creature *base.Creature, extension map[string]interface{}, destroyed bool) error {
+	ext := types.NewExtension()
+	ext.ConvertMap(extension)
 	query := "UPDATE players SET abilities = $1, skills = $2, extensions = $3, destroyed = $4 WHERE id = $5" // dev:finder+query
 	stmt, err := db.Conn.PrepareContext(ctx, query)
 	if err != nil {
@@ -52,7 +56,7 @@ func (db *DBX) UpdatePlayer(ctx context.Context, id int, creature *rules.Creatur
 	}
 	defer stmt.Close()
 	db.Logger.Debug("update player", "creature", creature)
-	_, err = stmt.ExecContext(ctx, creature.Abilities, creature.Skills, creature.Extension, destroyed, id)
+	_, err = stmt.ExecContext(ctx, creature.Abilities, creature.Skills, ext, destroyed, id)
 	if err != nil {
 		db.Logger.Error("update players exec failed", "error", err.Error())
 		return err

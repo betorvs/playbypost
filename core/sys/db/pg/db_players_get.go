@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/betorvs/playbypost/core/rpg"
-	"github.com/betorvs/playbypost/core/rules"
+	"github.com/betorvs/playbypost/core/rpg/base"
 	"github.com/betorvs/playbypost/core/sys/web/types"
 )
 
@@ -20,12 +20,12 @@ func (db *DBX) GetPlayers(ctx context.Context, rpgSystem *rpg.RPGSystem) ([]type
 	for rows.Next() {
 		// var p types.Players
 		p := types.NewPlayer()
-		c := rules.RestoreCreature()
-		extended := rpg.NewExtended()
-		if err := rows.Scan(&p.ID, &p.Name, &p.StageID, &p.PlayerID, &p.Destroyed, &c.Abilities, &c.Skills, &extended, &p.RPG); err != nil {
+		c := base.RestoreCreature()
+		// extended := rpg.NewExtended()
+		if err := rows.Scan(&p.ID, &p.Name, &p.StageID, &p.PlayerID, &p.Destroyed, &c.Abilities, &c.Skills, &p.Extensions, &p.RPG); err != nil {
 			db.Logger.Error("scan error on players", "error", err.Error())
 		}
-		c.Extension = rpg.NewExtendedSystem(rpgSystem, extended)
+		// c.Extension = rpg.NewExtendedSystem(rpgSystem, extended)
 		types.CreatureToPlayer(p, c)
 		// for k, v := range c.Abilities {
 		// 	db.Logger.Debug("abilities", "k", k, "v", v)
@@ -55,12 +55,12 @@ func (db *DBX) GetPlayerByID(ctx context.Context, id int, rpgSystem *rpg.RPGSyst
 	defer rows.Close()
 	for rows.Next() {
 		p := types.NewPlayer()
-		c := rules.RestoreCreature()
-		extended := rpg.NewExtended()
-		if err := rows.Scan(&p.ID, &p.Name, &p.StageID, &p.PlayerID, &p.Destroyed, &c.Abilities, &c.Skills, &extended, &p.RPG); err != nil {
+		c := base.RestoreCreature()
+		// extended := rpg.NewExtended()
+		if err := rows.Scan(&p.ID, &p.Name, &p.StageID, &p.PlayerID, &p.Destroyed, &c.Abilities, &c.Skills, &p.Extensions, &p.RPG); err != nil {
 			db.Logger.Error("scan error on players by id ", "error", err.Error())
 		}
-		c.Extension = rpg.NewExtendedSystem(rpgSystem, extended)
+		// c.Extension = rpg.NewExtendedSystem(rpgSystem, extended)
 		types.CreatureToPlayer(p, c)
 		if p.ID > 0 {
 			players = *p
@@ -84,14 +84,14 @@ func (db *DBX) GetPlayerByPlayerID(ctx context.Context, id int, rpgSystem *rpg.R
 	defer rows.Close()
 	for rows.Next() {
 		p := types.NewPlayer()
-		c := rules.RestoreCreature()
+		c := base.RestoreCreature()
 		c.RPG = rpgSystem
-		extended := rpg.NewExtended()
-		if err := rows.Scan(&p.ID, &p.Name, &p.StageID, &p.PlayerID, &p.Destroyed, &c.Abilities, &c.Skills, &extended, &p.RPG); err != nil {
+		// extended := rpg.NewExtended()
+		if err := rows.Scan(&p.ID, &p.Name, &p.StageID, &p.PlayerID, &p.Destroyed, &c.Abilities, &c.Skills, &p.Extensions, &p.RPG); err != nil {
 			db.Logger.Error("scan error on players by player_id ", "error", err.Error())
 		}
 		if p.ID > 0 {
-			c.Extension = rpg.NewExtendedSystem(rpgSystem, extended)
+			// c.Extension = rpg.NewExtendedSystem(rpgSystem, extended)
 			types.CreatureToPlayer(p, c)
 			players = *p
 		}
@@ -114,12 +114,12 @@ func (db *DBX) GetPlayerByStageID(ctx context.Context, id int, rpgSystem *rpg.RP
 	defer rows.Close()
 	for rows.Next() {
 		p := types.NewPlayer()
-		c := rules.RestoreCreature()
-		extended := rpg.NewExtended()
-		if err := rows.Scan(&p.ID, &p.Name, &p.StageID, &p.PlayerID, &p.Destroyed, &c.Abilities, &c.Skills, &extended, &p.RPG); err != nil {
+		c := base.RestoreCreature()
+		// extended := rpg.NewExtended()
+		if err := rows.Scan(&p.ID, &p.Name, &p.StageID, &p.PlayerID, &p.Destroyed, &c.Abilities, &c.Skills, &p.Extensions, &p.RPG); err != nil {
 			db.Logger.Error("scan error on players by stage_id", "error", err.Error())
 		}
-		c.Extension = rpg.NewExtendedSystem(rpgSystem, extended)
+		// c.Extension = rpg.NewExtendedSystem(rpgSystem, extended)
 		types.CreatureToPlayer(p, c)
 		if p.ID > 0 {
 			players = append(players, *p)
@@ -143,15 +143,15 @@ func (db *DBX) GetPlayerByUserID(ctx context.Context, id, channel string, rpgSys
 	defer rows.Close()
 	for rows.Next() {
 		p := types.NewPlayer()
-		c := rules.RestoreCreature()
+		c := base.RestoreCreature()
 		var userID, dbchannel string
-		extended := rpg.NewExtended()
-		if err := rows.Scan(&p.ID, &p.Name, &p.StageID, &p.PlayerID, &p.Destroyed, &c.Abilities, &c.Skills, &extended, &p.RPG, &userID, &dbchannel); err != nil {
+		// extended := rpg.NewExtended()
+		if err := rows.Scan(&p.ID, &p.Name, &p.StageID, &p.PlayerID, &p.Destroyed, &c.Abilities, &c.Skills, &p.Extensions, &p.RPG, &userID, &dbchannel); err != nil {
 			db.Logger.Error("scan error on players by userid ", "error", err.Error())
 		}
 		if p.ID > 0 {
 			if channel != "" && channel == dbchannel {
-				c.Extension = rpg.NewExtendedSystem(rpgSystem, extended)
+				// c.Extension = rpg.NewExtendedSystem(rpgSystem, extended)
 				types.CreatureToPlayer(p, c)
 				players = *p
 			}

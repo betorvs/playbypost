@@ -6,6 +6,8 @@ import (
 	"slices"
 
 	"github.com/betorvs/playbypost/core/rpg"
+	"github.com/betorvs/playbypost/core/rpg/base"
+	"github.com/betorvs/playbypost/core/rpg/d10hm"
 	"github.com/betorvs/playbypost/core/rules"
 	"github.com/betorvs/playbypost/core/sys/web/types"
 	"github.com/betorvs/playbypost/core/utils"
@@ -277,29 +279,39 @@ func (db *DBX) GetStageTaskFromRunningTaskID(ctx context.Context, taskID int) (t
 	return t, nil
 }
 
-func (db *DBX) GetCreatureFromParticipantsList(ctx context.Context, players []types.Options, npcs []types.Options, rpgSystem *rpg.RPGSystem) (map[int]*rules.Creature, map[int]*rules.Creature, error) {
+func (db *DBX) GetCreatureFromParticipantsList(ctx context.Context, players []types.Options, npcs []types.Options, rpgSystem *rpg.RPGSystem) (map[int]rules.RolePlaying, map[int]rules.RolePlaying, error) {
 	db.Logger.Debug("GetCreatureFromParticipantsList", "players", players, "npcs", npcs)
 	// players
-	playersMap := map[int]*rules.Creature{}
-	creatureMap := map[int]*rules.Creature{}
+	playersMap := make(map[int]rules.RolePlaying)
+	creatureMap := make(map[int]rules.RolePlaying)
 	{
 		query := "SELECT id, character_name, abilities, skills, extensions FROM players" // dev:finder+query
 		rows, err := db.Conn.QueryContext(ctx, query)
 		if err != nil {
 			db.Logger.Error("query on players failed", "error", err.Error())
-			return map[int]*rules.Creature{}, map[int]*rules.Creature{}, err
+			return playersMap, creatureMap, err
 		}
 		defer rows.Close()
 		for rows.Next() {
-			c := rules.RestoreCreature()
+			c := base.RestoreCreature()
 			c.RPG = rpgSystem
 			var id int
-			extended := rpg.NewExtended()
+			extended := types.NewExtension()
 			if err := rows.Scan(&id, &c.Name, &c.Abilities, &c.Skills, &extended); err != nil {
 				db.Logger.Error("scan error on players by id ", "error", err.Error())
 			}
-			c.Extension = rpg.NewExtendedSystem(rpgSystem, extended)
-			creatureMap[id] = c
+			// c.Extension = rpg.NewExtendedSystem(rpgSystem, extended)
+
+			// switch roleplaying type here
+			switch rpgSystem.Name {
+			case rpg.D10HM:
+				player := d10hm.New(c.Name, rpgSystem)
+				player.Creature = *c
+				player.SetValues(extended, convertInterfaceInt)
+				creatureMap[id] = player
+
+			}
+
 		}
 	}
 	for _, v := range players {
@@ -308,26 +320,34 @@ func (db *DBX) GetCreatureFromParticipantsList(ctx context.Context, players []ty
 		}
 	}
 	// npcs
-	npcsMap := map[int]*rules.Creature{}
-	creatureMap2 := map[int]*rules.Creature{}
+	npcsMap := make(map[int]rules.RolePlaying)
+	creatureMap2 := make(map[int]rules.RolePlaying)
 	{
 		query := "SELECT id, npc_name, abilities, skills, extensions FROM non_players" // dev:finder+query
 		rows, err := db.Conn.QueryContext(ctx, query)
 		if err != nil {
 			db.Logger.Error("query on non_players by id failed", "error", err.Error())
-			return map[int]*rules.Creature{}, map[int]*rules.Creature{}, err
+			return playersMap, creatureMap, err
 		}
 		defer rows.Close()
 		for rows.Next() {
-			c := rules.RestoreCreature()
+			c := base.RestoreCreature()
 			c.RPG = rpgSystem
 			var id int
-			extended := rpg.NewExtended()
+			extended := types.NewExtension()
 			if err := rows.Scan(&id, &c.Name, &c.Abilities, &c.Skills, &extended); err != nil {
 				db.Logger.Error("scan error on non_players by id ", "error", err.Error())
 			}
-			c.Extension = rpg.NewExtendedSystem(rpgSystem, extended)
-			creatureMap2[id] = c
+			// c.Extension = rpg.NewExtendedSystem(rpgSystem, extended)
+			switch rpgSystem.Name {
+			case rpg.D10HM:
+				npc := d10hm.New(c.Name, rpgSystem)
+				npc.Creature = *c
+				npc.SetValues(extended, convertInterfaceInt)
+				creatureMap2[id] = npc
+
+			}
+			// creatureMap2[id] = c
 		}
 	}
 	for _, v := range npcs {

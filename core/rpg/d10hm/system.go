@@ -4,7 +4,47 @@ import (
 	"database/sql/driver"
 	"encoding/json"
 	"fmt"
+
+	"github.com/betorvs/playbypost/core/rpg"
+	"github.com/betorvs/playbypost/core/rpg/base"
 )
+
+type StorytellingCharacter struct {
+	base.Creature
+	D10Extented
+}
+
+func New(n string, r *rpg.RPGSystem) *StorytellingCharacter {
+	return &StorytellingCharacter{
+		Creature:    *base.NewCreature(n, r),
+		D10Extented: *NewExtended(),
+	}
+}
+
+func (c *StorytellingCharacter) Name() string {
+	return c.Creature.Name
+}
+
+func (c *StorytellingCharacter) SetName(n string) error {
+	if n == "" {
+		return fmt.Errorf("name is empty")
+	}
+	c.Creature.Name = n
+	return nil
+}
+
+func (c *StorytellingCharacter) RPGSystem() *rpg.RPGSystem {
+	return c.Creature.RPG
+}
+
+func (c *StorytellingCharacter) Damage(v int) error {
+	c.Health = c.Health - v
+	return nil
+}
+
+func (c *StorytellingCharacter) HealthStatus() int {
+	return c.Health
+}
 
 type D10Extented struct {
 	Health     int `json:"health"`
@@ -100,10 +140,10 @@ type Weapon struct {
 	Description string `json:"description"`
 }
 
-func NewWithValuesExtended(resolve, composture, dexterity, wits int) *D10Extented {
+func NewWithValuesExtended(resolve, composture, dexterity, wits int) D10Extented {
 	size := 5
 	weapon := make(map[string]Weapon)
-	return &D10Extented{
+	return D10Extented{
 		Health:     size + resolve,
 		WillPower:  resolve + composture,
 		Initiative: dexterity + composture,
@@ -126,40 +166,9 @@ func lowerValue(a, b int) int {
 	return b
 }
 
-func (d D10Extented) SkillBonus(s string) (int, error) {
-	return 0, nil
-}
-
-func (d D10Extented) InitiativeBonus() (int, error) {
-	return d.Initiative, nil
-}
-
-func (d D10Extented) AttackBonus(s string) (int, error) {
-	if value, ok := d.Weapon[s]; ok {
-		return value.Value, nil
-	}
-	return 0, nil
-}
-
-func (d D10Extented) DefenseBonus(a string) (int, error) {
-	if a == "ranged" {
-		return d.Armor, nil
-	}
-	return d.Armor + d.Defense, nil
-}
-
 func (d D10Extented) WeaponBonus(s string) (int, string, error) {
 	if value, ok := d.Weapon[s]; ok {
 		return value.Value, "", nil
 	}
 	return 0, "", nil
-}
-
-func (d *D10Extented) Damage(v int) error {
-	d.Health = d.Health - v
-	return nil
-}
-
-func (d D10Extented) HealthStatus() int {
-	return d.Health
 }
