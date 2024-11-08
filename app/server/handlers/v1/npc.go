@@ -7,7 +7,6 @@ import (
 	"strconv"
 
 	"github.com/betorvs/playbypost/core/rpg"
-	"github.com/betorvs/playbypost/core/rules"
 	"github.com/betorvs/playbypost/core/sys/web/types"
 )
 
@@ -56,14 +55,15 @@ func (a MainApi) GenerateNPC(w http.ResponseWriter, r *http.Request) {
 
 	switch a.rpg.Name {
 	case rpg.D10HM:
-		creature, err := rules.GenD10Random(obj.Name, a.rpg)
+		creature, err := types.GenerateRandomPlayer(obj.Name, a.rpg)
 		if err != nil {
 			a.logger.Error("generate createure", "error", err.Error())
 			a.s.ErrJSON(w, http.StatusBadRequest, "cannot generate a random player")
 			return
 		}
 		// creature.
-		npc, err := a.db.GenerateNPC(a.ctx, obj.Name, stage.Stage.ID, stage.Stage.StorytellerID, creature)
+		npc, err := creature.Save(a.ctx, stage.Stage.ID, stage.Stage.StorytellerID, a.db.GenerateNPC)
+		// npc, err := a.db.GenerateNPC(a.ctx, obj.Name, stage.Stage.ID, stage.Stage.StorytellerID, &creature.Creature, creature.GetValues())
 		if err != nil {
 			a.s.ErrJSON(w, http.StatusBadRequest, "npc database issue")
 			return

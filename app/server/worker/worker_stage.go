@@ -7,6 +7,7 @@ import (
 
 	"github.com/betorvs/playbypost/core/initiative"
 	"github.com/betorvs/playbypost/core/parser"
+	"github.com/betorvs/playbypost/core/rpg/base"
 	"github.com/betorvs/playbypost/core/rules"
 	"github.com/betorvs/playbypost/core/sys/web/types"
 	"github.com/betorvs/playbypost/core/utils"
@@ -149,7 +150,7 @@ func (a *WorkerAPI) parseCommand(cmd types.Activity) error {
 				return fmt.Errorf("npc not found")
 			}
 			// send message to slack
-			msg := fmt.Sprintf("NPC %s health status: %d", npc.Name, npc.Extension.HealthStatus())
+			msg := fmt.Sprintf("NPC %s health status: %d", npc.Name(), npc.HealthStatus())
 			body, err := a.client.PostEvent(cmd.Actions["channel"], cmd.Actions["userid"], msg, types.EventAnnounce)
 			if err != nil {
 				a.logger.Error("error posting event health status", "error", err.Error(), "body", string(body))
@@ -167,7 +168,7 @@ func (a *WorkerAPI) parseCommand(cmd types.Activity) error {
 				return fmt.Errorf("player not found")
 			}
 			// send message to slack
-			msg := fmt.Sprintf("Player %s health status: %d", player.Name, player.Extension.HealthStatus())
+			msg := fmt.Sprintf("Player %s health status: %d", player.Name(), player.HealthStatus())
 			body, err := a.client.PostEvent(cmd.Actions["channel"], cmd.Actions["userid"], msg, types.EventAnnounce)
 			if err != nil {
 				a.logger.Error("error posting event health status", "error", err.Error(), "body", string(body))
@@ -240,12 +241,12 @@ func (a *WorkerAPI) parseCommand(cmd types.Activity) error {
 		}
 		a.logger.Info("npc found", "npc_id", npcID, "npc", defensor)
 		a.logger.Info("player found", "player_id", playerID, "player", attacker)
-		if initiative.Current() == attacker.Name {
-			a.logger.Info("player ready to play", "player_name", attacker.Name, "npc_name", defensor.Name)
+		if initiative.Current() == attacker.Name() {
+			a.logger.Info("player ready to play", "player_name", attacker.Name(), "npc_name", defensor.Name())
 			attack := rules.NewAttack(cmd.Actions["command"], "longsword", rules.Melee, attacker, defensor, &a.dice, a.logger)
 			attack.Call()
-			a.logger.Info("attack result", "attack", attack, "defensor_health", attack.Defensor.Extension.HealthStatus())
-			err := a.db.UpdateNPC(a.ctx, npcID, attack.Defensor, attack.Defensor.IsDead())
+			a.logger.Info("attack result", "attack", attack, "defensor_health", attack.Defensor.HealthStatus())
+			err := attack.Defensor.Update(a.ctx, npcID, a.db.UpdateNPC)
 			if err != nil {
 				a.logger.Error("error updating npc", "error", err.Error())
 				return err
@@ -254,7 +255,7 @@ func (a *WorkerAPI) parseCommand(cmd types.Activity) error {
 			if attack.Response.Success {
 				emoji = types.EventSuccess
 			}
-			attackResult := fmt.Sprintf("Player %s attacked NPC %s. Result: %s", attacker.Name, defensor.Name, attack.Response.Text)
+			attackResult := fmt.Sprintf("Player %s attacked NPC %s. Result: %s", attacker.Name(), defensor.Name(), attack.Response.Text)
 			body, err := a.client.PostEvent(cmd.Actions["channel"], "ALL", attackResult, emoji)
 			if err != nil {
 				a.logger.Error("error posting event attack npc", "error", err.Error(), "body", string(body))
@@ -268,18 +269,18 @@ func (a *WorkerAPI) parseCommand(cmd types.Activity) error {
 				return err
 			}
 			if attack.Defensor.IsDead() {
-				_, err = a.db.DeactivateParticipant(a.ctx, enc.InitiativeID, attack.Defensor.Name)
+				_, err = a.db.DeactivateParticipant(a.ctx, enc.InitiativeID, attack.Defensor.Name())
 				if err != nil {
 					a.logger.Error("error deactivating participant", "error", err.Error())
 					return err
 				}
 				// send message to slack
-				msg := fmt.Sprintf("NPC %s is dead", defensor.Name)
+				msg := fmt.Sprintf("NPC %s is dead", defensor.Name())
 				body, err = a.client.PostEvent(cmd.Actions["channel"], "ALL", msg, types.EventDead)
 				if err != nil {
 					a.logger.Error("error posting event npc dead", "error", err.Error(), "body", string(body))
 				}
-				initiative.RemoveByName(defensor.Name)
+				initiative.RemoveByName(defensor.Name())
 			}
 			// send to slack
 			msg := fmt.Sprintf("Next participant: %s", initiative.Current())
@@ -333,12 +334,12 @@ func (a *WorkerAPI) parseCommand(cmd types.Activity) error {
 		}
 		a.logger.Info("npc found", "npc_id", npcID, "npc", attacker)
 		a.logger.Info("player found", "player_id", playerID, "player", defensor)
-		if initiative.Current() == attacker.Name {
-			a.logger.Info("npc ready to play", "npc_name", attacker.Name, "player_name", defensor.Name)
+		if initiative.Current() == attacker.Name() {
+			a.logger.Info("npc ready to play", "npc_name", attacker.Name(), "player_name", defensor.Name())
 			attack := rules.NewAttack(cmd.Actions["command"], "longsword", rules.Melee, attacker, defensor, &a.dice, a.logger)
 			attack.Call()
-			a.logger.Info("attack result", "attack", attack, "defensor_health", attack.Defensor.Extension.HealthStatus())
-			err := a.db.UpdatePlayer(a.ctx, playerID, attack.Defensor, attack.Defensor.IsDead())
+			a.logger.Info("attack result", "attack", attack, "defensor_health", attack.Defensor.HealthStatus())
+			err := attack.Defensor.Update(a.ctx, playerID, a.db.UpdatePlayer)
 			if err != nil {
 				a.logger.Error("error updating player", "error", err.Error())
 				return err
@@ -347,7 +348,7 @@ func (a *WorkerAPI) parseCommand(cmd types.Activity) error {
 			if attack.Response.Success {
 				emoji = types.EventSuccess
 			}
-			attackResult := fmt.Sprintf("NPC %s attacked Player %s. Result: %s", attacker.Name, defensor.Name, attack.Response.Text)
+			attackResult := fmt.Sprintf("NPC %s attacked Player %s. Result: %s", attacker.Name(), defensor.Name(), attack.Response.Text)
 			body, err := a.client.PostEvent(cmd.Actions["channel"], "ALL", attackResult, emoji)
 			if err != nil {
 				a.logger.Error("error posting event attack player", "error", err.Error(), "body", string(body))
@@ -361,18 +362,18 @@ func (a *WorkerAPI) parseCommand(cmd types.Activity) error {
 				return err
 			}
 			if attack.Defensor.IsDead() {
-				_, err = a.db.DeactivateParticipant(a.ctx, enc.InitiativeID, defensor.Name)
+				_, err = a.db.DeactivateParticipant(a.ctx, enc.InitiativeID, defensor.Name())
 				if err != nil {
 					a.logger.Error("error deactivating participant", "error", err.Error())
 					return err
 				}
 				// send message to slack
-				msg := fmt.Sprintf("Player %s is dead", defensor.Name)
+				msg := fmt.Sprintf("Player %s is dead", defensor.Name())
 				body, err = a.client.PostEvent(cmd.Actions["channel"], "ALL", msg, types.EventDead)
 				if err != nil {
 					a.logger.Error("error posting event player dead", "error", err.Error(), "body", string(body))
 				}
-				initiative.RemoveByName(defensor.Name)
+				initiative.RemoveByName(defensor.Name())
 			}
 
 			// send next player to slack
@@ -396,9 +397,9 @@ func (a *WorkerAPI) parseCommand(cmd types.Activity) error {
 		}
 		a.logger.Info("player found", "player", player)
 		a.logger.Info("rpg system", "rpg", a.rpg.BaseSystem)
-		creature := rules.RestoreCreature()
+		creature := base.RestoreCreature()
 		creature.RPG = a.rpg
-		types.PlayerToCreature(&player, creature)
+		character := types.PlayerToCreature(&player, creature)
 		a.logger.Info("creature found", "creature", creature)
 		// get task
 		taskID, err := strconv.Atoi(cmd.Actions["task_id"])
@@ -412,7 +413,8 @@ func (a *WorkerAPI) parseCommand(cmd types.Activity) error {
 			return err
 		}
 		a.logger.Info("task found", "task", task)
-		result, err := a.executeTask(task, creature)
+
+		result, err := a.executeTask(task, character)
 		if err != nil {
 			a.logger.Error("error executing task", "error", err.Error())
 			return err
@@ -447,7 +449,7 @@ func (a *WorkerAPI) parseCommand(cmd types.Activity) error {
 	return nil
 }
 
-func (a *WorkerAPI) executeTask(task types.Task, creature *rules.Creature) (rules.Result, error) {
+func (a *WorkerAPI) executeTask(task types.Task, creature rules.RolePlaying) (rules.Result, error) {
 	result := rules.Result{}
 	switch task.Kind {
 	case types.SkillCheck:
@@ -481,14 +483,14 @@ func (a *WorkerAPI) rollInitiative(enc types.StageEncounter) (string, error) {
 
 	for _, p := range players {
 		a.logger.Info("players found", "players", p)
-		i, _ := p.Extension.InitiativeBonus()
-		party[p.Name] = i
+		i, _ := p.InitiativeBonus()
+		party[p.Name()] = i
 		a.logger.Info("participant found roll", "name", p.Name, "init bonus", i)
 	}
 	for _, n := range npcs {
 		a.logger.Info("npcs found roll", "npcs", n)
-		i, _ := n.Extension.InitiativeBonus()
-		party[n.Name] = i
+		i, _ := n.InitiativeBonus()
+		party[n.Name()] = i
 		a.logger.Info("npc found", "name", n.Name, "init bonus", i)
 	}
 	randomInit := utils.RandomString(6)
