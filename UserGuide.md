@@ -27,6 +27,19 @@ set PGPORT=5432
 set PGDATABASE="playbypost"
 ```
 
+### Changing library files
+
+You can change or add more content to [library files](./library/) with caution. 
+
+If you need to change path, these are environment variable used:
+
+- "D10HM_DEFINITION": default value "./library/definitions-d10HM.json".
+- "PFD20_DEFINITION": default value "./library/definitions-pfd20.json".
+- "PFD20_ANCESTRIES_DEFINITION": default value "./library/definitions-pfd20-ancestries.json".
+- "PFD20_BACKGROUNDS_DEFINITION": default value "./library/definitions-pfd20-backgrounds.json".
+- "PFD20_CLASSES_DEFINITION": default value "./library/definitions-pfd20-classes.json".
+
+
 ## Create Bot Credentials
 
 It can only connect to a one Chat. Then choose one and create credentials for it.
