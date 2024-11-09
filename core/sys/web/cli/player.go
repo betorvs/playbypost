@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/betorvs/playbypost/core/rules"
+	"github.com/betorvs/playbypost/core/rpg/base"
 	"github.com/betorvs/playbypost/core/sys/web/types"
 )
 
@@ -39,8 +39,8 @@ func (c *Cli) GeneratePlayer(name, userID string, playerid, stageid int) (types.
 	return msg, nil
 }
 
-func (c *Cli) GetPlayersByStageID(id int) (map[int]rules.Creature, error) {
-	var list map[int]rules.Creature
+func (c *Cli) GetPlayersByStageID(id int) (map[int]base.Creature, error) {
+	var list map[int]base.Creature
 	play := fmt.Sprintf("stage/%s/%d", player, id)
 	body, err := c.getGeneric(play)
 	if err != nil {
@@ -53,8 +53,8 @@ func (c *Cli) GetPlayersByStageID(id int) (map[int]rules.Creature, error) {
 	return list, nil
 }
 
-func (c *Cli) GetPlayersByID(id int) (rules.Creature, error) {
-	var list rules.Creature
+func (c *Cli) GetPlayersByID(id int) (base.Creature, error) {
+	var list base.Creature
 	play := fmt.Sprintf("%s/%d", player, id)
 	body, err := c.getGeneric(play)
 	if err != nil {

@@ -1,0 +1,29 @@
+[
+    {
+        "name": "Human",
+        "kind": "Ancestry",
+        "system": "pfd20",
+        "start_hit_points": 8,
+        "size": "Medium",
+        "speed": 9,
+        "languages": [
+            "Common"
+        ],
+        "languages_bonus": 1,
+        "abilityBoosts": [
+            {
+                "ability": "Free",
+                "source": "Human"
+            },
+            {
+                "ability": "Free",
+                "source": "Human"
+            }
+        ],
+        "flaws": [],
+        "traits": [
+            "Human",
+            "Humanoid"
+        ]
+    }
+]

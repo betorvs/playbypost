@@ -2,13 +2,6 @@ package rpg
 
 import (
 	"fmt"
-	"log/slog"
-	"os"
-	"slices"
-	"strings"
-
-	"github.com/betorvs/dice"
-	"github.com/betorvs/playbypost/core/sys/definitions"
 )
 
 const (
@@ -17,6 +10,7 @@ const (
 	D20      string = "d20Base"
 	D2035    string = "d20-3.5"     // Based on d20 3.5 SRD
 	D10HM    string = "D10HomeMade" // D10 based on World of Darkness
+	PFD20    string = "Pathfinder"  // Pathfinder d20
 )
 
 /*
@@ -47,6 +41,7 @@ https://www.dandwiki.com/wiki/UA:Alternative_Skill_Systems
 SkillRanks = default skill system from D20
 SkillModifiers = 8 class skil and 4 not class skill + complex multiclass system
 LevelBasedSkill = add level to check if class skill
+ProficiencyRankAndLevel = add proficiency rank and level to check if class/background skill
 */
 
 const (
@@ -55,6 +50,7 @@ const (
 	SkillRanks
 	SkillModifiers
 	LevelBasedSkill
+	ProficiencyRankAndLevel
 )
 
 type RPGSystem struct {
@@ -65,18 +61,18 @@ type RPGSystem struct {
 	AbilityRank       RankingSystem
 	SkillRank         RankingSystem
 	DamageCalculation Measurement
-	Ability           Ability
-	Skill             Skill
-	RestrictiveTasks  bool
+	// Ability           AbilityDescription
+	// Skill             SkillDescription
+	RestrictiveTasks bool
 }
 
-type Ability struct {
+type AbilityDescription struct {
 	Grouped map[string][]string
 	List    []string
 	Tags    map[string][]string
 }
 
-type Skill struct {
+type SkillDescription struct {
 	List      []string
 	SkillBase map[string]string
 	Grouped   map[string][]string
@@ -91,17 +87,17 @@ func (r *RPGSystem) String() string {
 }
 
 func LoadRPGSystemsDefault(k string) *RPGSystem {
-	a := Ability{
-		Grouped: make(map[string][]string),
-		List:    []string{},
-		Tags:    make(map[string][]string),
-	}
-	s := Skill{
-		List:      []string{},
-		SkillBase: make(map[string]string),
-		Grouped:   make(map[string][]string),
-		Tags:      make(map[string][]string),
-	}
+	// a := AbilityDescription{
+	// 	Grouped: make(map[string][]string),
+	// 	List:    []string{},
+	// 	Tags:    make(map[string][]string),
+	// }
+	// s := SkillDescription{
+	// 	List:      []string{},
+	// 	SkillBase: make(map[string]string),
+	// 	Grouped:   make(map[string][]string),
+	// 	Tags:      make(map[string][]string),
+	// }
 	d20 := &RPGSystem{
 		Name:              D2035,
 		BaseSystem:        D20,
@@ -109,8 +105,8 @@ func LoadRPGSystemsDefault(k string) *RPGSystem {
 		SuccessRule:       GreaterThan,
 		SkillRank:         SkillRanks,
 		DamageCalculation: Sum,
-		Ability:           a,
-		Skill:             s,
+		// Ability:           a,
+		// Skill:             s,
 	}
 	switch k {
 	case AutoPlay:
@@ -128,8 +124,19 @@ func LoadRPGSystemsDefault(k string) *RPGSystem {
 			AbilityRank:       OnePerOne,
 			SkillRank:         OnePerOne,
 			DamageCalculation: FromResult,
-			Ability:           a,
-			Skill:             s,
+			// Ability:           a,
+			// Skill:             s,
+		}
+	case PFD20:
+		return &RPGSystem{
+			Name:              PFD20,
+			BaseSystem:        D20,
+			BaseDice:          "1d20",
+			SuccessRule:       GreaterThan,
+			SkillRank:         ProficiencyRankAndLevel,
+			DamageCalculation: Sum,
+			// Ability:           a,
+			// Skill:             s,
 		}
 	case D2035:
 		return d20
@@ -138,48 +145,48 @@ func LoadRPGSystemsDefault(k string) *RPGSystem {
 	}
 }
 
-func (r *RPGSystem) AppendSkills(s string) {
-	r.Skill.List = append(r.Skill.List, strings.ToLower(s))
-}
+// func (r *RPGSystem) AppendSkills(s string) {
+// 	r.Skill.List = append(r.Skill.List, strings.ToLower(s))
+// }
 
-func (r *RPGSystem) AppendAbilities(s string) {
-	r.Ability.List = append(r.Ability.List, strings.ToLower(s))
-}
+// func (r *RPGSystem) AppendAbilities(s string) {
+// 	r.Ability.List = append(r.Ability.List, strings.ToLower(s))
+// }
 
-func (r *RPGSystem) AppendSkillBase(skillName, abilityName string) {
-	r.Skill.SkillBase[strings.ToLower(skillName)] = strings.ToLower(abilityName)
-}
+// func (r *RPGSystem) AppendSkillBase(skillName, abilityName string) {
+// 	r.Skill.SkillBase[strings.ToLower(skillName)] = strings.ToLower(abilityName)
+// }
 
-func (r *RPGSystem) AppendAbilityPerGroup(group, ability string) {
-	r.Ability.Grouped[strings.ToLower(group)] = append(r.Ability.Grouped[strings.ToLower(group)], strings.ToLower(ability))
-}
+// func (r *RPGSystem) AppendAbilityPerGroup(group, ability string) {
+// 	r.Ability.Grouped[strings.ToLower(group)] = append(r.Ability.Grouped[strings.ToLower(group)], strings.ToLower(ability))
+// }
 
-func (r *RPGSystem) AppendAbilityTags(ability string, tags []string) {
-	for _, v := range tags {
-		r.Ability.Tags[strings.ToLower(ability)] = append(r.Ability.Tags[strings.ToLower(ability)], strings.ToLower(v))
-	}
-}
+// func (r *RPGSystem) AppendAbilityTags(ability string, tags []string) {
+// 	for _, v := range tags {
+// 		r.Ability.Tags[strings.ToLower(ability)] = append(r.Ability.Tags[strings.ToLower(ability)], strings.ToLower(v))
+// 	}
+// }
 
-func (r *RPGSystem) AppendSkillPerGroup(group, skill string) {
-	r.Skill.Grouped[strings.ToLower(group)] = append(r.Skill.Grouped[strings.ToLower(group)], strings.ToLower(skill))
-}
+// func (r *RPGSystem) AppendSkillPerGroup(group, skill string) {
+// 	r.Skill.Grouped[strings.ToLower(group)] = append(r.Skill.Grouped[strings.ToLower(group)], strings.ToLower(skill))
+// }
 
-func (r *RPGSystem) AppendSkillTags(skill string, tags []string) {
-	for _, v := range tags {
-		r.Skill.Tags[strings.ToLower(skill)] = append(r.Skill.Tags[strings.ToLower(skill)], strings.ToLower(v))
-	}
-}
+// func (r *RPGSystem) AppendSkillTags(skill string, tags []string) {
+// 	for _, v := range tags {
+// 		r.Skill.Tags[strings.ToLower(skill)] = append(r.Skill.Tags[strings.ToLower(skill)], strings.ToLower(v))
+// 	}
+// }
 
-func (r *RPGSystem) GetSkillBase(skillName string) string {
-	if s, ok := r.Skill.SkillBase[skillName]; ok {
-		return s
-	}
-	return ""
-}
+// func (r *RPGSystem) GetSkillBase(skillName string) string {
+// 	if s, ok := r.Skill.SkillBase[skillName]; ok {
+// 		return s
+// 	}
+// 	return ""
+// }
 
 func (r *RPGSystem) InitiativeDice() string {
 	switch r.Name {
-	case D2035:
+	case D2035, PFD20:
 		return r.BaseDice
 	case D10HM:
 		return fmt.Sprintf("%d%s", 1, r.BaseDice)
@@ -187,105 +194,36 @@ func (r *RPGSystem) InitiativeDice() string {
 	return r.BaseDice
 }
 
-func (r *RPGSystem) InitDefinitions(f string, logger *slog.Logger) {
-	content, err := definitions.LoadFromFile(f)
-	if err != nil {
-		logger.Error("error from definitions", "error", err.Error())
-		os.Exit(2)
-	}
-	// fmt.Printf("content: %#v\n", content)
-	for _, v := range content {
-		// fmt.Printf("%s: %v \n", v.Name, v.Kind)
-		if v.Kind == definitions.AbilityKind {
-			r.AppendAbilities(v.Name)
-			if v.Group != "" {
-				r.AppendAbilityPerGroup(v.Group, v.Name)
-			}
-			if len(v.Tags) != 0 {
-				r.AppendAbilityTags(v.Name, v.Tags)
-			}
-		}
-		if v.Kind == definitions.SkillKind {
-			r.AppendSkills(v.Name)
-			if slices.Contains(r.Ability.List, v.Base) {
-				r.AppendSkillBase(v.Name, v.Base)
-			}
-			if v.Group != "" {
-				r.AppendSkillPerGroup(v.Group, v.Name)
-			}
-			if len(v.Tags) != 0 {
-				r.AppendSkillTags(v.Name, v.Tags)
-			}
-		}
+// func (r *RPGSystem) InitDefinitions(f string, logger *slog.Logger) {
+// 	content, err := definitions.LoadFromFile(f)
+// 	if err != nil {
+// 		logger.Error("error from definitions", "error", err.Error())
+// 		os.Exit(2)
+// 	}
+// 	// fmt.Printf("content: %#v\n", content)
+// 	for _, v := range content {
+// 		// fmt.Printf("%s: %v \n", v.Name, v.Kind)
+// 		if v.Kind == definitions.AbilityKind {
+// 			r.AppendAbilities(v.Name)
+// 			if v.Group != "" {
+// 				r.AppendAbilityPerGroup(v.Group, v.Name)
+// 			}
+// 			if len(v.Tags) != 0 {
+// 				r.AppendAbilityTags(v.Name, v.Tags)
+// 			}
+// 		}
+// 		if v.Kind == definitions.SkillKind {
+// 			r.AppendSkills(v.Name)
+// 			if slices.Contains(r.Ability.List, v.Base) {
+// 				r.AppendSkillBase(v.Name, v.Base)
+// 			}
+// 			if v.Group != "" {
+// 				r.AppendSkillPerGroup(v.Group, v.Name)
+// 			}
+// 			if len(v.Tags) != 0 {
+// 				r.AppendSkillTags(v.Name, v.Tags)
+// 			}
+// 		}
 
-	}
-}
-
-type RollInterface interface {
-	FreeRoll(name, text string) (DiceRoll, error)
-	Check(name string) (DiceRoll, error)
-	FormatDice(m, target int) string
-}
-
-// Roll struct
-type Roll struct {
-	RPGSystem *RPGSystem
-}
-
-type DiceRoll struct {
-	RequestedBy string
-	Description string
-	Result      int
-	Rolled      string
-}
-
-func NewRollMock(rpgSystem *RPGSystem) RollInterface {
-	return &Roll{RPGSystem: rpgSystem}
-}
-
-// FreeRoll func returns a int value, a string text and error
-func (r Roll) FreeRoll(name, text string) (DiceRoll, error) {
-	res := DiceRoll{}
-	res.RequestedBy = name
-	diceRolled, _, err := dice.Roll(text)
-	if err != nil {
-		res.Result = 0
-		res.Description = "No dices to roll"
-		return res, err
-	} else {
-		// message := fmt.Sprintf("%s rolled %s and result %v with rolls %s", name, diceRolled.Description(), diceRolled.Int(), diceRolled.String())
-		res.Result = diceRolled.Int()
-		res.Description = diceRolled.Description()
-		res.Rolled = diceRolled.String()
-		return res, nil
-	}
-}
-
-func (r Roll) Check(name string) (DiceRoll, error) {
-	res := DiceRoll{}
-	diceRolled, _, err := dice.Roll(r.RPGSystem.BaseDice)
-	if err != nil {
-		res.Result = 0
-		res.Description = "No dices to roll"
-		return res, err
-	} else {
-		// message := fmt.Sprintf("%s rolled %s and result %v with rolls %s", name, diceRolled.Description(), diceRolled.Int(), diceRolled.String())
-		res.Result = diceRolled.Int()
-		res.Description = diceRolled.Description()
-		res.Rolled = diceRolled.String()
-		return res, nil
-	}
-}
-
-func (r Roll) FormatDice(m, target int) string {
-	dices := 1
-	if m > 0 {
-		dices = m
-	}
-	var dice string
-	switch r.RPGSystem.Name {
-	case D10HM:
-		dice = fmt.Sprintf("%d%srv8", dices, r.RPGSystem.BaseDice)
-	}
-	return dice
-}
+// 	}
+// }

@@ -8,6 +8,7 @@ import (
 
 	"github.com/betorvs/playbypost/core/rpg"
 	"github.com/betorvs/playbypost/core/sys/db"
+	"github.com/betorvs/playbypost/core/sys/library"
 	"github.com/betorvs/playbypost/core/sys/web/cli"
 )
 
@@ -24,12 +25,13 @@ type WorkerAPI struct {
 	dice           rpg.Roll
 	client         *cli.Cli
 	rpg            *rpg.RPGSystem
+	lib            *library.Library
 	autoPlay       *rpg.RPGSystem
 	autoPlaySync   *sync.Mutex
 	stageSync      *sync.Mutex
 }
 
-func NewWorkerAPI(ctx context.Context, dice rpg.Roll, db db.DBClient, l *slog.Logger, client *cli.Cli, rpgSystem *rpg.RPGSystem, auto *rpg.RPGSystem) *WorkerAPI {
+func NewWorkerAPI(ctx context.Context, dice rpg.Roll, db db.DBClient, l *slog.Logger, client *cli.Cli, rpgSystem *rpg.RPGSystem, auto *rpg.RPGSystem, lib *library.Library) *WorkerAPI {
 	return &WorkerAPI{
 		ctx:          ctx,
 		dice:         dice,
@@ -38,6 +40,7 @@ func NewWorkerAPI(ctx context.Context, dice rpg.Roll, db db.DBClient, l *slog.Lo
 		client:       client,
 		rpg:          rpgSystem,
 		autoPlay:     auto,
+		lib:          lib,
 		autoPlaySync: &sync.Mutex{},
 		stageSync:    &sync.Mutex{},
 	}

@@ -1,6 +1,4 @@
-//go:build unit
-
-package rules
+package d10hm
 
 import (
 	"log/slog"
@@ -8,25 +6,29 @@ import (
 	"testing"
 
 	"github.com/betorvs/playbypost/core/rpg"
+	"github.com/betorvs/playbypost/core/rpg/base"
+	"github.com/betorvs/playbypost/core/rules"
+	"github.com/betorvs/playbypost/core/sys/library"
 	"github.com/betorvs/playbypost/core/tests/mock"
 )
 
 func TestSkillD10HM(t *testing.T) {
 	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
 	rpgSystem := rpg.LoadRPGSystemsDefault(rpg.D10HM)
-	rpgSystem.AppendAbilities("dexterity")
-	rpgSystem.AppendSkills("athletics")
+	lib := library.New()
+	lib.AppendAbilities("dexterity")
+	lib.AppendSkills("athletics")
 	dice := mock.NewRollMock("d10", rpg.D10HM)
-	person1 := NewCreature("test-athletics-d10hm-1", rpgSystem)
-	err := person1.AddAbility(Ability{Name: "dexterity", Value: 5})
+	person1 := New("test-athletics-d10hm-1", rpgSystem)
+	err := person1.AddAbility(base.Ability{Name: "dexterity", Value: 5}, lib)
 	if err != nil {
 		t.Errorf("error on ability %v", err)
 	}
-	err = person1.AddSkill(Skill{Name: "athletics", Value: 5, Base: "dexterity"})
+	err = person1.AddSkill(base.Skill{Name: "athletics", Value: 5, Base: "dexterity"}, lib)
 	if err != nil {
 		t.Errorf("error on skill %v", err)
 	}
-	result, err := person1.SkillCheck(dice, Check{Skill: "athletics", Target: 5}, logger)
+	result, err := person1.SkillCheck(dice, rules.Check{Skill: "athletics", Target: 5}, logger, lib)
 	if err != nil {
 		t.Errorf("error %v", err)
 	}

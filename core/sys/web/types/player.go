@@ -1,8 +1,16 @@
 package types
 
 import (
+	"database/sql/driver"
+	"encoding/json"
+	"errors"
+
 	"github.com/betorvs/playbypost/core/rpg"
+	"github.com/betorvs/playbypost/core/rpg/base"
+	"github.com/betorvs/playbypost/core/rpg/d10hm"
+	"github.com/betorvs/playbypost/core/rpg/pfd20"
 	"github.com/betorvs/playbypost/core/rules"
+	"github.com/betorvs/playbypost/core/sys/library"
 )
 
 type GeneratePlayer struct {
@@ -20,19 +28,44 @@ type Players struct {
 	Abilities  map[string]int `json:"abilities"`
 	Skills     map[string]int `json:"skills"`
 	RPG        string         `json:"rpg"`
-	Extensions map[string]int `json:"extensions"`
+	Extensions Extensions     `json:"extensions"`
 	Destroyed  bool           `json:"destroyed"`
+}
+
+type Extensions map[string]interface{}
+
+func NewExtension() Extensions {
+	return make(map[string]interface{})
+}
+
+func (a Extensions) Value() (driver.Value, error) {
+	return json.Marshal(a)
+}
+
+func (a *Extensions) Scan(value interface{}) error {
+	b, ok := value.([]byte)
+	if !ok {
+		return errors.New("type assertion to []byte failed on extended")
+	}
+
+	return json.Unmarshal(b, &a)
+}
+
+func (a *Extensions) ConvertMap(m map[string]interface{}) {
+	for k, v := range m {
+		(*a)[k] = v
+	}
 }
 
 func NewPlayer() *Players {
 	return &Players{
 		Abilities:  make(map[string]int),
 		Skills:     make(map[string]int),
-		Extensions: map[string]int{},
+		Extensions: NewExtension(),
 	}
 }
 
-func CreatureToPlayer(p *Players, c *rules.Creature) {
+func CreatureToPlayer(p *Players, c *base.Creature) {
 	for k, v := range c.Abilities {
 		key := k
 		if v.DisplayName != "" && v.DisplayName != v.Name {
@@ -47,35 +80,45 @@ func CreatureToPlayer(p *Players, c *rules.Creature) {
 		}
 		p.Skills[key] = v.Value
 	}
-	// extensions
-	p.Extensions = make(map[string]int)
-	for k, v := range c.Extension.GetValues() {
-		switch x := v.(type) {
-		case int:
-			p.Extensions[k] = x
-		}
-
-	}
 }
 
-func PlayerToCreature(p *Players, c *rules.Creature) {
+func PlayerToCreature(p *Players, c *base.Creature, lib *library.Library) rules.RolePlaying {
 	for k, v := range p.Abilities {
-		c.Abilities[k] = rules.Ability{
+		c.Abilities[k] = base.Ability{
 			Name:  k,
 			Value: v,
 		}
 	}
 	for k, v := range p.Skills {
-		c.Skills[k] = rules.Skill{
+		c.Skills[k] = base.Skill{
 			Name:  k,
 			Value: v,
 		}
 		if c.RPG.BaseSystem == rpg.D20 {
-			c.Skills[k] = rules.Skill{
+			c.Skills[k] = base.Skill{
 				Name:  k,
 				Value: v,
-				Base:  c.RPG.GetSkillBase(k),
+				Base:  lib.GetSkillBase(k),
 			}
 		}
 	}
+	switch c.RPG.Name {
+	case rpg.D10HM:
+		character := d10hm.New(c.Name, c.RPG)
+		character.Creature = *c
+		return character
+	}
+	return nil
+}
+
+func GenerateRandomPlayer(name string, rpgSystem *rpg.RPGSystem, lib *library.Library) (rules.RolePlaying, error) {
+	switch rpgSystem.Name {
+	case rpg.D10HM:
+		character, err := d10hm.GenD10Random(name, rpgSystem, lib)
+		return character, err
+	case rpg.PFD20:
+		character, err := pfd20.GenPFD20Random(name, rpgSystem, lib)
+		return character, err
+	}
+	return nil, nil
 }

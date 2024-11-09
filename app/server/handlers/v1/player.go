@@ -7,7 +7,6 @@ import (
 	"strconv"
 
 	"github.com/betorvs/playbypost/core/rpg"
-	"github.com/betorvs/playbypost/core/rules"
 	"github.com/betorvs/playbypost/core/sys/web/types"
 )
 
@@ -64,14 +63,15 @@ func (a MainApi) GeneratePlayer(w http.ResponseWriter, r *http.Request) {
 
 	switch a.rpg.Name {
 	case rpg.D10HM:
-		creature, err := rules.GenD10Random(obj.Name, a.rpg)
+		creature, err := types.GenerateRandomPlayer(obj.Name, a.rpg, a.lib)
 		if err != nil {
 			a.logger.Error("generate creature", "error", err.Error())
 			a.s.ErrJSON(w, http.StatusBadRequest, "cannot generate a random player")
 			return
 		}
 		// creature.
-		res, err := a.db.SavePlayerTx(a.ctx, userID, obj.StageID, creature, a.rpg)
+		res, err := creature.Save(a.ctx, userID, stage.Stage.ID, a.db.SavePlayerTx)
+		// res, err := a.db.SavePlayerTx(a.ctx, userID, obj.StageID, &creature.Creature, creature.GetValues(), a.rpg)
 		if err != nil {
 			a.logger.Error("generate creature", "userid", userID, "error", err.Error())
 			a.s.ErrJSON(w, http.StatusBadGateway, "error saving new player")
