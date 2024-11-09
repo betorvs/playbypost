@@ -1,0 +1,185 @@
+[
+    {
+        "name": "strength", 
+        "display_name": "str",
+        "kind": "Ability",
+        "system": "pfd20",
+        "base": null,
+        "tags": [
+        ],
+        "group": "physical",
+        "description": "Strength"
+    },
+    {
+        "name": "dexterity",
+        "display_name": "dex",
+        "kind": "Ability",
+        "system": "pfd20",
+        "base": null,
+        "tags": [
+        ],
+        "group": "physical",
+        "description": "Dexterity"
+    },
+    {
+        "name": "constitution",
+        "display_name": "con",
+        "kind": "Ability",
+        "system": "pfd20",
+        "base": null,
+        "tags": [
+        ],
+        "group": "physical",
+        "description": "Constitution"
+    },
+    {
+        "name": "intelligence",
+        "display_name": "int",
+        "kind": "Ability",
+        "system": "pfd20",
+        "base": null,
+        "tags": [
+        ],
+        "group": "mental",
+        "description": "Intelligence"
+    },
+    {
+        "name": "wisdom",
+        "display_name": "wis",
+        "kind": "Ability",
+        "system": "pfd20",
+        "base": null,
+        "tags": [],
+        "group": "mental",
+        "description": "Wisdom"
+    },
+    {
+        "name": "charisma",
+        "display_name": "cha",
+        "kind": "Ability",
+        "system": "pfd20",
+        "base": null,
+        "tags": [],
+        "group": "social",
+        "description": "Charisma"
+    },
+    {
+        "name": "acrobatics",
+        "kind": "Skill",
+        "system": "pfd20",
+        "base": "dexterity",
+        "description": "Untrained Balance one-action, Tumble Through one-action; Trained Maneuver in Flight one-action, Squeeze"
+    },
+    {
+        "name": "arcana",
+        "kind": "Skill",
+        "system": "pfd20",
+        "base": "intelligence",
+        "description": "Untrained Recall Knowledge; Trained Borrow an Arcane Spell Decipher Writing Identify Magic Learn a Spell "
+    },
+    {
+        "name": "athletics",
+        "kind": "Skill",
+        "system": "pfd20",
+        "base": "strenght",
+        "description": "Untrained Climb [one-action], Force Open [one-action], Grapple [one-action], High Jump [two-actions], Long Jump [two-actions], Shove [one-action], Swim [one-action], Trip [one-action]; Trained Disarm "
+    },
+    {
+        "name": "crafting",
+        "kind": "Skill",
+        "system": "pfd20",
+        "base": "intelligence",
+        "description": "Untrained Recall Knowledge; Trained Craft Earn Income Identify Alchemy "
+    },
+    {
+        "name": "deception",
+        "kind": "Skill",
+        "system": "pfd20",
+        "base": "charisma",
+        "description": "Untrained Create a Diversion [one-action], ImpersonateE, Lie; Trained Feint"
+    },
+    {
+        "name": "diplomacy",
+        "kind": "Skill",
+        "system": "pfd20",
+        "base": "charisma",
+        "description": "Untrained Gather InformationE, Make an ImpressionE, Request [one-action]  "
+    },
+    {
+        "name": "intimidation",
+        "kind": "Skill",
+        "system": "pfd20",
+        "base": "charisma",
+        "description": "Untrained CoerceE, Demoralize [one-action]  "
+    },
+    {
+        "name": "lore",
+        "kind": "Skill",
+        "system": "pfd20",
+        "base": "intelligence",
+        "description": "Untrained Recall Knowledge Trained Earn Income"
+    },
+    {
+        "name": "medicine",
+        "kind": "Skill",
+        "system": "pfd20",
+        "base": "wisdom",
+        "description": "Untrained Administer First Aid[two-actions], Recall KnowledgeG [one-action]; Trained Treat DiseaseD, Treat Poison [one-action], Treat DiseaseD, Treat WoundsE"
+    },
+    {
+        "name": "nature",
+        "kind": "Skill",
+        "system": "pfd20",
+        "base": "wisdom",
+        "description": "Untrained Command an Animal [one-action], Recall KnowledgeG [one-action]; Trained Identify Magic, Learn a Spell"
+    },
+    {
+        "name": "occultism",
+        "kind": "Skill",
+        "system": "pfd20",
+        "base": "intelligence",
+        "description": "Untrained Recall Knowledge Trained Decipher Writing, Identify Magic, Learn a Spell"
+    },
+    {
+        "name": "performance",
+        "kind": "Skill",
+        "system": "pfd20",
+        "base": "charisma",
+        "description": "Untrained Perform  Trained Earn Income"
+    },
+    {
+        "name": "religion",
+        "kind": "Skill",
+        "system": "pfd20",
+        "base": "wisdom",
+        "description": "Untrained Recall Knowledge Trained Decipher Writing, Identify Magic, Learn a Spell"
+    },
+    {
+        "name": "society",
+        "kind": "Skill",
+        "system": "pfd20",
+        "base": "intelligence",
+        "description": "Untrained Recall KnowledgeG [one-action], Subsist D; Trained Create Forgery Decipher Writing"
+    },
+    {
+        "name": "stealth",
+        "kind": "Skill",
+        "system": "pfd20",
+        "base": "dexterity",
+        "description": "Untrained Conceal an Object [one-action], Hide [one-action], Sneak [one-action] Trained "
+    },
+    {
+        "name": "survival",
+        "kind": "Skill",
+        "system": "pfd20",
+        "base": "wisdow",
+        "description": "Untrained Sense Direction, Subsist; Trained Cover Tracks, Track"
+    },
+    {
+        "name": "thievery",
+        "kind": "Skill",
+        "system": "pfd20",
+        "base": "dexterity",
+        "description": "Untrained Palm an Object [one-action], Steal [one-action]; Trained Disable A Device [two-actions], Pick a Lock [two-actions]"
+    }
+]

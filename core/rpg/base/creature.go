@@ -7,6 +7,7 @@ import (
 	"slices"
 
 	"github.com/betorvs/playbypost/core/rpg"
+	"github.com/betorvs/playbypost/core/sys/library"
 )
 
 const (
@@ -96,16 +97,16 @@ func RestoreCreature() *Creature {
 	}
 }
 
-func (c *Creature) AddAbility(a Ability) error {
-	if slices.Contains(c.RPG.Ability.List, a.Name) {
+func (c *Creature) AddAbility(a Ability, lib *library.Library) error {
+	if slices.Contains(lib.Ability.List, a.Name) {
 		c.Abilities[a.Name] = a
 		return nil
 	}
 	return errors.New(AbilityInvalid)
 }
 
-func (c *Creature) AddSkill(s Skill) error {
-	if slices.Contains(c.RPG.Skill.List, s.Name) {
+func (c *Creature) AddSkill(s Skill, lib *library.Library) error {
+	if slices.Contains(lib.Skill.List, s.Name) {
 		c.Skills[s.Name] = s
 		return nil
 	}

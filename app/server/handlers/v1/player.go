@@ -63,7 +63,7 @@ func (a MainApi) GeneratePlayer(w http.ResponseWriter, r *http.Request) {
 
 	switch a.rpg.Name {
 	case rpg.D10HM:
-		creature, err := types.GenerateRandomPlayer(obj.Name, a.rpg)
+		creature, err := types.GenerateRandomPlayer(obj.Name, a.rpg, a.lib)
 		if err != nil {
 			a.logger.Error("generate creature", "error", err.Error())
 			a.s.ErrJSON(w, http.StatusBadRequest, "cannot generate a random player")

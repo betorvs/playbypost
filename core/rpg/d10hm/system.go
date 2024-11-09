@@ -1,8 +1,6 @@
 package d10hm
 
 import (
-	"database/sql/driver"
-	"encoding/json"
 	"fmt"
 
 	"github.com/betorvs/playbypost/core/rpg"
@@ -17,7 +15,7 @@ type StorytellingCharacter struct {
 func New(n string, r *rpg.RPGSystem) *StorytellingCharacter {
 	return &StorytellingCharacter{
 		Creature:    *base.NewCreature(n, r),
-		D10Extented: *NewExtended(),
+		D10Extented: *newExtended(),
 	}
 }
 
@@ -46,6 +44,28 @@ func (c *StorytellingCharacter) HealthStatus() int {
 	return c.Health
 }
 
+func (c *StorytellingCharacter) SetWeapon(name, kind string, value int, description string) {
+	c.D10Extented.Weapon.SetWeapon(name, kind, value, description)
+}
+
+func (c *StorytellingCharacter) SetArmor(v int) {
+	c.D10Extented.Armor = v
+}
+
+func (d D10Extented) weaponBonus(s string) (int, error) {
+	w, ok := d.Weapon.GetWeapon(s)
+	if !ok {
+		return 0, fmt.Errorf("weapon %s not found", s)
+	}
+	return w.Value, nil
+}
+
+// type Weapon struct {
+// 	Name        string `json:"name"`
+// 	Value       int    `json:"value"`
+// 	Description string `json:"description"`
+// }
+
 type D10Extented struct {
 	Health     int `json:"health"`
 	Defense    int `json:"defense"`
@@ -54,14 +74,37 @@ type D10Extented struct {
 	// Merits      []Advantages
 	// Flaws       []Advantages
 	// MoralSystem MoralSystem
-	Size   int     `json:"size"`
-	Armor  int     `json:"armor"`
-	Weapon Weapons `json:"weapon"`
+	Size   int          `json:"size"`
+	Armor  int          `json:"armor"`
+	Weapon base.Weapons `json:"weapon"`
 }
 
-func (a D10Extented) Value() (driver.Value, error) {
-	return json.Marshal(a)
-}
+// func (a D10Extented) Value() (driver.Value, error) {
+// 	return json.Marshal(a)
+// }
+
+// type Weapons map[string]Weapon
+
+// func (a Weapons) Value() (driver.Value, error) {
+// 	return json.Marshal(a)
+// }
+
+// func (a *Weapons) Scan(value interface{}) error {
+// 	var data []byte
+// 	if b, ok := value.([]byte); ok {
+// 		data = b
+// 	} else if s, ok := value.(string); ok {
+// 		data = []byte(s)
+// 	} else if value == nil {
+// 		return nil
+// 	} else if v, ok := value.(map[string]interface{}); ok {
+// 		data, _ = json.Marshal(v)
+// 	} else {
+// 		return fmt.Errorf("unable to convert %v to []byte", value)
+// 	}
+
+// 	return json.Unmarshal(data, &a)
+// }
 
 func (a *D10Extented) SetValues(values map[string]interface{}, convertInterfaceInt func(interface{}) int) {
 	if values == nil {
@@ -76,23 +119,13 @@ func (a *D10Extented) SetValues(values map[string]interface{}, convertInterfaceI
 	_ = a.Weapon.Scan(values["weapon"])
 }
 
-func (d D10Extented) String() string {
-	return fmt.Sprintf("Creature Extended: Health %d, Defense %d, WillPower %d, Initiative %d, Size %d, Weapons %v", d.Health, d.Defense, d.WillPower, d.Initiative, d.Size, d.Weapon)
-}
+// func (d D10Extented) String() string {
+// 	return fmt.Sprintf("Creature Extended: Health %d, Defense %d, WillPower %d, Initiative %d, Size %d, Weapons %v", d.Health, d.Defense, d.WillPower, d.Initiative, d.Size, d.Weapon)
+// }
 
-func (a *D10Extented) SetWeapon(name string, value int, description string) {
-	a.Weapon[name] = Weapon{
-		Name:        name,
-		Value:       value,
-		Description: description,
-	}
-}
+//
 
-func (a *D10Extented) SetArmor(v int) {
-	a.Armor = v
-}
-
-func (a D10Extented) GetValues() map[string]interface{} {
+func (a D10Extented) getValues() map[string]interface{} {
 	weapon := "weapon"
 	var weaponValue int
 	for _, v := range a.Weapon {
@@ -111,38 +144,9 @@ func (a D10Extented) GetValues() map[string]interface{} {
 	}
 }
 
-type Weapons map[string]Weapon
-
-func (a Weapons) Value() (driver.Value, error) {
-	return json.Marshal(a)
-}
-
-func (a *Weapons) Scan(value interface{}) error {
-	var data []byte
-	if b, ok := value.([]byte); ok {
-		data = b
-	} else if s, ok := value.(string); ok {
-		data = []byte(s)
-	} else if value == nil {
-		return nil
-	} else if v, ok := value.(map[string]interface{}); ok {
-		data, _ = json.Marshal(v)
-	} else {
-		return fmt.Errorf("unable to convert %v to []byte", value)
-	}
-
-	return json.Unmarshal(data, &a)
-}
-
-type Weapon struct {
-	Name        string `json:"name"`
-	Value       int    `json:"value"`
-	Description string `json:"description"`
-}
-
-func NewWithValuesExtended(resolve, composture, dexterity, wits int) D10Extented {
+func newWithValuesExtended(resolve, composture, dexterity, wits int) D10Extented {
 	size := 5
-	weapon := make(map[string]Weapon)
+	weapon := base.NewWeaponEmpty()
 	return D10Extented{
 		Health:     size + resolve,
 		WillPower:  resolve + composture,
@@ -153,9 +157,9 @@ func NewWithValuesExtended(resolve, composture, dexterity, wits int) D10Extented
 	}
 }
 
-func NewExtended() *D10Extented {
+func newExtended() *D10Extented {
 	return &D10Extented{
-		Weapon: make(map[string]Weapon),
+		Weapon: base.NewWeaponEmpty(),
 	}
 }
 
@@ -164,11 +168,4 @@ func lowerValue(a, b int) int {
 		return a
 	}
 	return b
-}
-
-func (d D10Extented) WeaponBonus(s string) (int, string, error) {
-	if value, ok := d.Weapon[s]; ok {
-		return value.Value, "", nil
-	}
-	return 0, "", nil
 }

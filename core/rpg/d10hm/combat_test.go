@@ -9,6 +9,7 @@ import (
 	"github.com/betorvs/playbypost/core/rpg"
 	"github.com/betorvs/playbypost/core/rpg/base"
 	"github.com/betorvs/playbypost/core/rules"
+	"github.com/betorvs/playbypost/core/sys/library"
 	"github.com/betorvs/playbypost/core/tests/mock"
 )
 
@@ -48,15 +49,16 @@ var (
 func TestCombatD10HM(t *testing.T) {
 	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
 	rpgSystem := rpg.LoadRPGSystemsDefault(rpg.D10HM)
-	rpgSystem.AppendAbilities("strength")
-	rpgSystem.AppendSkills("weaponry")
+	lib := library.New()
+	lib.AppendAbilities("strength")
+	lib.AppendSkills("weaponry")
 	dice := mock.NewRollMock("d10", rpg.D10HM)
 	person1 := New("test-combat-p1-d10hm-1", rpgSystem)
-	err := person1.AddAbility(base.Ability{Name: "strength", Value: 5})
+	err := person1.AddAbility(base.Ability{Name: "strength", Value: 5}, lib)
 	if err != nil {
 		t.Errorf("error add ability %v", err)
 	}
-	err = person1.AddSkill(base.Skill{Name: "weaponry", Value: 5, Base: "strength"})
+	err = person1.AddSkill(base.Skill{Name: "weaponry", Value: 5, Base: "strength"}, lib)
 	if err != nil {
 		t.Errorf("error add skill %v", err)
 	}
@@ -64,11 +66,11 @@ func TestCombatD10HM(t *testing.T) {
 	_ = json.Unmarshal(rawData1, &person1.D10Extented)
 	// person1.Extension = rpg.NewExtendedSystem(rpgSystem, extended)
 	evilperson1 := New("test-combat-ep1-d10hm-1", rpgSystem)
-	err = evilperson1.AddAbility(base.Ability{Name: "strength", Value: 5})
+	err = evilperson1.AddAbility(base.Ability{Name: "strength", Value: 5}, lib)
 	if err != nil {
 		t.Errorf("error add ability %v", err)
 	}
-	err = evilperson1.AddSkill(base.Skill{Name: "weaponry", Value: 5, Base: "strength"})
+	err = evilperson1.AddSkill(base.Skill{Name: "weaponry", Value: 5, Base: "strength"}, lib)
 	if err != nil {
 		t.Errorf("error add skill %v", err)
 	}

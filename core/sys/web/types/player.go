@@ -8,7 +8,9 @@ import (
 	"github.com/betorvs/playbypost/core/rpg"
 	"github.com/betorvs/playbypost/core/rpg/base"
 	"github.com/betorvs/playbypost/core/rpg/d10hm"
+	"github.com/betorvs/playbypost/core/rpg/pfd20"
 	"github.com/betorvs/playbypost/core/rules"
+	"github.com/betorvs/playbypost/core/sys/library"
 )
 
 type GeneratePlayer struct {
@@ -80,7 +82,7 @@ func CreatureToPlayer(p *Players, c *base.Creature) {
 	}
 }
 
-func PlayerToCreature(p *Players, c *base.Creature) rules.RolePlaying {
+func PlayerToCreature(p *Players, c *base.Creature, lib *library.Library) rules.RolePlaying {
 	for k, v := range p.Abilities {
 		c.Abilities[k] = base.Ability{
 			Name:  k,
@@ -96,7 +98,7 @@ func PlayerToCreature(p *Players, c *base.Creature) rules.RolePlaying {
 			c.Skills[k] = base.Skill{
 				Name:  k,
 				Value: v,
-				Base:  c.RPG.GetSkillBase(k),
+				Base:  lib.GetSkillBase(k),
 			}
 		}
 	}
@@ -109,10 +111,13 @@ func PlayerToCreature(p *Players, c *base.Creature) rules.RolePlaying {
 	return nil
 }
 
-func GenerateRandomPlayer(name string, rpgSystem *rpg.RPGSystem) (rules.RolePlaying, error) {
+func GenerateRandomPlayer(name string, rpgSystem *rpg.RPGSystem, lib *library.Library) (rules.RolePlaying, error) {
 	switch rpgSystem.Name {
 	case rpg.D10HM:
-		character, err := d10hm.GenD10Random(name, rpgSystem)
+		character, err := d10hm.GenD10Random(name, rpgSystem, lib)
+		return character, err
+	case rpg.PFD20:
+		character, err := pfd20.GenPFD20Random(name, rpgSystem, lib)
 		return character, err
 	}
 	return nil, nil

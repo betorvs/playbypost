@@ -6,7 +6,7 @@ func (c *StorytellingCharacter) Attack(kind, weapon string) int {
 	case "weaponry":
 		strenght := c.Abilities["strenght"].Value
 		weaponry := c.Skills["weaponry"].Value
-		weaponValue, _, _ := c.WeaponBonus(weapon)
+		weaponValue, _ := c.weaponBonus(weapon)
 		return strenght + weaponry + weaponValue
 	}
 	return 0

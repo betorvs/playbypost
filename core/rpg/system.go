@@ -2,12 +2,6 @@ package rpg
 
 import (
 	"fmt"
-	"log/slog"
-	"os"
-	"slices"
-	"strings"
-
-	"github.com/betorvs/playbypost/core/sys/definitions"
 )
 
 const (
@@ -67,9 +61,9 @@ type RPGSystem struct {
 	AbilityRank       RankingSystem
 	SkillRank         RankingSystem
 	DamageCalculation Measurement
-	Ability           AbilityDescription
-	Skill             SkillDescription
-	RestrictiveTasks  bool
+	// Ability           AbilityDescription
+	// Skill             SkillDescription
+	RestrictiveTasks bool
 }
 
 type AbilityDescription struct {
@@ -93,17 +87,17 @@ func (r *RPGSystem) String() string {
 }
 
 func LoadRPGSystemsDefault(k string) *RPGSystem {
-	a := AbilityDescription{
-		Grouped: make(map[string][]string),
-		List:    []string{},
-		Tags:    make(map[string][]string),
-	}
-	s := SkillDescription{
-		List:      []string{},
-		SkillBase: make(map[string]string),
-		Grouped:   make(map[string][]string),
-		Tags:      make(map[string][]string),
-	}
+	// a := AbilityDescription{
+	// 	Grouped: make(map[string][]string),
+	// 	List:    []string{},
+	// 	Tags:    make(map[string][]string),
+	// }
+	// s := SkillDescription{
+	// 	List:      []string{},
+	// 	SkillBase: make(map[string]string),
+	// 	Grouped:   make(map[string][]string),
+	// 	Tags:      make(map[string][]string),
+	// }
 	d20 := &RPGSystem{
 		Name:              D2035,
 		BaseSystem:        D20,
@@ -111,8 +105,8 @@ func LoadRPGSystemsDefault(k string) *RPGSystem {
 		SuccessRule:       GreaterThan,
 		SkillRank:         SkillRanks,
 		DamageCalculation: Sum,
-		Ability:           a,
-		Skill:             s,
+		// Ability:           a,
+		// Skill:             s,
 	}
 	switch k {
 	case AutoPlay:
@@ -130,8 +124,8 @@ func LoadRPGSystemsDefault(k string) *RPGSystem {
 			AbilityRank:       OnePerOne,
 			SkillRank:         OnePerOne,
 			DamageCalculation: FromResult,
-			Ability:           a,
-			Skill:             s,
+			// Ability:           a,
+			// Skill:             s,
 		}
 	case PFD20:
 		return &RPGSystem{
@@ -141,8 +135,8 @@ func LoadRPGSystemsDefault(k string) *RPGSystem {
 			SuccessRule:       GreaterThan,
 			SkillRank:         ProficiencyRankAndLevel,
 			DamageCalculation: Sum,
-			Ability:           a,
-			Skill:             s,
+			// Ability:           a,
+			// Skill:             s,
 		}
 	case D2035:
 		return d20
@@ -151,44 +145,44 @@ func LoadRPGSystemsDefault(k string) *RPGSystem {
 	}
 }
 
-func (r *RPGSystem) AppendSkills(s string) {
-	r.Skill.List = append(r.Skill.List, strings.ToLower(s))
-}
+// func (r *RPGSystem) AppendSkills(s string) {
+// 	r.Skill.List = append(r.Skill.List, strings.ToLower(s))
+// }
 
-func (r *RPGSystem) AppendAbilities(s string) {
-	r.Ability.List = append(r.Ability.List, strings.ToLower(s))
-}
+// func (r *RPGSystem) AppendAbilities(s string) {
+// 	r.Ability.List = append(r.Ability.List, strings.ToLower(s))
+// }
 
-func (r *RPGSystem) AppendSkillBase(skillName, abilityName string) {
-	r.Skill.SkillBase[strings.ToLower(skillName)] = strings.ToLower(abilityName)
-}
+// func (r *RPGSystem) AppendSkillBase(skillName, abilityName string) {
+// 	r.Skill.SkillBase[strings.ToLower(skillName)] = strings.ToLower(abilityName)
+// }
 
-func (r *RPGSystem) AppendAbilityPerGroup(group, ability string) {
-	r.Ability.Grouped[strings.ToLower(group)] = append(r.Ability.Grouped[strings.ToLower(group)], strings.ToLower(ability))
-}
+// func (r *RPGSystem) AppendAbilityPerGroup(group, ability string) {
+// 	r.Ability.Grouped[strings.ToLower(group)] = append(r.Ability.Grouped[strings.ToLower(group)], strings.ToLower(ability))
+// }
 
-func (r *RPGSystem) AppendAbilityTags(ability string, tags []string) {
-	for _, v := range tags {
-		r.Ability.Tags[strings.ToLower(ability)] = append(r.Ability.Tags[strings.ToLower(ability)], strings.ToLower(v))
-	}
-}
+// func (r *RPGSystem) AppendAbilityTags(ability string, tags []string) {
+// 	for _, v := range tags {
+// 		r.Ability.Tags[strings.ToLower(ability)] = append(r.Ability.Tags[strings.ToLower(ability)], strings.ToLower(v))
+// 	}
+// }
 
-func (r *RPGSystem) AppendSkillPerGroup(group, skill string) {
-	r.Skill.Grouped[strings.ToLower(group)] = append(r.Skill.Grouped[strings.ToLower(group)], strings.ToLower(skill))
-}
+// func (r *RPGSystem) AppendSkillPerGroup(group, skill string) {
+// 	r.Skill.Grouped[strings.ToLower(group)] = append(r.Skill.Grouped[strings.ToLower(group)], strings.ToLower(skill))
+// }
 
-func (r *RPGSystem) AppendSkillTags(skill string, tags []string) {
-	for _, v := range tags {
-		r.Skill.Tags[strings.ToLower(skill)] = append(r.Skill.Tags[strings.ToLower(skill)], strings.ToLower(v))
-	}
-}
+// func (r *RPGSystem) AppendSkillTags(skill string, tags []string) {
+// 	for _, v := range tags {
+// 		r.Skill.Tags[strings.ToLower(skill)] = append(r.Skill.Tags[strings.ToLower(skill)], strings.ToLower(v))
+// 	}
+// }
 
-func (r *RPGSystem) GetSkillBase(skillName string) string {
-	if s, ok := r.Skill.SkillBase[skillName]; ok {
-		return s
-	}
-	return ""
-}
+// func (r *RPGSystem) GetSkillBase(skillName string) string {
+// 	if s, ok := r.Skill.SkillBase[skillName]; ok {
+// 		return s
+// 	}
+// 	return ""
+// }
 
 func (r *RPGSystem) InitiativeDice() string {
 	switch r.Name {
@@ -200,36 +194,36 @@ func (r *RPGSystem) InitiativeDice() string {
 	return r.BaseDice
 }
 
-func (r *RPGSystem) InitDefinitions(f string, logger *slog.Logger) {
-	content, err := definitions.LoadFromFile(f)
-	if err != nil {
-		logger.Error("error from definitions", "error", err.Error())
-		os.Exit(2)
-	}
-	// fmt.Printf("content: %#v\n", content)
-	for _, v := range content {
-		// fmt.Printf("%s: %v \n", v.Name, v.Kind)
-		if v.Kind == definitions.AbilityKind {
-			r.AppendAbilities(v.Name)
-			if v.Group != "" {
-				r.AppendAbilityPerGroup(v.Group, v.Name)
-			}
-			if len(v.Tags) != 0 {
-				r.AppendAbilityTags(v.Name, v.Tags)
-			}
-		}
-		if v.Kind == definitions.SkillKind {
-			r.AppendSkills(v.Name)
-			if slices.Contains(r.Ability.List, v.Base) {
-				r.AppendSkillBase(v.Name, v.Base)
-			}
-			if v.Group != "" {
-				r.AppendSkillPerGroup(v.Group, v.Name)
-			}
-			if len(v.Tags) != 0 {
-				r.AppendSkillTags(v.Name, v.Tags)
-			}
-		}
+// func (r *RPGSystem) InitDefinitions(f string, logger *slog.Logger) {
+// 	content, err := definitions.LoadFromFile(f)
+// 	if err != nil {
+// 		logger.Error("error from definitions", "error", err.Error())
+// 		os.Exit(2)
+// 	}
+// 	// fmt.Printf("content: %#v\n", content)
+// 	for _, v := range content {
+// 		// fmt.Printf("%s: %v \n", v.Name, v.Kind)
+// 		if v.Kind == definitions.AbilityKind {
+// 			r.AppendAbilities(v.Name)
+// 			if v.Group != "" {
+// 				r.AppendAbilityPerGroup(v.Group, v.Name)
+// 			}
+// 			if len(v.Tags) != 0 {
+// 				r.AppendAbilityTags(v.Name, v.Tags)
+// 			}
+// 		}
+// 		if v.Kind == definitions.SkillKind {
+// 			r.AppendSkills(v.Name)
+// 			if slices.Contains(r.Ability.List, v.Base) {
+// 				r.AppendSkillBase(v.Name, v.Base)
+// 			}
+// 			if v.Group != "" {
+// 				r.AppendSkillPerGroup(v.Group, v.Name)
+// 			}
+// 			if len(v.Tags) != 0 {
+// 				r.AppendSkillTags(v.Name, v.Tags)
+// 			}
+// 		}
 
-	}
-}
+// 	}
+// }

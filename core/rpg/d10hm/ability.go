@@ -9,11 +9,12 @@ import (
 	"github.com/betorvs/playbypost/core/rpg"
 	"github.com/betorvs/playbypost/core/rpg/base"
 	"github.com/betorvs/playbypost/core/rules"
+	"github.com/betorvs/playbypost/core/sys/library"
 )
 
-func (c *StorytellingCharacter) AbilityCheck(d rpg.RollInterface, check rules.Check, logger *slog.Logger) (rules.Result, error) {
+func (c *StorytellingCharacter) AbilityCheck(d rpg.RollInterface, check rules.Check, logger *slog.Logger, lib *library.Library) (rules.Result, error) {
 	response := rules.Result{}
-	if !slices.Contains(c.RPG.Ability.List, c.Abilities[check.Ability].Name) {
+	if !slices.Contains(lib.Ability.List, c.Abilities[check.Ability].Name) {
 		return response, errors.New(base.AbilityInvalid)
 	}
 	diceName := fmt.Sprintf("check-ability-%s-%s", check.Ability, c.Name())

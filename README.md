@@ -21,3 +21,4 @@
 ## References
 
 [bot image source](https://www.freepik.com/free-vector/floating-robot_82654546.htm#fromView=search&page=1&position=13&uuid=44c37a73-28a9-4b70-8d0d-711903439bc1)
+[icon source](https://www.svgrepo.com/svg/360948/write-f)

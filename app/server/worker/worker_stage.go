@@ -399,7 +399,7 @@ func (a *WorkerAPI) parseCommand(cmd types.Activity) error {
 		a.logger.Info("rpg system", "rpg", a.rpg.BaseSystem)
 		creature := base.RestoreCreature()
 		creature.RPG = a.rpg
-		character := types.PlayerToCreature(&player, creature)
+		character := types.PlayerToCreature(&player, creature, a.lib)
 		a.logger.Info("creature found", "creature", creature)
 		// get task
 		taskID, err := strconv.Atoi(cmd.Actions["task_id"])
@@ -462,7 +462,7 @@ func (a *WorkerAPI) executeTask(task types.Task, creature rules.RolePlaying) (ru
 		if task.Ability != "" {
 			check.Override = task.Ability
 		}
-		res, err := creature.SkillCheck(&a.dice, check, a.logger)
+		res, err := creature.SkillCheck(&a.dice, check, a.logger, a.lib)
 		if err != nil {
 			a.logger.Error("creature error skill check", "error", err.Error())
 			return result, err

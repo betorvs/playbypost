@@ -1,4 +1,4 @@
-package d10hm
+package pfd20
 
 import (
 	"errors"
@@ -12,7 +12,7 @@ import (
 	"github.com/betorvs/playbypost/core/sys/library"
 )
 
-func (c *StorytellingCharacter) SkillCheck(d rpg.RollInterface, check rules.Check, logger *slog.Logger, lib *library.Library) (rules.Result, error) {
+func (c *PathfinderCharacter) SkillCheck(d rpg.RollInterface, check rules.Check, logger *slog.Logger, lib *library.Library) (rules.Result, error) {
 	response := rules.Result{}
 	if !slices.Contains(lib.Skill.List, c.Skills[check.Skill].Name) {
 		return response, errors.New(base.SkillInvalid)
@@ -23,20 +23,25 @@ func (c *StorytellingCharacter) SkillCheck(d rpg.RollInterface, check rules.Chec
 	}
 	diceName := fmt.Sprintf("check-skill-%s-%s", check.Skill, c.Name())
 	switch c.RPG.SuccessRule {
-
-	case rpg.CountResults:
-		abilityBonus := c.Abilities[abilityBase].Value
-		calcDices := d.FormatDice(c.Skills[check.Skill].Value+abilityBonus, 0)
-		result, err := d.FreeRoll(diceName, calcDices)
+	case rpg.GreaterThan:
+		result, err := d.Check(diceName)
 		if err != nil {
 			return response, err
 		}
-		logger.Info("dice result", "result", result, "rolled", result.Rolled)
-		response.Success = result.Result >= check.Target
+		bonus := c.calcSkillModifier(check.Skill)
+		logger.Info("dice result", "result", result.Result+bonus, "rolled", result.Rolled)
+		abilityBonus := c.calcAbilityModifier(abilityBase)
+		response.Success = result.Result+abilityBonus >= check.Target
 		response.Description = result.Description
-		response.Result = result.Result
-		response.Rolled = result.Rolled
-
+		response.Result = result.Result + abilityBonus
 	}
 	return response, nil
+}
+
+func (c *PathfinderCharacter) calcSkillModifier(skill string) int {
+	v, ok := c.Proficiency[skill]
+	if !ok {
+		return 0
+	}
+	return proficiencyRank(v.Level, c.Level)
 }

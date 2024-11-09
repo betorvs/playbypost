@@ -18,6 +18,7 @@ import (
 	v1 "github.com/betorvs/playbypost/app/server/handlers/v1"
 	"github.com/betorvs/playbypost/core/rpg"
 	"github.com/betorvs/playbypost/core/sys/db"
+	"github.com/betorvs/playbypost/core/sys/library"
 	"github.com/betorvs/playbypost/core/sys/scheduler"
 	"github.com/betorvs/playbypost/core/sys/web/cli"
 	"github.com/betorvs/playbypost/core/sys/web/server"
@@ -44,7 +45,7 @@ func main() {
 	db := db.NewDB(conn, logger)
 	defer db.Close()
 	// rpg loading
-	rpgFlag := flag.String("rpg", rpg.D10HM, fmt.Sprintf("-rpg [%s|%s]", rpg.D10HM, rpg.D2035))
+	rpgFlag := flag.String("rpg", rpg.D10HM, fmt.Sprintf("-rpg [%s|%s]", rpg.D10HM, rpg.PFD20))
 	stageWorker := flag.Bool("stage-worker", false, "-stage-worker")
 	autoPlayWorker := flag.Bool("autoplay-worker", false, "-autoplay-worker")
 	flag.Parse()
@@ -52,7 +53,11 @@ func main() {
 	d := rpg.Roll{
 		RPGSystem: rpgSystem,
 	}
-	logger.Info("rpg system loaded", "system", rpgSystem, "ability", rpgSystem.Ability, "skill", rpgSystem.Skill)
+	logger.Info("rpg system loaded", "system", rpgSystem)
+	// creating library
+	lib := library.New()
+	lib.ImportRPGLibrary(rpgSystem.Name, logger, utils.LoadLibraryFiles())
+	logger.Info("library loaded", "library", lib)
 	// creating a random token for admin user
 	adminToken := utils.RandomString(12)
 
@@ -62,7 +67,7 @@ func main() {
 	srv.Register("GET /health", srv.GetHealth)
 
 	client := cli.NewHeaders("http://localhost:8091", adminUser, adminToken)
-	app := v1.NewMainApi(adminUser, ctx, d, db, logger, srv, client, rpgSystem)
+	app := v1.NewMainApi(adminUser, ctx, d, db, logger, srv, client, rpgSystem, lib)
 
 	srv.RegisterStatic()
 
@@ -227,11 +232,9 @@ func loadRPG(k string, logger *slog.Logger) *rpg.RPGSystem {
 	switch k {
 	case rpg.D10HM:
 		rpgSystem = *rpg.LoadRPGSystemsDefault(rpg.D10HM)
-		rpgSystem.InitDefinitions("./library/definitions-d10HM.json", logger)
 
-	case rpg.D2035:
-		rpgSystem = *rpg.LoadRPGSystemsDefault(rpg.D2035)
-		rpgSystem.InitDefinitions("./library/definitions-d20.json", logger)
+	case rpg.PFD20:
+		rpgSystem = *rpg.LoadRPGSystemsDefault(rpg.PFD20)
 
 	}
 	return &rpgSystem

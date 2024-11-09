@@ -1,45 +1,113 @@
 package pfd20
 
+import (
+	"fmt"
+
+	"github.com/betorvs/playbypost/core/rpg"
+	"github.com/betorvs/playbypost/core/rpg/base"
+)
+
 // System is the Pathfinder 2.0 system
 // https://pf2.d20pfsrd.com/
 
-type PFExtended struct {
-	Ancestry    Ancestry
-	Background  Background
-	Class       Class
-	HitPoints   int
-	Proficiency map[string]Proficiency
+type PathfinderCharacter struct {
+	base.Creature
+	PFExtended
 }
 
-func NewPFExtended() *PFExtended {
+func New(n string, r *rpg.RPGSystem) *PathfinderCharacter {
+	return &PathfinderCharacter{
+		Creature:   *base.NewCreature(n, r),
+		PFExtended: *newPFExtended(),
+	}
+}
+
+func (c *PathfinderCharacter) Name() string {
+	return c.Creature.Name
+}
+
+func (c *PathfinderCharacter) SetName(n string) error {
+	if n == "" {
+		return fmt.Errorf("name is empty")
+	}
+	c.Creature.Name = n
+	return nil
+}
+
+func (c *PathfinderCharacter) RPGSystem() *rpg.RPGSystem {
+	return c.Creature.RPG
+}
+
+func (c *PathfinderCharacter) Damage(v int) error {
+	c.HitPoints = c.HitPoints - v
+	return nil
+}
+
+func (c *PathfinderCharacter) HealthStatus() int {
+	return c.HitPoints
+}
+
+func (c *PathfinderCharacter) InitiativeBonus() (int, error) {
+	p := proficiencyRank(c.Proficiency[Perception].Level, c.Level)
+	s := c.calcAbilityModifier(Wisdom)
+	return p + s, nil
+}
+
+func (c *PathfinderCharacter) SetWeapon(name, kind string, value int, description string) {
+	c.PFExtended.Weapon.SetWeapon(name, kind, value, description)
+}
+
+func (c *PathfinderCharacter) SetArmor(v int) {
+	c.PFExtended.ArmorClassBonus = v
+}
+
+type PFExtended struct {
+	Ancestry        string
+	Background      string
+	Class           string
+	HitPoints       int
+	ArmorClassBonus int
+	Level           int
+	Proficiency     map[string]Proficiency
+	Weapon          base.Weapons
+}
+
+type Proficiency struct {
+	On     string `json:"on"`
+	Level  string `json:"level"`
+	Source string `json:"source"`
+}
+
+func newPFExtended() *PFExtended {
 	return &PFExtended{}
 }
 
-func (p PFExtended) SkillBonus(s string) (int, error) {
-	return 0, nil
-}
-
-func (p PFExtended) InitiativeBonus() (int, error) {
-	return 0, nil
-}
-
-func (p PFExtended) AttackBonus(s string) (int, error) {
-	return 0, nil
+func (p PFExtended) getValues() map[string]interface{} {
+	return map[string]interface{}{
+		"ancestry":    p.Ancestry,
+		"background":  p.Background,
+		"class":       p.Class,
+		"hit_points":  p.HitPoints,
+		"armor_class": p.ArmorClassBonus,
+		"level":       p.Level,
+		"proficiency": p.Proficiency,
+		"weapon":      p.Weapon,
+	}
 }
 
 func (p PFExtended) DefenseBonus(s string) (int, error) {
 	switch s {
 	case Fortitude:
-		p := ProficiencyRank(p.Proficiency["fortitude"].Level, p.Class.Level)
+		p := proficiencyRank(p.Proficiency[Fortitude].Level, p.Level)
 		return p, nil
 	case Reflex:
-		p := ProficiencyRank(p.Proficiency["reflex"].Level, p.Class.Level)
+		p := proficiencyRank(p.Proficiency[Reflex].Level, p.Level)
 		return p, nil
 	case Will:
-		p := ProficiencyRank(p.Proficiency["will"].Level, p.Class.Level)
+		p := proficiencyRank(p.Proficiency[Will].Level, p.Level)
 		return p, nil
 	case ArmorClass:
-		p := ProficiencyRank(p.Proficiency["armor_class"].Level, p.Class.Level)
+		p := proficiencyRank(p.Proficiency[ArmorClass].Level, p.Level)
 		return p, nil
 	}
 	return 0, nil
@@ -47,91 +115,6 @@ func (p PFExtended) DefenseBonus(s string) (int, error) {
 
 func (p PFExtended) WeaponBonus(s string) (int, string, error) {
 	return 0, "", nil
-}
-
-func (p PFExtended) Damage(v int) error {
-	return nil
-}
-
-func (p PFExtended) HealthStatus() int {
-	return 0
-}
-
-func (p PFExtended) SetWeapon(name string, value int, description string) {
-}
-
-func (p PFExtended) SetArmor(v int) {
-}
-
-func (p PFExtended) GetValues() map[string]interface{} {
-	return nil
-}
-
-func (p PFExtended) String() string {
-	return ""
-}
-
-// ancestries
-// hit points size speed languages abilities boosts flaws traits
-// example: human 8 ; medium ; 25 ; common ; 2 abilities
-type Ancestry struct {
-	Name            string   `json:"name"`
-	StartHitPoints  int      `json:"start_hit_points"`
-	Size            string   `json:"size"`
-	Speed           int      `json:"speed"`
-	Languages       []string `json:"languages"`
-	LanguagesBonus  int      `json:"languages_bonus"` // number of languages you can learn + Intelligence modifier
-	AbilitiesBoosts []Boosts `json:"abilities_boosts"`
-	Flaws           []Boosts `json:"flaws"`
-	Traits          []string `json:"traits"`
-}
-
-type Boosts struct {
-	Ability string `json:"ability"`
-	OR      string `json:"or,omitempty"`
-	AND     string `json:"and,omitempty"`
-	Source  string `json:"source"`
-}
-
-// backgrounds
-// ability boosts, skill training, skill feat
-// example: warrior ; 2 abilities ; 2 skills ; 1 feat
-type Background struct {
-	Name            string   `json:"name"`
-	AbilitiesBoosts []Boosts `json:"abilities_boosts"`
-	SkillTraining   []string `json:"skill_training"`
-	SkillFeat       []string `json:"skill_feat"`
-}
-
-// classes
-// ability boosts, hit points, key ability, initial proficiencies, proficiencies, skills, feats, equipment, spells
-// - skills
-// - feats
-// - spells
-type Class struct {
-	Name              string        `json:"name"`
-	Level             int           `json:"level"`
-	AbilitiesBoosts   []Boosts      `json:"abilities_boosts"`
-	HitPointsPerLevel int           `json:"hit_points_per_level"`
-	Proficiencies     []Proficiency `json:"proficiencies"`
-	FreeSkills        int           `json:"free_skills"` // number of free skills you can choose plus Intelligence modifier
-	Features          []Features    `json:"features"`
-	HasSpell          bool          `json:"has_spell"`
-	SpellsPerDay      map[int]int   `json:"spells_per_day"` // level and number of spells
-}
-
-type Features struct {
-	Name        string `json:"name"`
-	Kind        string `json:"kind"`
-	Level       int    `json:"level"`
-	Description string `json:"description"`
-}
-
-type Proficiency struct {
-	On     string `json:"on"`
-	Or     string `json:"or,omitempty"`
-	Level  string `json:"level"`
-	Source string `json:"source"`
 }
 
 // equipment
@@ -145,7 +128,7 @@ const (
 )
 
 // Proficiency is the level of proficiency + your level
-func ProficiencyRank(rank string, level int) int {
+func proficiencyRank(rank string, level int) int {
 	switch rank {
 	case ProficiencyUntrained:
 		return 0

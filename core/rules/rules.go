@@ -6,6 +6,7 @@ import (
 
 	"github.com/betorvs/playbypost/core/rpg"
 	"github.com/betorvs/playbypost/core/rpg/base"
+	"github.com/betorvs/playbypost/core/sys/library"
 )
 
 type RolePlaying interface {
@@ -16,8 +17,8 @@ type RolePlaying interface {
 	IsDead() bool
 	Save(ctx context.Context, id, sID int, save func(ctx context.Context, id, sID int, creature *base.Creature, extension map[string]interface{}) (int, error)) (int, error)
 	Update(ctx context.Context, id int, update func(ctx context.Context, id int, creature *base.Creature, extension map[string]interface{}, destroyed bool) error) error
-	SkillCheck(d rpg.RollInterface, check Check, logger *slog.Logger) (Result, error)
-	AbilityCheck(d rpg.RollInterface, check Check, logger *slog.Logger) (Result, error)
+	SkillCheck(d rpg.RollInterface, check Check, logger *slog.Logger, lib *library.Library) (Result, error)
+	AbilityCheck(d rpg.RollInterface, check Check, logger *slog.Logger, lib *library.Library) (Result, error)
 	HealthStatus() int
 	Damage(v int) error
 	Name() string

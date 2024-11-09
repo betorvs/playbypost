@@ -7,13 +7,14 @@ import (
 
 	"github.com/betorvs/playbypost/core/rpg"
 	"github.com/betorvs/playbypost/core/rpg/base"
+	"github.com/betorvs/playbypost/core/sys/library"
 )
 
 // func (c *StorytellingCharacter) GenRandom(name string, rpgSystem *rpg.RPGSystem) (rules.RolePlaying, error) {
 // 	return GenD10Random(name, rpgSystem)
 // }
 
-func GenD10Random(n string, rpgSystem *rpg.RPGSystem) (*StorytellingCharacter, error) {
+func GenD10Random(n string, rpgSystem *rpg.RPGSystem, lib *library.Library) (*StorytellingCharacter, error) {
 	physical := "physical"
 	mental := "mental"
 	social := "social"
@@ -23,12 +24,12 @@ func GenD10Random(n string, rpgSystem *rpg.RPGSystem) (*StorytellingCharacter, e
 		a := []int{2, 3, 3}
 
 		rand.Shuffle(len(a), func(i, j int) { a[i], a[j] = a[j], a[i] })
-		for k, v := range rpgSystem.Ability.Grouped[physical] {
+		for k, v := range lib.Ability.Grouped[physical] {
 			ability := base.Ability{
 				Name:  v,
 				Value: a[k],
 			}
-			err := person1.AddAbility(ability)
+			err := person1.AddAbility(ability, lib)
 			if err != nil {
 				return person1, err
 			}
@@ -38,12 +39,12 @@ func GenD10Random(n string, rpgSystem *rpg.RPGSystem) (*StorytellingCharacter, e
 		a := []int{2, 2, 3}
 		rand.Shuffle(len(a), func(i, j int) { a[i], a[j] = a[j], a[i] })
 
-		for k, v := range rpgSystem.Ability.Grouped[mental] {
+		for k, v := range lib.Ability.Grouped[mental] {
 			ability := base.Ability{
 				Name:  v,
 				Value: a[k],
 			}
-			err := person1.AddAbility(ability)
+			err := person1.AddAbility(ability, lib)
 			if err != nil {
 				return person1, err
 			}
@@ -53,12 +54,12 @@ func GenD10Random(n string, rpgSystem *rpg.RPGSystem) (*StorytellingCharacter, e
 		a := []int{2, 2, 2}
 		rand.Shuffle(len(a), func(i, j int) { a[i], a[j] = a[j], a[i] })
 
-		for k, v := range rpgSystem.Ability.Grouped[social] {
+		for k, v := range lib.Ability.Grouped[social] {
 			ability := base.Ability{
 				Name:  v,
 				Value: a[k],
 			}
-			err := person1.AddAbility(ability)
+			err := person1.AddAbility(ability, lib)
 			if err != nil {
 				return person1, err
 			}
@@ -68,14 +69,14 @@ func GenD10Random(n string, rpgSystem *rpg.RPGSystem) (*StorytellingCharacter, e
 		b := []int{3, 3, 2, 2, 1}
 		rand.Shuffle(len(b), func(i, j int) { b[i], b[j] = b[j], b[i] })
 		count := 0
-		for _, v := range rpgSystem.Skill.Grouped[physical] {
-			if slices.Contains(rpgSystem.Skill.Tags[v], "auto-gen") {
+		for _, v := range lib.Skill.Grouped[physical] {
+			if slices.Contains(lib.Skill.Tags[v], "auto-gen") {
 				s := base.Skill{
 					Name:  v,
 					Value: b[count],
-					Base:  rpgSystem.GetSkillBase(v),
+					Base:  lib.GetSkillBase(v),
 				}
-				err := person1.AddSkill(s)
+				err := person1.AddSkill(s, lib)
 				if err != nil {
 					return person1, err
 				}
@@ -88,14 +89,14 @@ func GenD10Random(n string, rpgSystem *rpg.RPGSystem) (*StorytellingCharacter, e
 		b := []int{3, 2, 2}
 		rand.Shuffle(len(b), func(i, j int) { b[i], b[j] = b[j], b[i] })
 		count := 0
-		for _, v := range rpgSystem.Skill.Grouped[social] {
-			if slices.Contains(rpgSystem.Skill.Tags[v], "auto-gen") {
+		for _, v := range lib.Skill.Grouped[social] {
+			if slices.Contains(lib.Skill.Tags[v], "auto-gen") {
 				s := base.Skill{
 					Name:  v,
 					Value: b[count],
-					Base:  rpgSystem.GetSkillBase(v),
+					Base:  lib.GetSkillBase(v),
 				}
-				err := person1.AddSkill(s)
+				err := person1.AddSkill(s, lib)
 				if err != nil {
 					return person1, err
 				}
@@ -108,14 +109,14 @@ func GenD10Random(n string, rpgSystem *rpg.RPGSystem) (*StorytellingCharacter, e
 	{
 		b := []int{2, 2}
 		count := 0
-		for _, v := range rpgSystem.Skill.Grouped[mental] {
-			if slices.Contains(rpgSystem.Skill.Tags[v], "auto-gen") {
+		for _, v := range lib.Skill.Grouped[mental] {
+			if slices.Contains(lib.Skill.Tags[v], "auto-gen") {
 				s := base.Skill{
 					Name:  v,
 					Value: b[count],
-					Base:  rpgSystem.GetSkillBase(v),
+					Base:  lib.GetSkillBase(v),
 				}
-				err := person1.AddSkill(s)
+				err := person1.AddSkill(s, lib)
 				if err != nil {
 					return person1, err
 				}
@@ -130,13 +131,14 @@ func GenD10Random(n string, rpgSystem *rpg.RPGSystem) (*StorytellingCharacter, e
 		composture := person1.Abilities["composture"].Value
 		dexterity := person1.Abilities["dexterity"].Value
 		wits := person1.Abilities["wits"].Value
-		d10hmExtended := NewWithValuesExtended(resolve, composture, dexterity, wits)
+		d10hmExtended := newWithValuesExtended(resolve, composture, dexterity, wits)
 		// longsword := weapons[0]
-		d10hmExtended.Weapon["longsword"] = Weapon{
-			Name:        "longsword",
-			Value:       3,
-			Description: "a longsword",
-		}
+		d10hmExtended.Weapon.SetWeapon("longsword", "melee", 3, "a longsword")
+		// d10hmExtended.Weapon["longsword"] = Weapon{
+		// 	Name:        "longsword",
+		// 	Value:       3,
+		// 	Description: "a longsword",
+		// }
 		person1.D10Extented = d10hmExtended
 	}
 

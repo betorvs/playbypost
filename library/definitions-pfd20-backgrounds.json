@@ -18,6 +18,6 @@
             "Intimidation",
             "Warfare Lore"
         ],
-        "skill_feat": "Intimidating Glare"
+        "skill_feat": ["Intimidating Glare"]
     }
 ]
