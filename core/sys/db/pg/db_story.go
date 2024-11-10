@@ -224,6 +224,46 @@ func (db *DBX) DeleteStoryByID(ctx context.Context, id int) error {
 		db.Logger.Error("found encounters", "story_id", id)
 		return fmt.Errorf("found encounters with this story")
 	}
+	// select story_keys_id
+	query := "SELECT a.id, k.id FROM access_story_keys AS a JOIN story_keys AS k ON k.id = a.story_keys_id WHERE k.story_id = $1" // dev:finder+query
+	rows, err := tx.QueryContext(ctx, query, id)
+	if err != nil {
+		db.Logger.Error("query on access_story_keys failed", "error", err.Error())
+		return err
+	}
+	defer rows.Close()
+	var accessStoryID, storyKeyID int
+	for rows.Next() {
+		if err := rows.Scan(&accessStoryID, &storyKeyID); err != nil {
+			db.Logger.Error("scan error on access_story_keys", "error", err.Error())
+		}
+	}
+	// delete access_story_keys
+	queryAccess := "DELETE FROM access_story_keys WHERE id = $1" // dev:finder+query
+	stmtAccessStoryKeys, err := db.Conn.PrepareContext(ctx, queryAccess)
+	if err != nil {
+		db.Logger.Error("tx prepare on access_story_keys failed", "error", err.Error())
+		return err
+	}
+	defer stmtAccessStoryKeys.Close()
+	_, err = tx.StmtContext(ctx, stmtAccessStoryKeys).ExecContext(ctx, accessStoryID)
+	if err != nil {
+		db.Logger.Error("exec on access_story_keys failed", "error", err.Error())
+		return err
+	}
+	// delete story_keys
+	queryKey := "DELETE FROM story_keys WHERE id = $1" // dev:finder+query
+	stmtStoryKeys, err := db.Conn.PrepareContext(ctx, queryKey)
+	if err != nil {
+		db.Logger.Error("tx prepare on story_keys failed", "error", err.Error())
+		return err
+	}
+	defer stmtStoryKeys.Close()
+	_, err = tx.StmtContext(ctx, stmtStoryKeys).ExecContext(ctx, storyKeyID)
+	if err != nil {
+		db.Logger.Error("exec on story_keys failed", "error", err.Error())
+		return err
+	}
 	// delete story
 	queryStory := "DELETE FROM story WHERE id = $1" // dev:finder+query
 	stmtStory, err := db.Conn.PrepareContext(ctx, queryStory)
