@@ -9,6 +9,7 @@ import Validator from "../types/validator";
 import { FetchValidatorByIDKind } from "../functions/Validator";
 import { Button } from "react-bootstrap";
 import GetUserID from "../context/GetUserID";
+import { useNavigate } from "react-router-dom";
 
 interface props {
     id: string;
@@ -23,9 +24,13 @@ const AutoPlayDetailHeader = ({ id, storyID, autoPlay }: props) => {
   const user_id = GetUserID();
   const kind = "autoplay";
 
+  const navigate = useNavigate()
+
   const handlePublish = (id: number, publish: boolean) => {
     console.log("Publish: ", id, publish);
     ChangePublishAutoPlay(id);
+    alert("Command executed successfully");
+    navigate("/autoplay");
   };
 
   let publishButton = "success";
