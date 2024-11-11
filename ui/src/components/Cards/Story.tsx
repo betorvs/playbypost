@@ -4,6 +4,7 @@ import Story from "../../types/Story";
 import NavigateButton from "../Button/NavigateButton";
 import { useTranslation } from "react-i18next";
 import { DeleteStoryByID } from "../../functions/Stories";
+import { useNavigate } from "react-router-dom";
 
 interface Props {
   ID: number;
@@ -13,12 +14,15 @@ interface Props {
 
 const StoryCards = ({ ID, story, LinkText }: Props) => {
   const { t } = useTranslation(['home', 'main']);
+  const navigate = useNavigate()
   const validatorPut = (id: number) => {
     ValidatorPut(id, "stage");
   };
   const handleDelete = (id: number) => {
     console.log("Deleting story " + id);
     DeleteStoryByID(id);
+    alert("Command executed successfully");
+    navigate("/");
   }
 
   return (

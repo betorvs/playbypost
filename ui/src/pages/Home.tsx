@@ -2,10 +2,13 @@ import { AuthContext } from "../context/AuthContext";
 import { useContext } from "react";
 import Layout from "../components/Layout";
 import { useTranslation } from "react-i18next";
+import packageJson from '../../package.json';
+
 
 const HomePublicPage = () => {
   const { Logoff } = useContext(AuthContext);
   const { t } = useTranslation(['home', 'main']);
+  const version = packageJson.version;
 
   return (
     <div className="container mt-3" key="1">
@@ -64,6 +67,8 @@ const HomePublicPage = () => {
       <p>{t("home.notes-3", {ns: ['main', 'home']})}</p>
       <hr />
       <p>{t("home.sub-header-4", {ns: ['main', 'home']})}</p>
+      <hr />
+      <h6>Play-by-Post Version: v{version}</h6>
     </div>
   );
 };
