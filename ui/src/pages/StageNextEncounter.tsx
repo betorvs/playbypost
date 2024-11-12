@@ -2,7 +2,7 @@ import { useContext, useEffect, useState } from "react";
 import { AuthContext } from "../context/AuthContext";
 import { useNavigate, useParams } from "react-router-dom";
 import Encounter from "../types/Encounter";
-import FetchEncounters from "../functions/Encounters";
+// import FetchEncounters from "../functions/Encounters";
 import UseLocation from "../context/UseLocation";
 import GetUsername from "../context/GetUsername";
 import GetToken from "../context/GetToken";
@@ -10,6 +10,7 @@ import Layout from "../components/Layout";
 import { Button, Form } from "react-bootstrap";
 import NextEncounterType from "../types/Next";
 import { useTranslation } from "react-i18next";
+import { FetchStageEncountersByID } from "../functions/Stages";
 
 
 const StageNextEncounter = () => {
@@ -61,7 +62,7 @@ const StageNextEncounter = () => {
     const { t } = useTranslation(["home", "main"]);
   
     useEffect(() => {
-        FetchEncounters(safeID, setEncounters);
+      FetchStageEncountersByID(safeID, setEncounters);
     }, []);
   
     const cancelButton = () => {
