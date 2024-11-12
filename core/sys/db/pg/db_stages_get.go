@@ -3,6 +3,7 @@ package pg
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"slices"
 
 	"github.com/betorvs/playbypost/core/rpg"
@@ -62,7 +63,7 @@ func (db *DBX) GetStageByStoryID(ctx context.Context, id int) ([]types.Stage, er
 
 func (db *DBX) GetStageByStageID(ctx context.Context, id int) (types.StageAggregated, error) {
 	aggr := types.StageAggregated{}
-	query := "SELECT sa.id, sa.display_text, sa.story_id, sa.creator_id, sa.storyteller_id, sa.encoding_key, sy.title, sy.announcement, sy.notes, sy.writer_id, u.userid, sc.channel, sc.active FROM stage AS sa JOIN story AS sy ON sa.story_id = sy.id JOIN users AS u ON sa.storyteller_id = u.id LEFT JOIN stage_channel AS sc ON sc.upstream_id = sa.id WHERE sa.id = $1 AND sa.finished = false" // dev:finder+query
+	query := "SELECT sa.id, sa.display_text, sa.story_id, sa.creator_id, sa.storyteller_id, sa.encoding_key, sy.id, sy.title, sy.announcement, sy.notes, sy.writer_id, u.userid, sc.channel, sc.active FROM stage AS sa JOIN story AS sy ON sa.story_id = sy.id JOIN users AS u ON sa.storyteller_id = u.id LEFT JOIN stage_channel AS sc ON sc.upstream_id = sa.id WHERE sa.id = $1 AND sa.finished = false" // dev:finder+query
 	rows, err := db.Conn.QueryContext(ctx, query, id)
 	if err != nil {
 		db.Logger.Error("query on stage failed", "error", err.Error())
@@ -75,7 +76,7 @@ func (db *DBX) GetStageByStageID(ctx context.Context, id int) (types.StageAggreg
 		var story types.Story
 		var channel sql.NullString
 		var channelActive sql.NullBool
-		if err := rows.Scan(&sa.ID, &sa.Text, &sa.StoryID, &sa.CreatorID, &sa.StorytellerID, &encodingKey, &story.Title, &announce, &notes, &story.WriterID, &sa.UserID, &channel, &channelActive); err != nil {
+		if err := rows.Scan(&sa.ID, &sa.Text, &sa.StoryID, &sa.CreatorID, &sa.StorytellerID, &encodingKey, &story.ID, &story.Title, &announce, &notes, &story.WriterID, &sa.UserID, &channel, &channelActive); err != nil {
 			db.Logger.Error("scan error on stage", "error", err.Error())
 		}
 		story.Announcement, _ = utils.DecryptText(announce, encodingKey)
@@ -418,7 +419,10 @@ func (db *DBX) GetNextEncounterByStageID(ctx context.Context, id int) ([]types.N
 }
 
 func (db *DBX) GetStageEncounterListByStoryID(ctx context.Context, storyID int) (types.EncounterList, error) {
-	list := types.EncounterList{}
+	list := types.EncounterList{
+		Link:          []types.EncounterWithNext{},
+		EncounterList: []types.Options{},
+	}
 	query := "SELECT a.id, e.title AS encounter, e.id AS encounter_id, n.title AS next_encounter, n.id AS next_id FROM stage_next_encounter AS a JOIN encounters AS e ON e.id = a.current_encounter_id JOIN encounters AS n ON n.id = a.next_encounter_id WHERE e.story_id = $1" // dev:finder+query
 	rows, err := db.Conn.QueryContext(ctx, query, storyID)
 	if err != nil {
@@ -451,7 +455,27 @@ func (db *DBX) GetStageEncounterListByStoryID(ctx context.Context, storyID int) 
 		}
 		list.EncounterList = append(list.EncounterList, generic)
 	}
+	// generate flow chart td
+	flowchartTD, err := db.generateFlowChartTD(list.Link)
+	if err != nil {
+		db.Logger.Error("error on db.GetStageEncounterListByStoryID when calling generateFlowChartTD", "error", err.Error())
+	} else {
+		list.FlowChartTD = flowchartTD
+	}
 	return list, nil
+}
+
+func (db *DBX) generateFlowChartTD(list []types.EncounterWithNext) (string, error) {
+	var flowchartTD string
+	if len(list) != 0 {
+		flowchartTD = "flowchart TD"
+	} else {
+		return "", fmt.Errorf("empty list")
+	}
+	for _, v := range list {
+		flowchartTD += fmt.Sprintf("\n    A%d[%s] --- A%d[%s]", v.EncounterID, v.Encounter, v.NextID, v.NextEncounter)
+	}
+	return flowchartTD, nil
 }
 
 // stage_running_tasks

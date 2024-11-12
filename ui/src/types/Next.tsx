@@ -23,6 +23,7 @@ type EncounterWithNext = {
 type EncounterList = {
   encounter_list: GenericIDName[];
   link: EncounterWithNext[];
+  flow_chart_td: string;
 }
 
 type GenericIDName = {

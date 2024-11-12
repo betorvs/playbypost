@@ -6,9 +6,10 @@ import StageDetailHeader from "../components/StageDetailHeader";
 import { EncounterList } from "../types/Next";
 import { useTranslation } from "react-i18next";
 import { DeleteStageNextEncounter, FetchEncounterListStage, FetchStage } from "../functions/Stages";
-import { Button } from "react-bootstrap";
+import { Button, Tab, Tabs } from "react-bootstrap";
 import NavigateButton from "../components/Button/NavigateButton";
 import StageAggregated from "../types/StageAggregated";
+import { MermaidDiagram } from "@lightenna/react-mermaid-diagram";
 
 const StageManageNextEncounter = () => {
   const { id, story } = useParams();
@@ -22,6 +23,8 @@ const StageManageNextEncounter = () => {
   const { t } = useTranslation(["home", "main"]);
 
   const [encountersList, setEncountersList] = useState<EncounterList>();
+
+  const [key, setKey] = useState('table');
 
   const handleDelete = (id: number) => {
     console.log("Deleting next encounter " + id);
@@ -46,7 +49,14 @@ const StageManageNextEncounter = () => {
             </NavigateButton>{" "}
             <hr/>
           </div>
-          <div className="card" >
+          <Tabs
+          id="controlled-tab"
+          activeKey={key}
+          onSelect={(k) => k && setKey(k)}
+          className="mb-3">
+
+          <Tab eventKey="table" title="Table">
+          <div className="card" key={1}>
             <div className="card-header">
               {t("encounter.list", {ns: ['main', 'home']})}
             </div>
@@ -74,6 +84,18 @@ const StageManageNextEncounter = () => {
               }
             </ul>
           </div>
+          </Tab>
+          <Tab eventKey="flowchart" title="Flowchart">
+          <div className="container mt-3" key="2">
+          <h3>Flowchart</h3>
+            {encountersList?.flow_chart_td && ( 
+              <>
+              <MermaidDiagram>{encountersList.flow_chart_td}</MermaidDiagram>
+              </>
+            )}
+          </div>
+          </Tab>
+          </Tabs>
         </div>
       </div>
     </>
