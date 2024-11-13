@@ -100,7 +100,8 @@
         "header-edit": "Edit Story",
         "form-title-text": "A great history starts with a great title",
         "form-announce-text": "It will be post to all players. Think about all senses and create a great description!",
-        "form-notes-text": "It will be used only for you. Keep here good notes about what should happen."
+        "form-notes-text": "It will be used only for you. Keep here good notes about what should happen.",
+        "load_more": "Load More"
     },
     "encounter": {
         "this": "Encounter",

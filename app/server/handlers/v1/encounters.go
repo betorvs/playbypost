@@ -77,19 +77,62 @@ func (a MainApi) GetEncounterByStoryId(w http.ResponseWriter, r *http.Request) {
 		a.s.ErrJSON(w, http.StatusBadRequest, "id should be a integer")
 		return
 	}
-	obj, err := a.db.GetEncounterByStoryID(a.ctx, id)
-	if err != nil {
-		a.s.ErrJSON(w, http.StatusBadRequest, "encounters issue")
-		return
-	}
 	writerID := -1
-	if len(obj) > 0 {
-		writerID = obj[0].WriterID
+	var encounters []types.Encounter
+	// get params
+	limit := r.URL.Query().Get("limit")
+	cursor := r.URL.Query().Get("cursor")
+
+	if limit != "" {
+		limitInt, err := strconv.Atoi(limit)
+		if err != nil {
+			a.s.ErrJSON(w, http.StatusBadRequest, "limit should be a integer")
+			return
+		}
+		if limitInt > 10 {
+			limitInt = 10
+		}
+		if limitInt < 3 {
+			limitInt = 3
+		}
+		lastID := 1
+		if cursor != "" {
+			lastIDIntTmp, err := strconv.Atoi(cursor)
+			if err != nil {
+				a.s.ErrJSON(w, http.StatusBadRequest, "cursor should be a integer")
+				return
+			}
+			lastID = lastIDIntTmp
+		}
+		obj, cursor, err := a.db.GetEncounterByStoryIDWithPagination(a.ctx, id, limitInt, lastID)
+		if err != nil {
+			a.s.ErrJSON(w, http.StatusBadRequest, "get encounters with pagination issue")
+			return
+		}
+		if len(obj) > 0 {
+			writerID = obj[0].WriterID
+		}
+		if cursor > 0 {
+			// get URI from request
+			uri := r.RequestURI
+			uri = uri + "&cursor=" + strconv.Itoa(cursor)
+			w.Header().Set("X-Cursor-URI", uri)
+			w.Header().Set("X-Cursor", strconv.Itoa(cursor))
+		}
+		encounters = obj
+	} else {
+		obj, err := a.db.GetEncounterByStoryID(a.ctx, id)
+		if err != nil {
+			a.s.ErrJSON(w, http.StatusBadRequest, "encounters issue")
+			return
+		}
+
+		if len(obj) > 0 {
+			writerID = obj[0].WriterID
+		}
+		encounters = obj
 	}
-	// if a.Sessions.Current[headerUsername].UserID != masterID {
-	// 	a.s.JSON(w, obj)
-	// 	return
-	// }
+
 	user, err := a.db.GetWriterByID(a.ctx, writerID)
 	if err != nil {
 		a.s.ErrJSON(w, http.StatusBadRequest, "writer id not found")
@@ -97,14 +140,14 @@ func (a MainApi) GetEncounterByStoryId(w http.ResponseWriter, r *http.Request) {
 	}
 	if user.Username != headerUsername {
 		a.logger.Debug("username does not match with header", "username", user.Username, "header", headerUsername)
-		a.s.JSON(w, obj)
+		a.s.JSON(w, encounters)
 		return
 	}
-	encounters := []types.Encounter{}
-	for _, v := range obj {
+	encountersDecrypted := []types.Encounter{}
+	for _, v := range encounters {
 		announce, _ := utils.DecryptText(v.Announcement, user.EncodingKeys[id])
 		note, _ := utils.DecryptText(v.Notes, user.EncodingKeys[id])
-		encounters = append(encounters, types.Encounter{
+		encountersDecrypted = append(encountersDecrypted, types.Encounter{
 			ID:             v.ID,
 			Title:          v.Title,
 			Announcement:   announce,
@@ -116,7 +159,7 @@ func (a MainApi) GetEncounterByStoryId(w http.ResponseWriter, r *http.Request) {
 		})
 	}
 
-	a.s.JSON(w, encounters)
+	a.s.JSON(w, encountersDecrypted)
 }
 
 func (a MainApi) CreateEncounter(w http.ResponseWriter, r *http.Request) {

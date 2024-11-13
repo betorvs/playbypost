@@ -17,8 +17,12 @@ const StoryDetail = () => {
 
   const [encounters, setEncounters] = useState<Encounter[]>([]);
 
+  const [cursor, setCursor] = useState<string>("");
+
+  const [loading, setLoading] = useState<boolean>(false);
+
   useEffect(() => {
-    FetchEncounters(safeID, setEncounters);
+    FetchEncounters(safeID, cursor, encounters, setLoading, setEncounters, setCursor);
   }, []);
 
   return (
@@ -34,6 +38,11 @@ const StoryDetail = () => {
           ) : (
             <p>{t("story.error", {ns: ['main', 'home']})}</p>
           )}
+        </div>
+        <div className="row mb-2">
+          <button className="btn btn-primary" disabled={loading} onClick={() => FetchEncounters(safeID, cursor, encounters, setLoading, setEncounters, setCursor)}>
+            {t("story.load_more", {ns: ['main', 'home']})}
+          </button>
         </div>
       </div>
     </>

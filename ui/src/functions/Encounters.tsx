@@ -6,7 +6,11 @@ import CleanSession from "../context/CleanSession";
 
 const FetchEncounters = async (
   id: string,
-  setEncounters: React.Dispatch<React.SetStateAction<Encounter[]>>
+  cursor: string,
+  encounters: Encounter[],
+  setLoading: React.Dispatch<React.SetStateAction<boolean>>,
+  setEncounters: React.Dispatch<React.SetStateAction<Encounter[]>>,
+  setCursor: React.Dispatch<React.SetStateAction<string>>
 ): Promise<void> => {
   const requestHeaders: HeadersInit = new Headers();
   requestHeaders.set("Content-Type", "application/json");
@@ -14,13 +18,25 @@ const FetchEncounters = async (
   requestHeaders.set("X-Access-Token", GetToken());
   const apiURL = UseLocation();
   const urlAPI = new URL("api/v1/encounter/story/" + id, apiURL);
+  urlAPI.searchParams.append("limit", "10");
+  if (cursor !== "") {
+    urlAPI.searchParams.append("cursor", cursor);
+  }
   const response = await fetch(urlAPI, {
     method: "GET",
     headers: requestHeaders,
   });
   if (response.ok) {
     const data = await response.text();
-    setEncounters(JSON.parse(data));
+    
+    setEncounters([...encounters, ...JSON.parse(data)]);
+    const header = response.headers.get("X-Cursor");
+    console.log("Header Cursor: " + header);
+    if (header !== null) {
+      setCursor(header);
+    } else {
+      setLoading(true);
+    }
   } else if (response.status === 403) {
     console.log("Not authorized");
     CleanSession();
