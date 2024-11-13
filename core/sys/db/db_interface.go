@@ -29,7 +29,7 @@ type DBClient interface {
 	// Encounters
 	GetEncounters(ctx context.Context) ([]types.Encounter, error)
 	GetEncounterByStoryID(ctx context.Context, storyID int) ([]types.Encounter, error)
-	GetEncounterByStoryIDWithPagination(ctx context.Context, storyID, limit, cursor int) ([]types.Encounter, int, error)
+	GetEncounterByStoryIDWithPagination(ctx context.Context, storyID, limit, cursor int) ([]types.Encounter, int, int, error)
 	GetEncounterByID(ctx context.Context, id int) (types.Encounter, error)
 	CreateEncounterTx(ctx context.Context, title, announcement, notes string, storyID, storytellerID int, first, last bool) (int, error)
 	UpdateEncounterTx(ctx context.Context, title, announcement, notes string, id, storyID int, first, last bool) (int, error)

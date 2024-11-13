@@ -257,5 +257,9 @@
         "encounter-edit-wrong": "Algo deu errado. Encontro não foi editado.",
         "task-edit": "Tarefa editada com sucesso",
         "edit-wrong": "Algo deu errado. Tarefa não foi editada."
+    },
+    "pagination": {
+        "previous": "Anterior",
+        "next": "Próximo"
     }
 }

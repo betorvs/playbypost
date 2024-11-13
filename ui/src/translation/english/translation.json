@@ -257,5 +257,9 @@
         "encounter-edit-wrong": "Something goes wrong. Encounter edit failed.",
         "task-edit": "Task edited! Have a great session with your friends!",
         "task-edit-wrong": "Something goes wrong. Task was not edit."
+    },
+    "pagination": {
+        "previous": "Previous",
+        "next": "Next"
     }
 }

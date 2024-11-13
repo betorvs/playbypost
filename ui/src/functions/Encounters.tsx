@@ -6,9 +6,34 @@ import CleanSession from "../context/CleanSession";
 
 const FetchEncounters = async (
   id: string,
+  setEncounters: React.Dispatch<React.SetStateAction<Encounter[]>>
+): Promise<void> => {
+  const requestHeaders: HeadersInit = new Headers();
+  requestHeaders.set("Content-Type", "application/json");
+  requestHeaders.set("X-Username", GetUsername());
+  requestHeaders.set("X-Access-Token", GetToken());
+  const apiURL = UseLocation();
+  const urlAPI = new URL("api/v1/encounter/story/" + id, apiURL);
+  const response = await fetch(urlAPI, {
+    method: "GET",
+    headers: requestHeaders,
+  });
+  if (response.ok) {
+    const data = await response.text();
+    setEncounters(JSON.parse(data));
+  } else if (response.status === 403) {
+    console.log("Not authorized");
+    CleanSession();
+  }
+};
+
+const FetchEncountersWithPagination = async (
+  id: string,
   cursor: string,
-  encounters: Encounter[],
-  setLoading: React.Dispatch<React.SetStateAction<boolean>>,
+  total: number,
+  // encounters: Encounter[],
+  // setLoading: React.Dispatch<React.SetStateAction<boolean>>,
+  setPageCount: React.Dispatch<React.SetStateAction<number>>,
   setEncounters: React.Dispatch<React.SetStateAction<Encounter[]>>,
   setCursor: React.Dispatch<React.SetStateAction<string>>
 ): Promise<void> => {
@@ -18,7 +43,7 @@ const FetchEncounters = async (
   requestHeaders.set("X-Access-Token", GetToken());
   const apiURL = UseLocation();
   const urlAPI = new URL("api/v1/encounter/story/" + id, apiURL);
-  urlAPI.searchParams.append("limit", "10");
+  urlAPI.searchParams.append("limit", total.toString());
   if (cursor !== "") {
     urlAPI.searchParams.append("cursor", cursor);
   }
@@ -29,13 +54,15 @@ const FetchEncounters = async (
   if (response.ok) {
     const data = await response.text();
     
-    setEncounters([...encounters, ...JSON.parse(data)]);
-    const header = response.headers.get("X-Cursor");
-    console.log("Header Cursor: " + header);
+    // setEncounters([...encounters, ...JSON.parse(data)]);
+    setEncounters(JSON.parse(data));
+    const header = response.headers.get("X-Last-Id");
     if (header !== null) {
       setCursor(header);
-    } else {
-      setLoading(true);
+    } 
+    const count = response.headers.get("X-Total-Count");
+    if (count !== null) {
+      setPageCount(Math.ceil(parseInt(count) / total));
     }
   } else if (response.status === 403) {
     console.log("Not authorized");
@@ -86,4 +113,4 @@ const DeleteEncounterByID = async (id: number): Promise<void> => {
 }
 
 export default FetchEncounters;
-export { FetchEncounter, DeleteEncounterByID };
+export { FetchEncountersWithPagination, FetchEncounter, DeleteEncounterByID };

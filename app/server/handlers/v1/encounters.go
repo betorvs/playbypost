@@ -102,9 +102,10 @@ func (a MainApi) GetEncounterByStoryId(w http.ResponseWriter, r *http.Request) {
 				a.s.ErrJSON(w, http.StatusBadRequest, "cursor should be a integer")
 				return
 			}
+			a.logger.Debug("cursor", "cursor", lastIDIntTmp)
 			lastID = lastIDIntTmp
 		}
-		obj, cursor, err := a.db.GetEncounterByStoryIDWithPagination(a.ctx, id, limitInt, lastID)
+		obj, cursor, total, err := a.db.GetEncounterByStoryIDWithPagination(a.ctx, id, limitInt, lastID)
 		if err != nil {
 			a.s.ErrJSON(w, http.StatusBadRequest, "get encounters with pagination issue")
 			return
@@ -117,7 +118,8 @@ func (a MainApi) GetEncounterByStoryId(w http.ResponseWriter, r *http.Request) {
 			uri := r.RequestURI
 			uri = uri + "&cursor=" + strconv.Itoa(cursor)
 			w.Header().Set("X-Cursor-URI", uri)
-			w.Header().Set("X-Cursor", strconv.Itoa(cursor))
+			w.Header().Set("X-Last-Id", strconv.Itoa(cursor))
+			w.Header().Set("X-Total-Count", strconv.Itoa(total))
 		}
 		encounters = obj
 	} else {
