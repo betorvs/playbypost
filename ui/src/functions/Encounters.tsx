@@ -31,8 +31,6 @@ const FetchEncountersWithPagination = async (
   id: string,
   cursor: string,
   total: number,
-  // encounters: Encounter[],
-  // setLoading: React.Dispatch<React.SetStateAction<boolean>>,
   setPageCount: React.Dispatch<React.SetStateAction<number>>,
   setEncounters: React.Dispatch<React.SetStateAction<Encounter[]>>,
   setCursor: React.Dispatch<React.SetStateAction<string>>
@@ -53,8 +51,6 @@ const FetchEncountersWithPagination = async (
   });
   if (response.ok) {
     const data = await response.text();
-    
-    // setEncounters([...encounters, ...JSON.parse(data)]);
     setEncounters(JSON.parse(data));
     const header = response.headers.get("X-Last-Id");
     if (header !== null) {

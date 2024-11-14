@@ -99,7 +99,7 @@ func main() {
 	srv.Register("POST /api/v1/stage/npc", app.GenerateNPC)
 	srv.Register("POST /api/v1/stage/channel", app.AddChannelToStage)
 	srv.Register("GET /api/v1/stage/encounter/{id}", app.GetStageEncounterByEncounterID)
-	srv.Register("GET /api/v1/stage/encounters/{id}", app.GetStageEncounterByStageID)
+	srv.Register("GET /api/v1/stage/encounters/{id}", app.GetStageEncountersByStageID)
 	srv.Register("PUT /api/v1/stage/encounter/{id}/{phase}", app.UpdateEncounterPhaseById)
 	srv.Register("POST /api/v1/stage/encounter", app.AddEncounterToStage)
 	srv.Register("DELETE /api/v1/stage/encounter/{id}", app.DeleteStageEncounterByID)

@@ -57,15 +57,16 @@ func (db *DBX) GetEncounterByStoryID(ctx context.Context, storyID int) ([]types.
 func (db *DBX) GetEncounterByStoryIDWithPagination(ctx context.Context, storyID, limit, cursor int) ([]types.Encounter, int, int, error) {
 	encounters := []types.Encounter{}
 	total := 0
+	lastID := -1
 	{
 		query := "SELECT COUNT(*) FROM encounters WHERE story_id = $1" // dev:finder+query
 		if err := db.Conn.QueryRowContext(ctx, query, storyID).Scan(&total); err != nil {
 			db.Logger.Error("query on encounters by id failed", "error", err.Error())
-			return encounters, total, 0, err
+			return encounters, lastID, total, err
 		}
 
 	}
-	lastID := -1
+
 	query := "SELECT id, title, notes, announcement, story_id, writer_id, first_encounter, last_encounter FROM encounters WHERE story_id = $1 AND id > $2 LIMIT $3" // dev:finder+query
 	rows, err := db.Conn.QueryContext(ctx, query, storyID, cursor, limit)
 	if err != nil {

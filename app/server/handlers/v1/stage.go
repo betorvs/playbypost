@@ -177,7 +177,7 @@ func (a MainApi) AddChannelToStage(w http.ResponseWriter, r *http.Request) {
 	a.s.JSON(w, types.Msg{Msg: msg})
 }
 
-func (a MainApi) GetStageEncounterByStageID(w http.ResponseWriter, r *http.Request) {
+func (a MainApi) GetStageEncountersByStageID(w http.ResponseWriter, r *http.Request) {
 	if a.Session.CheckAuth(r) {
 		a.s.ErrJSON(w, http.StatusForbidden, "required authentication headers")
 		return
@@ -188,6 +188,49 @@ func (a MainApi) GetStageEncounterByStageID(w http.ResponseWriter, r *http.Reque
 		a.s.ErrJSON(w, http.StatusBadRequest, "id should be a integer")
 		return
 	}
+	// get params
+	limit := r.URL.Query().Get("limit")
+	cursor := r.URL.Query().Get("cursor")
+	if limit != "" {
+		limitInt, err := strconv.Atoi(limit)
+		if err != nil {
+			a.s.ErrJSON(w, http.StatusBadRequest, "limit should be a integer")
+			return
+		}
+		if limitInt > 10 {
+			limitInt = 10
+		}
+		if limitInt < 2 {
+			limitInt = 2
+		}
+		lastID := 0
+		if cursor != "" {
+			lastIDIntTmp, err := strconv.Atoi(cursor)
+			if err != nil {
+				a.s.ErrJSON(w, http.StatusBadRequest, "cursor should be a integer")
+				return
+			}
+			a.logger.Info("cursor", "cursor", lastIDIntTmp)
+			lastID = lastIDIntTmp
+		}
+		obj, cursor, total, err := a.db.GetStageEncountersByStageIDWithPagination(a.ctx, id, limitInt, lastID)
+		if err != nil {
+			a.s.ErrJSON(w, http.StatusBadRequest, "stage_encounters database issue")
+			return
+		}
+		if cursor > 0 {
+			// get URI from request
+			uri := r.RequestURI
+			uri = uri + "&cursor=" + strconv.Itoa(cursor)
+			w.Header().Set("X-Cursor-URI", uri)
+			w.Header().Set("X-Last-Id", strconv.Itoa(cursor))
+			w.Header().Set("X-Total-Count", strconv.Itoa(total))
+		}
+
+		a.s.JSON(w, obj)
+		return
+	}
+
 	obj, err := a.db.GetStageEncountersByStageID(a.ctx, id)
 	if err != nil {
 		a.s.ErrJSON(w, http.StatusBadRequest, "stage_encounters database issue")

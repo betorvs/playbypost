@@ -46,6 +46,7 @@ type DBClient interface {
 	GetStageByStoryID(ctx context.Context, id int) ([]types.Stage, error)
 	GetStageByStageID(ctx context.Context, id int) (types.StageAggregated, error)
 	GetStageEncounterByEncounterID(ctx context.Context, id int) (types.StageEncounter, error)
+	GetStageEncountersByStageIDWithPagination(ctx context.Context, id, limit, cursor int) ([]types.StageEncounter, int, int, error)
 	GetStageEncountersByStageID(ctx context.Context, id int) ([]types.StageEncounter, error)
 	GetRunningStageByChannelID(ctx context.Context, channelID, userID string, rpgSystem *rpg.RPGSystem) (types.RunningStage, error)
 	GetStageEncounterActivitiesByEncounterID(ctx context.Context, id int) ([]types.Activity, error)

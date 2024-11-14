@@ -95,7 +95,7 @@ func (a MainApi) GetEncounterByStoryId(w http.ResponseWriter, r *http.Request) {
 		if limitInt < 3 {
 			limitInt = 3
 		}
-		lastID := 1
+		lastID := 0
 		if cursor != "" {
 			lastIDIntTmp, err := strconv.Atoi(cursor)
 			if err != nil {
