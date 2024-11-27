@@ -88,6 +88,13 @@ func (db *DBX) GetAutoPlayEncounterListByStoryID(ctx context.Context, storyID in
 		}
 		list.EncounterList = append(list.EncounterList, generic)
 	}
+	// generate flow chart td
+	flowchartTD, err := db.generateFlowChartTD(list.Link)
+	if err != nil {
+		db.Logger.Error("error on db.GetAutoPlayEncounterListByStoryID when calling generateFlowChartTD", "error", err.Error())
+	} else {
+		list.FlowChartTD = flowchartTD
+	}
 	return list, nil
 }
 

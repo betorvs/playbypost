@@ -86,6 +86,7 @@ func ValidateNextSlice(s []Next, upstreamKind string) ([]Next, error) {
 type EncounterList struct {
 	EncounterList []Options           `json:"encounter_list"`
 	Link          []EncounterWithNext `json:"link"`
+	FlowChartTD   string              `json:"flow_chart_td"`
 }
 
 type EncounterWithNext struct {
