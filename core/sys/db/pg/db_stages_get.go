@@ -131,6 +131,48 @@ func (db *DBX) GetStageEncountersByStageID(ctx context.Context, id int) ([]types
 	return list, nil
 }
 
+func (db *DBX) GetStageEncountersByStageIDWithPagination(ctx context.Context, id, limit, cursor int) ([]types.StageEncounter, int, int, error) {
+	list := []types.StageEncounter{}
+	total := 0
+	lastID := -1
+	{
+		query := "SELECT COUNT(*) FROM stage_encounters AS se JOIN encounters AS e ON se.encounter_id = e.id JOIN stage AS s ON se.stage_id = s.id WHERE s.id = $1 AND s.finished = false" // dev:finder+query
+		if err := db.Conn.QueryRowContext(ctx, query, id).Scan(&total); err != nil {
+			db.Logger.Error("query on stage_encounters by stage_id failed", "error", err.Error())
+			return list, 0, total, err
+		}
+	}
+	query := "SELECT se.ID, se.display_text, e.title, se.storyteller_id, e.notes, e.announcement, e.writer_id, e.story_id, s.encoding_key, se.updated_at, se.phase FROM stage_encounters AS se JOIN encounters AS e ON se.encounter_id = e.id JOIN stage AS s ON se.stage_id = s.id WHERE s.id = $1 AND s.finished = false AND se.phase != 3 AND se.id > $2 LIMIT $3" // dev:finder+query
+	rows, err := db.Conn.QueryContext(ctx, query, id, cursor, limit)
+	if err != nil {
+		db.Logger.Error("query on stage_encounters by stage_id failed", "error", err.Error())
+		return list, lastID, total, err
+	}
+	defer rows.Close()
+	count := 1
+	for rows.Next() {
+		var s types.StageEncounter
+		var notes, announce, encodingKey string
+		var updatedAt sql.NullTime
+		if err := rows.Scan(&s.ID, &s.Text, &s.Title, &s.StorytellerID, &notes, &announce, &s.WriterID, &s.StoryID, &encodingKey, &updatedAt, &s.Phase); err != nil {
+			db.Logger.Error("scan error on stage_encounters by stage_id ", "error", err.Error(), "updated_at", updatedAt)
+		}
+		if count == limit {
+			lastID = s.ID
+			db.Logger.Info("limit reached", "limit", limit, "count", count, "lastID", lastID)
+		}
+		s.Notes, _ = utils.DecryptText(notes, encodingKey)
+		s.Announcement, _ = utils.DecryptText(announce, encodingKey)
+		list = append(list, s)
+		count++
+	}
+	// Check for errors FROM iterating over rows.
+	if err := rows.Err(); err != nil {
+		db.Logger.Error("rows err on stage_encounters by stage_id", "error", err.Error())
+	}
+	return list, lastID, total, nil
+}
+
 func (db *DBX) GetRunningStageByChannelID(ctx context.Context, channelID, userID string, rpgSystem *rpg.RPGSystem) (types.RunningStage, error) {
 	db.Logger.Debug("GetRunningStageByChannelID", "channelID", channelID, "userID", userID)
 	running := types.RunningStage{}

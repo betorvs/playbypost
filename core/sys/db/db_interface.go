@@ -29,6 +29,7 @@ type DBClient interface {
 	// Encounters
 	GetEncounters(ctx context.Context) ([]types.Encounter, error)
 	GetEncounterByStoryID(ctx context.Context, storyID int) ([]types.Encounter, error)
+	GetEncounterByStoryIDWithPagination(ctx context.Context, storyID, limit, cursor int) ([]types.Encounter, int, int, error)
 	GetEncounterByID(ctx context.Context, id int) (types.Encounter, error)
 	CreateEncounterTx(ctx context.Context, title, announcement, notes string, storyID, storytellerID int, first, last bool) (int, error)
 	UpdateEncounterTx(ctx context.Context, title, announcement, notes string, id, storyID int, first, last bool) (int, error)
@@ -45,6 +46,7 @@ type DBClient interface {
 	GetStageByStoryID(ctx context.Context, id int) ([]types.Stage, error)
 	GetStageByStageID(ctx context.Context, id int) (types.StageAggregated, error)
 	GetStageEncounterByEncounterID(ctx context.Context, id int) (types.StageEncounter, error)
+	GetStageEncountersByStageIDWithPagination(ctx context.Context, id, limit, cursor int) ([]types.StageEncounter, int, int, error)
 	GetStageEncountersByStageID(ctx context.Context, id int) ([]types.StageEncounter, error)
 	GetRunningStageByChannelID(ctx context.Context, channelID, userID string, rpgSystem *rpg.RPGSystem) (types.RunningStage, error)
 	GetStageEncounterActivitiesByEncounterID(ctx context.Context, id int) ([]types.Activity, error)

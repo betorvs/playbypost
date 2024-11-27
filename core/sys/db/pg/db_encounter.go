@@ -54,6 +54,46 @@ func (db *DBX) GetEncounterByStoryID(ctx context.Context, storyID int) ([]types.
 	return encounters, nil
 }
 
+func (db *DBX) GetEncounterByStoryIDWithPagination(ctx context.Context, storyID, limit, cursor int) ([]types.Encounter, int, int, error) {
+	encounters := []types.Encounter{}
+	total := 0
+	lastID := -1
+	{
+		query := "SELECT COUNT(*) FROM encounters WHERE story_id = $1" // dev:finder+query
+		if err := db.Conn.QueryRowContext(ctx, query, storyID).Scan(&total); err != nil {
+			db.Logger.Error("query on encounters by id failed", "error", err.Error())
+			return encounters, lastID, total, err
+		}
+
+	}
+
+	query := "SELECT id, title, notes, announcement, story_id, writer_id, first_encounter, last_encounter FROM encounters WHERE story_id = $1 AND id > $2 LIMIT $3" // dev:finder+query
+	rows, err := db.Conn.QueryContext(ctx, query, storyID, cursor, limit)
+	if err != nil {
+		db.Logger.Error("query on encounters by id failed", "error", err.Error())
+		return encounters, lastID, total, err
+	}
+	defer rows.Close()
+	count := 1
+	for rows.Next() {
+		var enc types.Encounter
+		if err := rows.Scan(&enc.ID, &enc.Title, &enc.Notes, &enc.Announcement, &enc.StoryID, &enc.WriterID, &enc.FirstEncounter, &enc.LastEncounter); err != nil {
+			db.Logger.Error("scan error on encounters by id", "error", err.Error())
+		}
+		if count == limit {
+			lastID = enc.ID
+			db.Logger.Debug("limit reached", "limit", limit, "count", count, "encounter_id", enc.ID)
+		}
+		encounters = append(encounters, enc)
+		count++
+	}
+	// Check for errors FROM iterating over rows.
+	if err := rows.Err(); err != nil {
+		db.Logger.Error("rows error on encounters by id", "error", err.Error())
+	}
+	return encounters, lastID, total, nil
+}
+
 func (db *DBX) GetEncounterByID(ctx context.Context, id int) (types.Encounter, error) {
 	enc := types.Encounter{}
 	query := "SELECT id, title, announcement, notes, story_id, writer_id, first_encounter, last_encounter FROM encounters WHERE id = $1" // dev:finder+query

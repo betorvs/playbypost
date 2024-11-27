@@ -63,8 +63,9 @@ func (s *SvrWeb) JSON(w http.ResponseWriter, v interface{}) {
 	}
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Access-Control-Allow-Origin", "*") //"Access-Control-Allow-Origin": "http://192.168.1.210:5173/",
-	w.Header().Set("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization, X-Username, X-Access-Token")
+	w.Header().Set("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization, X-Username, X-Access-Token, X-Last-Id, X-Cursor-URI, X-Total-Count")
 	w.Header().Set("Access-Control-Request-Methods", "GET, POST, DELETE, PUT, OPTIONS")
+	w.Header().Set("Access-Control-Expose-Headers", "X-Last-Id, X-Total-Count")
 	_, err = w.Write(js)
 	if err != nil {
 		s.logger.Error("json write error", "error", err.Error())
@@ -83,7 +84,7 @@ func (s *SvrWeb) GetHealth(w http.ResponseWriter, r *http.Request) {
 func (s *SvrWeb) ErrJSON(w http.ResponseWriter, code int, msg string) {
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
-	w.Header().Set("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization, X-Username, X-Access-Token")
+	w.Header().Set("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization, X-Username, X-Access-Token, X-Last-Id, X-Cursor-URI, X-Total-Count")
 	w.Header().Set("Access-Control-Request-Methods", "GET, POST, DELETE, PUT, OPTIONS")
 	w.WriteHeader(code)
 	message := types.Msg{Msg: msg}
@@ -102,7 +103,7 @@ func (s *SvrWeb) Options(w http.ResponseWriter, r *http.Request) {
 	s.logger.Debug("options", "http_method", r.Method, "url", r.URL.Path)
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
-	w.Header().Set("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization, X-Username, X-Access-Token")
+	w.Header().Set("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization, X-Username, X-Access-Token, X-Last-Id, X-Cursor-URI, X-Total-Count")
 	w.Header().Set("Access-Control-Request-Methods", "GET, POST, DELETE, PUT, OPTIONS")
 	if r.Header.Get("Access-Control-Request-Method") != "" {
 		w.Header().Set("Access-Control-Allow-Method", r.Header.Get("Access-Control-Request-Method"))

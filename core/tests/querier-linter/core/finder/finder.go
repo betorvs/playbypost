@@ -20,7 +20,7 @@ var reservedWords = []string{
 	"DELETE FROM", "WHERE", "FROM", "SET",
 	"JOIN", "LEFT", "RIGHT", "INNER",
 	".", "RETURNING", "AND", "OR",
-	"TRUE", "FALSE", "COUNT", "NOW()",
+	"TRUE", "FALSE", "COUNT", "NOW()", "LIMIT",
 }
 
 var (

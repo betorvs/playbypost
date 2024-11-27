@@ -100,7 +100,8 @@
         "form-title-text": "Uma grande história começa com um grande título",
         "form-announce-text": "Será postado para todos os jogadores. Pense em todos os sentidos e crie uma ótima descrição!",
         "form-notes": "Notas",
-        "form-notes-text": "Será usado apenas por você. Mantenha aqui boas notas sobre o que deve acontecer."
+        "form-notes-text": "Será usado apenas por você. Mantenha aqui boas notas sobre o que deve acontecer.",
+        "load_more": "Carregar mais"
     },
     "encounter": {
         "this": "Encontro",
@@ -256,5 +257,9 @@
         "encounter-edit-wrong": "Algo deu errado. Encontro não foi editado.",
         "task-edit": "Tarefa editada com sucesso",
         "edit-wrong": "Algo deu errado. Tarefa não foi editada."
+    },
+    "pagination": {
+        "previous": "Anterior",
+        "next": "Próximo"
     }
 }
