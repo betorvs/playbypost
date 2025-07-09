@@ -32,7 +32,7 @@ func (c *StorytellingCharacter) SetName(n string) error {
 }
 
 func (c *StorytellingCharacter) RPGSystem() *rpg.RPGSystem {
-	return c.Creature.RPG
+	return c.RPG
 }
 
 func (c *StorytellingCharacter) Damage(v int) error {
@@ -45,11 +45,11 @@ func (c *StorytellingCharacter) HealthStatus() int {
 }
 
 func (c *StorytellingCharacter) SetWeapon(name, kind string, value int, description string) {
-	c.D10Extented.Weapon.SetWeapon(name, kind, value, description)
+	c.Weapon.SetWeapon(name, kind, value, description)
 }
 
 func (c *StorytellingCharacter) SetArmor(v int) {
-	c.D10Extented.Armor = v
+	c.Armor = v
 }
 
 func (d D10Extented) weaponBonus(s string) (int, error) {

@@ -13,7 +13,12 @@ func (db *DBX) CreateWriters(ctx context.Context, username, password string) (in
 		db.Logger.Error("prepare insert into writers failed", "error", err.Error())
 		return -1, err
 	}
-	defer stmt.Close()
+	defer func() {
+		err := stmt.Close()
+		if err != nil {
+			db.Logger.Error("error closing stmt", "error", err)
+		}
+	}()
 	var res int
 	err = stmt.QueryRow(username, password).Scan(&res)
 	if err != nil {
@@ -34,7 +39,12 @@ func (db *DBX) GetWriters(ctx context.Context, active bool) ([]types.Writer, err
 		db.Logger.Error("query on writers failed", "error", err.Error())
 		return users, err
 	}
-	defer rows.Close()
+	defer func() {
+		err := rows.Close()
+		if err != nil {
+			db.Logger.Error("error closing rows", "error", err)
+		}
+	}()
 	for rows.Next() {
 		var user types.Writer
 		if err := rows.Scan(&user.ID, &user.Username); err != nil {
@@ -58,7 +68,12 @@ func (db *DBX) GetWriterByID(ctx context.Context, id int) (types.Writer, error) 
 		db.Logger.Error("query on writers by id failed", "error", err.Error())
 		return user, err
 	}
-	defer rows.Close()
+	defer func() {
+		err := rows.Close()
+		if err != nil {
+			db.Logger.Error("error closing rows", "error", err)
+		}
+	}()
 	for rows.Next() {
 		// var user types.Writer
 		var key string
@@ -88,7 +103,12 @@ func (db *DBX) GetWriterByUsername(ctx context.Context, username string) (types.
 		db.Logger.Error("query on writers by username failed", "error", err.Error())
 		return user, err
 	}
-	defer rows.Close()
+	defer func() {
+		err := rows.Close()
+		if err != nil {
+			db.Logger.Error("error closing rows", "error", err)
+		}
+	}()
 	for rows.Next() {
 		// var user types.Writer
 		if err := rows.Scan(&user.ID, &user.Username, &user.Password); err != nil {

@@ -16,7 +16,12 @@ func (db *DBX) GetEncounters(ctx context.Context) ([]types.Encounter, error) {
 		db.Logger.Error("query on encounters failed", "error", err.Error())
 		return list, err
 	}
-	defer rows.Close()
+	defer func() {
+		err := rows.Close()
+		if err != nil {
+			db.Logger.Error("error closing rows", "error", err)
+		}
+	}()
 	for rows.Next() {
 		var s types.Encounter
 		if err := rows.Scan(&s.ID, &s.Title, &s.Notes, &s.Announcement, &s.StoryID, &s.WriterID, &s.FirstEncounter, &s.LastEncounter); err != nil {
@@ -39,7 +44,12 @@ func (db *DBX) GetEncounterByStoryID(ctx context.Context, storyID int) ([]types.
 		db.Logger.Error("query on encounters by id failed", "error", err.Error())
 		return encounters, err
 	}
-	defer rows.Close()
+	defer func() {
+		err := rows.Close()
+		if err != nil {
+			db.Logger.Error("error closing rows", "error", err)
+		}
+	}()
 	for rows.Next() {
 		var enc types.Encounter
 		if err := rows.Scan(&enc.ID, &enc.Title, &enc.Notes, &enc.Announcement, &enc.StoryID, &enc.WriterID, &enc.FirstEncounter, &enc.LastEncounter); err != nil {
@@ -73,7 +83,12 @@ func (db *DBX) GetEncounterByStoryIDWithPagination(ctx context.Context, storyID,
 		db.Logger.Error("query on encounters by id failed", "error", err.Error())
 		return encounters, lastID, total, err
 	}
-	defer rows.Close()
+	defer func() {
+		err := rows.Close()
+		if err != nil {
+			db.Logger.Error("error closing rows", "error", err)
+		}
+	}()
 	count := 1
 	for rows.Next() {
 		var enc types.Encounter
@@ -102,7 +117,12 @@ func (db *DBX) GetEncounterByID(ctx context.Context, id int) (types.Encounter, e
 		db.Logger.Error("query on encounters by id failed", "error", err.Error())
 		return enc, err
 	}
-	defer rows.Close()
+	defer func() {
+		err := rows.Close()
+		if err != nil {
+			db.Logger.Error("error closing rows", "error", err)
+		}
+	}()
 	for rows.Next() {
 		if err := rows.Scan(&enc.ID, &enc.Title, &enc.Announcement, &enc.Notes, &enc.StoryID, &enc.WriterID, &enc.FirstEncounter, &enc.LastEncounter); err != nil {
 			db.Logger.Error("scan error on encounters by id", "error", err.Error())
@@ -152,7 +172,12 @@ func (db *DBX) CreateEncounterTx(ctx context.Context, title, announcement, notes
 		db.Logger.Error("tx prepare on stmtInsert failed", "error", err.Error())
 		return -1, err
 	}
-	defer stmtInsert.Close()
+	defer func() {
+		err := stmtInsert.Close()
+		if err != nil {
+			db.Logger.Error("error closing stmtInsert", "error", err)
+		}
+	}()
 	var encounterID int
 	err = tx.StmtContext(ctx, stmtInsert).QueryRow(title, announcement, notes, storyID, storytellerID, first, last).Scan(&encounterID)
 	if err != nil {
@@ -204,7 +229,12 @@ func (db *DBX) UpdateEncounterTx(ctx context.Context, title, announcement, notes
 		db.Logger.Error("tx prepare on stmtInsert failed", "error", err.Error())
 		return -1, err
 	}
-	defer stmtInsert.Close()
+	defer func() {
+		err := stmtInsert.Close()
+		if err != nil {
+			db.Logger.Error("error closing stmtInsert", "error", err)
+		}
+	}()
 	var encounterID int
 	err = tx.StmtContext(ctx, stmtInsert).QueryRow(title, announcement, notes, first, last, id).Scan(&encounterID)
 	if err != nil {
@@ -267,7 +297,12 @@ func (db *DBX) DeleteEncounterByID(ctx context.Context, id int) error {
 		db.Logger.Error("tx prepare on stmtInsert failed", "error", err.Error())
 		return err
 	}
-	defer stmtInsert.Close()
+	defer func() {
+		err := stmtInsert.Close()
+		if err != nil {
+			db.Logger.Error("error closing stmtInsert", "error", err)
+		}
+	}()
 	_, err = tx.StmtContext(ctx, stmtInsert).Exec(id)
 	if err != nil {
 		db.Logger.Error("error on delete FROM encounters", "error", err.Error())

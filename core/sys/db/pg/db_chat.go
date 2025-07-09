@@ -15,7 +15,12 @@ func (db *DBX) AddChatInformation(ctx context.Context, username, userid, channel
 		db.Logger.Error("prepare insert into chat information failed", "error", err.Error())
 		return -1, err
 	}
-	defer stmt.Close()
+	defer func() {
+		err := stmt.Close()
+		if err != nil {
+			db.Logger.Error("error closing stmt", "error", err)
+		}
+	}()
 	var res int
 	err = stmt.QueryRow(userid, channel, username, chat).Scan(&res)
 	if err != nil {
@@ -34,7 +39,12 @@ func (db *DBX) GetChatInformation(ctx context.Context) ([]types.ChatInfo, error)
 		db.Logger.Error("query on chat_information failed", "error", err.Error())
 		return info, err
 	}
-	defer rows.Close()
+	defer func() {
+		err := rows.Close()
+		if err != nil {
+			db.Logger.Error("error closing rows", "error", err)
+		}
+	}()
 	for rows.Next() {
 		var s types.ChatInfo
 		if err := rows.Scan(&s.ID, &s.UserID, &s.Username, &s.Channel, &s.Chat); err != nil {
@@ -71,7 +81,12 @@ func (db *DBX) GetChatChannelInformation(ctx context.Context) ([]string, error) 
 		db.Logger.Error("query on chat_information.channel failed", "error", err.Error())
 		return info, err
 	}
-	defer rows.Close()
+	defer func() {
+		err := rows.Close()
+		if err != nil {
+			db.Logger.Error("error closing rows", "error", err)
+		}
+	}()
 	for rows.Next() {
 		var s string
 		if err := rows.Scan(&s); err != nil {
@@ -106,7 +121,12 @@ func (db *DBX) GetChatRunningChannels(ctx context.Context, kind string) ([]types
 		db.Logger.Error("query on chat_information.channel failed", "error", err.Error())
 		return stats, err
 	}
-	defer rows.Close()
+	defer func() {
+		err := rows.Close()
+		if err != nil {
+			db.Logger.Error("error closing rows", "error", err)
+		}
+	}()
 	for rows.Next() {
 		var s types.RunningChannels
 		if err := rows.Scan(&s.Title, &s.Channel); err != nil {

@@ -35,7 +35,7 @@ func (c *PathfinderCharacter) SetName(n string) error {
 }
 
 func (c *PathfinderCharacter) RPGSystem() *rpg.RPGSystem {
-	return c.Creature.RPG
+	return c.RPG
 }
 
 func (c *PathfinderCharacter) Damage(v int) error {
@@ -54,11 +54,11 @@ func (c *PathfinderCharacter) InitiativeBonus() (int, error) {
 }
 
 func (c *PathfinderCharacter) SetWeapon(name, kind string, value int, description string) {
-	c.PFExtended.Weapon.SetWeapon(name, kind, value, description)
+	c.Weapon.SetWeapon(name, kind, value, description)
 }
 
 func (c *PathfinderCharacter) SetArmor(v int) {
-	c.PFExtended.ArmorClassBonus = v
+	c.ArmorClassBonus = v
 }
 
 type PFExtended struct {

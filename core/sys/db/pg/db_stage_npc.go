@@ -15,7 +15,12 @@ func (db *DBX) GetNPCByStageID(ctx context.Context, id int) ([]types.Players, er
 		db.Logger.Error("query on non_players by stage_id failed", "error", err.Error())
 		return players, err
 	}
-	defer rows.Close()
+	defer func() {
+		err := rows.Close()
+		if err != nil {
+			db.Logger.Error("error closing rows", "error", err)
+		}
+	}()
 	for rows.Next() {
 		p := types.NewPlayer()
 		c := base.RestoreCreature()
@@ -56,7 +61,12 @@ func (db *DBX) UpdateNPC(ctx context.Context, id int, creature *base.Creature, e
 		db.Logger.Error("update non_players prepare failed", "error", err.Error())
 		return err
 	}
-	defer stmt.Close()
+	defer func() {
+		err := stmt.Close()
+		if err != nil {
+			db.Logger.Error("error closing stmt", "error", err)
+		}
+	}()
 	db.Logger.Debug("update NPC", "creature", creature)
 	_, err = stmt.ExecContext(ctx, creature.Abilities, creature.Skills, ext, destroyed, id)
 	if err != nil {

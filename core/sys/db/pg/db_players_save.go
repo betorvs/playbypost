@@ -31,7 +31,12 @@ func (db *DBX) SavePlayerTx(ctx context.Context, id, storyID int, creature *base
 		db.Logger.Error("tx prepare on players failed", "error", err.Error())
 		return -1, err
 	}
-	defer stmt.Close()
+	defer func() {
+		err := stmt.Close()
+		if err != nil {
+			db.Logger.Error("error closing stmt", "error", err)
+		}
+	}()
 	err = tx.StmtContext(ctx, stmt).QueryRow(creature.Name, id, storyID, false, creature.Abilities, creature.Skills, ext, creature.RPG.Name).Scan(&playerID)
 	if err != nil {
 		db.Logger.Error("tx statement on players failed", "error", err.Error())
@@ -54,7 +59,12 @@ func (db *DBX) UpdatePlayer(ctx context.Context, id int, creature *base.Creature
 		db.Logger.Error("update players prepare failed", "error", err.Error())
 		return err
 	}
-	defer stmt.Close()
+	defer func() {
+		err := stmt.Close()
+		if err != nil {
+			db.Logger.Error("error closing stmt", "error", err)
+		}
+	}()
 	db.Logger.Debug("update player", "creature", creature)
 	_, err = stmt.ExecContext(ctx, creature.Abilities, creature.Skills, ext, destroyed, id)
 	if err != nil {

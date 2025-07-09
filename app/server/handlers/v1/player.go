@@ -115,10 +115,8 @@ func (a MainApi) GetPlayersByID(w http.ResponseWriter, r *http.Request) {
 		a.s.ErrJSON(w, http.StatusBadRequest, "id should be a integer")
 		return
 	}
-	npc := false
-	if r.URL.Query().Get("npc") == "true" {
-		npc = true
-	}
+	npc := r.URL.Query().Get("npc") == "true"
+
 	a.logger.Debug("get players by id", "player-id", id, "query_npc", npc)
 	obj, err := a.db.GetPlayerByID(a.ctx, id, a.rpg)
 	if err != nil {

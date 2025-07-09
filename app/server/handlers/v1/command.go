@@ -87,7 +87,7 @@ func (a MainApi) ExecuteCommand(w http.ResponseWriter, r *http.Request) {
 
 		composed := types.Composed{Msg: "next options"}
 		if len(opt.NextEncounters) > 0 {
-			opts, _ := parser.ParserAutoPlaysNext(opt.NextEncounters, opt.AutoPlay.Solo)
+			opts, _ := parser.ParserAutoPlaysNext(opt.NextEncounters, opt.Solo)
 			a.logger.Info("auto play found", "opts", opts)
 			composed.Opts = opts
 		}

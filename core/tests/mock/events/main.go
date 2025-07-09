@@ -28,7 +28,7 @@ func main() {
 		Handler: mux,
 	}
 	mux.HandleFunc("GET /health", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprint(w, "{\"status\":\"OK\"}")
+		_, _ = fmt.Fprint(w, "{\"status\":\"OK\"}")
 	})
 	a := app{
 		logger: logger,
@@ -58,15 +58,15 @@ func (a *app) events(w http.ResponseWriter, r *http.Request) {
 	err := json.NewDecoder(r.Body).Decode(&obj)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		fmt.Fprint(w, "{\"msg\":\"json decode error\"}")
+		_, _ = fmt.Fprint(w, "{\"msg\":\"json decode error\"}")
 		return
 	}
 	a.logger.Info("event received", "event", obj)
 	w.WriteHeader(http.StatusAccepted)
-	fmt.Fprint(w, "{\"msg\":\"Accepted\"}")
+	_, _ = fmt.Fprint(w, "{\"msg\":\"Accepted\"}")
 }
 
 func (a *app) validate(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprint(w, "{\"msg\":\"authenticated\"}")
+	_, _ = fmt.Fprint(w, "{\"msg\":\"authenticated\"}")
 }

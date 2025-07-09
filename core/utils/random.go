@@ -8,7 +8,7 @@ import (
 
 func RandomString(n int) string {
 	rand.New(rand.NewSource(time.Now().UnixNano()))
-	var alphabet []rune = []rune("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz")
+	var alphabet = []rune("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz")
 	alphabetSize := len(alphabet)
 	var sb strings.Builder
 

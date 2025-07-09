@@ -43,7 +43,12 @@ func main() {
 
 	conn := utils.LoadDBEnvVars()
 	db := db.NewDB(conn, logger)
-	defer db.Close()
+	defer func() {
+		err := db.Close()
+		if err != nil {
+			logger.Error("error closing db", "error", err)
+		}
+	}()
 	// rpg loading
 	rpgFlag := flag.String("rpg", rpg.D10HM, fmt.Sprintf("-rpg [%s|%s]", rpg.D10HM, rpg.PFD20))
 	stageWorker := flag.Bool("stage-worker", false, "-stage-worker")

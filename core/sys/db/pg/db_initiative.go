@@ -13,7 +13,12 @@ func (db *DBX) UpdateNextPlayer(ctx context.Context, id, nextPlayer int) error {
 	if err != nil {
 		db.Logger.Error("tx prepare on initiative failed", "error", err.Error())
 	}
-	defer stmt.Close()
+	defer func() {
+		err := stmt.Close()
+		if err != nil {
+			db.Logger.Error("error closing stmt", "error", err)
+		}
+	}()
 	var res int
 	err = stmt.QueryRow(nextPlayer, id).Scan(&res)
 	if err != nil {
@@ -42,7 +47,12 @@ func (db *DBX) SaveInitiativeTx(ctx context.Context, i initiative.Initiative, en
 		db.Logger.Error("tx prepare on initiative failed", "error", err.Error())
 		return -1, err
 	}
-	defer stmt.Close()
+	defer func() {
+		err := stmt.Close()
+		if err != nil {
+			db.Logger.Error("error closing stmt", "error", err)
+		}
+	}()
 	// ExecContext(ctx, query, "test01", 1)
 	var id int
 	err = tx.StmtContext(ctx, stmt).QueryRow(i.Name, encounterID, i.Position).Scan(&id)
@@ -77,7 +87,12 @@ func (db *DBX) GetInitiativeByID(ctx context.Context, id int) (initiative.Initia
 		db.Logger.Error("query on users failed", "error", err.Error())
 		return obj, err
 	}
-	defer rows.Close()
+	defer func() {
+		err := rows.Close()
+		if err != nil {
+			db.Logger.Error("error closing rows", "error", err)
+		}
+	}()
 	var nextPlayer, result int
 	var title, name string
 	party := initiative.Participants{}
@@ -110,7 +125,12 @@ func (db *DBX) GetRunningInitiativeByEncounterID(ctx context.Context, encounterI
 		db.Logger.Error("query on users failed", "error", err.Error())
 		return obj, initiativeID, err
 	}
-	defer rows.Close()
+	defer func() {
+		err := rows.Close()
+		if err != nil {
+			db.Logger.Error("error closing rows", "error", err)
+		}
+	}()
 	var nextPlayer, result int
 	var title, name string
 	party := initiative.Participants{}
@@ -141,7 +161,12 @@ func (db *DBX) DeactivateParticipant(ctx context.Context, id int, name string) (
 	if err != nil {
 		db.Logger.Error("tx prepare on initiative_participants failed", "error", err.Error())
 	}
-	defer stmt.Close()
+	defer func() {
+		err := stmt.Close()
+		if err != nil {
+			db.Logger.Error("error closing stmt", "error", err)
+		}
+	}()
 	var res int
 	err = stmt.QueryRow(id, name).Scan(&res)
 	if err != nil {

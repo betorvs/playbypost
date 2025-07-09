@@ -95,7 +95,7 @@ func (s *SvrWeb) ErrJSON(w http.ResponseWriter, code int, msg string) {
 			s.logger.Error("json write error", "error", err.Error())
 		}
 	} else {
-		fmt.Fprint(w, msg)
+		_, _ = fmt.Fprint(w, msg)
 	}
 }
 
@@ -111,5 +111,5 @@ func (s *SvrWeb) Options(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 
 	message := types.Msg{Msg: "OK"}
-	fmt.Fprint(w, message)
+	_, _ = fmt.Fprint(w, message)
 }

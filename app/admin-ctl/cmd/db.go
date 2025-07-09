@@ -70,13 +70,19 @@ func init() {
 
 func ping() {
 	creds := utils.LoadDBEnvVars()
-	conn := strings.Replace(creds, "playbypost", "postgres", -1)
+	conn := strings.ReplaceAll(creds, "playbypost", "postgres")
 	db, err := pg.New(conn)
 	if err != nil {
 		fmt.Println("error ", err.Error())
 		os.Exit(2)
 	}
-	defer db.Close()
+	defer func() {
+		err := db.Close()
+		if err != nil {
+			fmt.Println("error ", err.Error())
+			os.Exit(1)
+		}
+	}()
 	err = db.Ping()
 	if err != nil {
 		fmt.Println("error ", err.Error())
@@ -87,14 +93,20 @@ func ping() {
 
 func create() {
 	creds := utils.LoadDBEnvVars()
-	conn := strings.Replace(creds, "playbypost", "postgres", -1)
+	conn := strings.ReplaceAll(creds, "playbypost", "postgres")
 	fmt.Println(conn)
 	db, err := pg.New(conn)
 	if err != nil {
 		fmt.Println("error ", err.Error())
 		os.Exit(1)
 	}
-	defer db.Close()
+	defer func() {
+		err := db.Close()
+		if err != nil {
+			fmt.Println("error ", err.Error())
+			os.Exit(1)
+		}
+	}()
 	ctx, cancel := context.WithCancel(context.TODO())
 	defer cancel()
 	res, err := db.ExecContext(ctx, "CREATE DATABASE playbypost;")
@@ -112,13 +124,25 @@ func up() {
 		fmt.Println("error ", err.Error())
 		os.Exit(1)
 	}
-	defer fs.Close()
+	defer func() {
+		err := fs.Close()
+		if err != nil {
+			fmt.Println("error ", err.Error())
+			os.Exit(1)
+		}
+	}()
 	dbpg, err := pg.New(creds)
 	if err != nil {
 		fmt.Println("error ", err.Error())
 		os.Exit(1)
 	}
-	defer dbpg.Close()
+	defer func() {
+		err := dbpg.Close()
+		if err != nil {
+			fmt.Println("error ", err.Error())
+			os.Exit(1)
+		}
+	}()
 	driver, err := postgres.WithInstance(dbpg, &postgres.Config{})
 	if err != nil {
 		fmt.Println("error ", err.Error())
@@ -138,13 +162,19 @@ func up() {
 
 func drop() {
 	creds := utils.LoadDBEnvVars()
-	conn := strings.Replace(creds, "playbypost", "postgres", -1)
+	conn := strings.ReplaceAll(creds, "playbypost", "postgres")
 	db, err := pg.New(conn)
 	if err != nil {
 		fmt.Println("error ", err.Error())
 		os.Exit(2)
 	}
-	defer db.Close()
+	defer func() {
+		err := db.Close()
+		if err != nil {
+			fmt.Println("error ", err.Error())
+			os.Exit(1)
+		}
+	}()
 	ctx, cancel := context.WithCancel(context.TODO())
 	defer cancel()
 	_, err = db.ExecContext(ctx, "DROP DATABASE playbypost;")

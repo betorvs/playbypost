@@ -30,7 +30,12 @@ func (db *DBX) CreateStageTx(ctx context.Context, text, userid string, storyID, 
 		db.Logger.Error("tx prepare on queryUser failed", "error", err.Error())
 		return -1, err
 	}
-	defer stmtQueryUser.Close()
+	defer func() {
+		err := stmtQueryUser.Close()
+		if err != nil {
+			db.Logger.Error("error closing stmtQueryUser", "error", err)
+		}
+	}()
 	var userID int
 	err = tx.StmtContext(ctx, stmtQueryUser).QueryRow(userid).Scan(&userID)
 	if err != nil {
@@ -53,7 +58,12 @@ func (db *DBX) CreateStageTx(ctx context.Context, text, userid string, storyID, 
 		db.Logger.Error("tx prepare on story_keys failed", "error", err.Error())
 		return -1, err
 	}
-	defer stmtStoryKeys.Close()
+	defer func() {
+		err := stmtStoryKeys.Close()
+		if err != nil {
+			db.Logger.Error("error closing stmtStoryKeys", "error", err)
+		}
+	}()
 	var encodingKey string
 	err = tx.StmtContext(ctx, stmtStoryKeys).QueryRow(storyID).Scan(&encodingKey)
 	if err != nil {
@@ -68,7 +78,12 @@ func (db *DBX) CreateStageTx(ctx context.Context, text, userid string, storyID, 
 		db.Logger.Error("tx prepare on stmtInsertStage failed", "error", err.Error())
 		return -1, err
 	}
-	defer stmtInsertStage.Close()
+	defer func() {
+		err := stmtInsertStage.Close()
+		if err != nil {
+			db.Logger.Error("error closing stmtInsertStage", "error", err)
+		}
+	}()
 	var stageID int
 	err = tx.StmtContext(ctx, stmtInsertStage).QueryRow(text, encodingKey, false, userID, storyID, creatorID).Scan(&stageID)
 	if err != nil {
@@ -91,7 +106,12 @@ func (db *DBX) AddChannelToStage(ctx context.Context, channel string, id int) (i
 		db.Logger.Error("prepare insert into stage_channel failed", "error", err.Error())
 		return -1, err
 	}
-	defer stmt.Close()
+	defer func() {
+		err := stmt.Close()
+		if err != nil {
+			db.Logger.Error("error closing stmt", "error", err)
+		}
+	}()
 	var res int
 	err = stmt.QueryRow(channel, id, true).Scan(&res)
 	if err != nil {
@@ -108,7 +128,12 @@ func (db *DBX) AddEncounterToStage(ctx context.Context, text string, stage_id, s
 		db.Logger.Error("prepare insert into stage_encounters failed", "error", err.Error())
 		return -1, err
 	}
-	defer stmt.Close()
+	defer func() {
+		err := stmt.Close()
+		if err != nil {
+			db.Logger.Error("error closing stmt", "error", err)
+		}
+	}()
 	var res int
 	err = stmt.QueryRow(text, stage_id, storyteller_id, encounter_id).Scan(&res)
 	if err != nil {
@@ -156,7 +181,12 @@ func (db *DBX) UpdatePhase(ctx context.Context, id, phase int) error {
 		db.Logger.Error("tx prepare on stmtUpdateStageEncounter failed", "error", err.Error())
 		return err
 	}
-	defer stmtUpdateStageEncounter.Close()
+	defer func() {
+		err := stmtUpdateStageEncounter.Close()
+		if err != nil {
+			db.Logger.Error("error closing stmtUpdateStageEncounter", "error", err)
+		}
+	}()
 	var ID int
 	err = tx.StmtContext(ctx, stmtUpdateStageEncounter).QueryRow(phase, id).Scan(&ID)
 	if err != nil {
@@ -225,7 +255,12 @@ func (db *DBX) AddNextEncounter(ctx context.Context, next []types.Next) error {
 			db.Logger.Error("prepare insert into stage_next_encounter failed", "error", err.Error())
 			return err
 		}
-		defer stmt.Close()
+		defer func() {
+			err := stmt.Close()
+			if err != nil {
+				db.Logger.Error("error closing stmt", "error", err)
+			}
+		}()
 		var nextEncounterIDDB int
 		err = tx.StmtContext(ctx, stmt).QueryRow(n.Text, n.UpstreamID, n.EncounterID, n.NextEncounterID).Scan(&nextEncounterIDDB)
 		if err != nil {
@@ -239,7 +274,12 @@ func (db *DBX) AddNextEncounter(ctx context.Context, next []types.Next) error {
 			db.Logger.Error("prepare insert into stage_next_objectives failed", "error", err.Error())
 			return err
 		}
-		defer stmtObjectives.Close()
+		defer func() {
+			err := stmtObjectives.Close()
+			if err != nil {
+				db.Logger.Error("error closing stmtObjectives", "error", err)
+			}
+		}()
 		var objectiveID int
 		err = tx.StmtContext(ctx, stmtObjectives).QueryRow(nextEncounterIDDB, n.Objective.Kind, pq.Array(n.Objective.Values)).Scan(&objectiveID)
 		if err != nil {
@@ -358,7 +398,12 @@ func (db *DBX) CloseStage(ctx context.Context, id int) error {
 	if err != nil {
 		return err
 	}
-	defer rows.Close()
+	defer func() {
+		err := rows.Close()
+		if err != nil {
+			db.Logger.Error("error closing rows", "error", err)
+		}
+	}()
 	var lastEncounterID int
 	var channel, displayText string
 	for rows.Next() {
@@ -417,7 +462,12 @@ func (db *DBX) DeleteStageNextEncounter(ctx context.Context, id int) error {
 		db.Logger.Error("tx prepare on stage_next_encounter failed", "error", err.Error())
 		return err
 	}
-	defer stmt.Close()
+	defer func() {
+		err := stmt.Close()
+		if err != nil {
+			db.Logger.Error("error closing stmt", "error", err)
+		}
+	}()
 	var nextID, objectiveID int
 	err = tx.StmtContext(ctx, stmt).QueryRow(id).Scan(&nextID, &objectiveID)
 	if err != nil {
@@ -431,7 +481,12 @@ func (db *DBX) DeleteStageNextEncounter(ctx context.Context, id int) error {
 		db.Logger.Error("tx prepare on stage_next_objectives failed", "error", err.Error())
 		return err
 	}
-	defer stmt.Close()
+	defer func() {
+		err := stmt.Close()
+		if err != nil {
+			db.Logger.Error("error closing stmt", "error", err)
+		}
+	}()
 	_, err = tx.StmtContext(ctx, stmt).ExecContext(ctx, objectiveID)
 	if err != nil {
 		db.Logger.Error("tx exec on stage_next_objectives failed", "error", err.Error())
@@ -444,7 +499,12 @@ func (db *DBX) DeleteStageNextEncounter(ctx context.Context, id int) error {
 		db.Logger.Error("tx prepare on stage_next_encounter failed", "error", err.Error())
 		return err
 	}
-	defer stmt.Close()
+	defer func() {
+		err := stmt.Close()
+		if err != nil {
+			db.Logger.Error("error closing stmt", "error", err)
+		}
+	}()
 	_, err = tx.StmtContext(ctx, stmt).ExecContext(ctx, nextID)
 	if err != nil {
 		db.Logger.Error("tx exec on stage_next_encounter failed", "error", err.Error())
@@ -479,7 +539,12 @@ func (db *DBX) DeleteStageEncounterByID(ctx context.Context, id int) error {
 		db.Logger.Error("tx prepare on stage_encounters failed", "error", err.Error())
 		return err
 	}
-	defer stmt.Close()
+	defer func() {
+		err := stmt.Close()
+		if err != nil {
+			db.Logger.Error("error closing stmt", "error", err)
+		}
+	}()
 	_, err = tx.StmtContext(ctx, stmt).ExecContext(ctx, id)
 	if err != nil {
 		db.Logger.Error("tx exec on stage_encounters failed", "error", err.Error())

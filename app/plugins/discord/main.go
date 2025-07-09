@@ -160,7 +160,7 @@ func main() {
 	}
 	// web handlers
 	mux.HandleFunc("GET /health", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprint(w, "{\"status\":\"OK\"}")
+		_, _ = fmt.Fprint(w, "{\"status\":\"OK\"}")
 	})
 	mux.HandleFunc("POST /api/v1/event", a.events)
 	mux.HandleFunc("GET /api/v1/validate", a.validate)
@@ -186,7 +186,10 @@ func main() {
 	}
 	logger.Info("commands deleted")
 	logger.Info("shutting down bot...")
-	discord.Close()
+	err = discord.Close()
+	if err != nil {
+		logger.Error("error closing discord session", "error", err)
+	}
 
 	ctxTimeout, ctxCancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer ctxCancel()
@@ -578,7 +581,7 @@ func (a *app) events(w http.ResponseWriter, r *http.Request) {
 	headerToken := r.Header.Get(types.HeaderToken)
 	if headerToken != a.admToken {
 		w.WriteHeader(http.StatusForbidden)
-		fmt.Fprint(w, "{\"msg\":\"unauthenticated\"}")
+		_, _ = fmt.Fprint(w, "{\"msg\":\"unauthenticated\"}")
 		return
 	}
 
@@ -587,12 +590,12 @@ func (a *app) events(w http.ResponseWriter, r *http.Request) {
 	err := json.NewDecoder(r.Body).Decode(&obj)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		fmt.Fprint(w, "{\"msg\":\"json decode error\"}")
+		_, _ = fmt.Fprint(w, "{\"msg\":\"json decode error\"}")
 		return
 	}
 	if obj.Channel == "" || obj.UserID == "" || obj.Message == "" {
 		w.WriteHeader(http.StatusBadRequest)
-		fmt.Fprint(w, "{\"msg\":\"missing required fields\"}")
+		_, _ = fmt.Fprint(w, "{\"msg\":\"missing required fields\"}")
 		return
 	}
 	attachment := discordgo.MessageEmbed{}
@@ -636,18 +639,18 @@ func (a *app) events(w http.ResponseWriter, r *http.Request) {
 	a.logger.Info("message sent", "message", res)
 
 	w.WriteHeader(http.StatusAccepted)
-	fmt.Fprint(w, "{\"msg\":\"Accepted\"}")
+	_, _ = fmt.Fprint(w, "{\"msg\":\"Accepted\"}")
 }
 
 func (a *app) validate(w http.ResponseWriter, r *http.Request) {
 	headerToken := r.Header.Get(types.HeaderToken)
 	if headerToken != a.admToken {
 		w.WriteHeader(http.StatusForbidden)
-		fmt.Fprint(w, "{\"msg\":\"unauthenticated\"}")
+		_, _ = fmt.Fprint(w, "{\"msg\":\"unauthenticated\"}")
 		return
 	}
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprint(w, "{\"msg\":\"authenticated\"}")
+	_, _ = fmt.Fprint(w, "{\"msg\":\"authenticated\"}")
 }
 
 func helpMessage() (string, []*discordgo.MessageEmbed) {
