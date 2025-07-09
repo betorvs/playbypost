@@ -3,6 +3,7 @@ package finder
 import (
 	"bufio"
 	"fmt"
+	"log/slog"
 	"os"
 	"regexp"
 	"strings"
@@ -44,7 +45,12 @@ func QueriesFromDir(migrationFile string) ([]string, error) {
 		fmt.Println(err)
 		return result, err
 	}
-	defer file.Close()
+	defer func() {
+		err := file.Close()
+		if err != nil {
+			slog.Error("error closing file", "error", err)
+		}
+	}()
 
 	// Create a scanner
 	scanner := bufio.NewScanner(file)

@@ -18,7 +18,12 @@ func (db *DBX) GetAutoPlay(ctx context.Context) ([]types.AutoPlay, error) {
 		db.Logger.Error("query on auto_play failed", "error", err.Error())
 		return autoPlay, err
 	}
-	defer rows.Close()
+	defer func() {
+		err := rows.Close()
+		if err != nil {
+			db.Logger.Error("error closing rows", "error", err)
+		}
+	}()
 	for rows.Next() {
 		var auto types.AutoPlay
 		if err := rows.Scan(&auto.ID, &auto.Text, &auto.StoryID, &auto.CreatorID, &auto.Solo, &auto.Publish); err != nil {
@@ -41,7 +46,12 @@ func (db *DBX) GetAutoPlayByID(ctx context.Context, autoPlayID int) (types.AutoP
 		db.Logger.Error("query on auto_play by id failed", "error", err.Error())
 		return autoPlay, err
 	}
-	defer rows.Close()
+	defer func() {
+		err := rows.Close()
+		if err != nil {
+			db.Logger.Error("error closing rows", "error", err)
+		}
+	}()
 	for rows.Next() {
 		if err := rows.Scan(&autoPlay.ID, &autoPlay.Text, &autoPlay.StoryID, &autoPlay.CreatorID, &autoPlay.Solo, &autoPlay.Publish); err != nil {
 			db.Logger.Error("scan error on auto_play by id ", "error", err.Error())
@@ -62,7 +72,12 @@ func (db *DBX) GetAutoPlayEncounterListByStoryID(ctx context.Context, storyID in
 		db.Logger.Error("query on auto_play_next_encounter by story_id failed", "error", err.Error())
 		return list, err
 	}
-	defer rows.Close()
+	defer func() {
+		err := rows.Close()
+		if err != nil {
+			db.Logger.Error("error closing rows", "error", err)
+		}
+	}()
 	for rows.Next() {
 		var next types.EncounterWithNext
 		if err := rows.Scan(&next.ID, &next.Encounter, &next.EncounterID, &next.NextEncounter, &next.NextID); err != nil {
@@ -80,7 +95,12 @@ func (db *DBX) GetAutoPlayEncounterListByStoryID(ctx context.Context, storyID in
 		db.Logger.Error("query on encounters by story_id failed", "error", err.Error())
 		return list, err
 	}
-	defer rowsEncounter.Close()
+	defer func() {
+		err := rowsEncounter.Close()
+		if err != nil {
+			db.Logger.Error("error closing rows", "error", err)
+		}
+	}()
 	for rowsEncounter.Next() {
 		var generic types.Options
 		if err := rowsEncounter.Scan(&generic.ID, &generic.Name); err != nil {
@@ -124,12 +144,17 @@ func (db *DBX) GetAutoPlayOptionsByChannelID(ctx context.Context, channelID, use
 		db.Logger.Error("query on auto_play_channel by channel_id failed", "error", err.Error())
 		return autoPlay, err
 	}
-	defer rows.Close()
+	defer func() {
+		err := rows.Close()
+		if err != nil {
+			db.Logger.Error("error closing rows", "error", err)
+		}
+	}()
 	for rows.Next() {
 		var group types.AutoPlayGroup
 		var next types.Next
 		var values []sql.NullInt64
-		if err := rows.Scan(&autoPlay.AutoPlay.ID, &autoPlay.AutoPlay.Text, &autoPlay.AutoPlay.StoryID, &autoPlay.AutoPlay.Solo, &autoPlay.EncodingKey, &autoPlay.AutoPlayChannelID, &autoPlay.ChannelID, &group.ID, &group.UserID, &group.LastUpdateAt, &group.Interactions, &next.ID, &next.UpstreamID, &next.Text, &next.EncounterID, &next.NextEncounterID, &next.Objective.Kind, pq.Array(&values)); err != nil {
+		if err := rows.Scan(&autoPlay.ID, &autoPlay.Text, &autoPlay.StoryID, &autoPlay.Solo, &autoPlay.EncodingKey, &autoPlay.AutoPlayChannelID, &autoPlay.ChannelID, &group.ID, &group.UserID, &group.LastUpdateAt, &group.Interactions, &next.ID, &next.UpstreamID, &next.Text, &next.EncounterID, &next.NextEncounterID, &next.Objective.Kind, pq.Array(&values)); err != nil {
 			db.Logger.Error("scan error on auto_play_channel by channel_id ", "error", err.Error())
 		}
 		if len(values) > 0 {
@@ -176,7 +201,12 @@ func (db *DBX) GetAutoPlayActivities(ctx context.Context) ([]types.Activity, err
 		db.Logger.Error("query on auto_play_encounter_activities failed", "error", err.Error())
 		return autoPlay, err
 	}
-	defer rows.Close()
+	defer func() {
+		err := rows.Close()
+		if err != nil {
+			db.Logger.Error("error closing rows", "error", err)
+		}
+	}()
 	for rows.Next() {
 		var auto types.Activity
 		if err := rows.Scan(&auto.ID, &auto.UpstreamID, &auto.EncounterID, &auto.Actions, &auto.Processed); err != nil {
@@ -235,7 +265,12 @@ func (db *DBX) DescribeAutoPlayPublished(ctx context.Context, solo bool) ([]type
 		db.Logger.Error("query on DescribeAutoPlayPublished failed ", "error", err.Error())
 		return describe, err
 	}
-	defer rows.Close()
+	defer func() {
+		err := rows.Close()
+		if err != nil {
+			db.Logger.Error("error closing rows", "error", err)
+		}
+	}()
 	for rows.Next() {
 		var d types.AutoPlayDescribed
 		var encodingKey string
@@ -265,7 +300,12 @@ func (db *DBX) GetNextEncounterByAutoPlayID(ctx context.Context, autoPlayID int)
 		db.Logger.Error("query on auto_play_next_encounter failed", "error", err.Error())
 		return next, err
 	}
-	defer rows.Close()
+	defer func() {
+		err := rows.Close()
+		if err != nil {
+			db.Logger.Error("error closing rows", "error", err)
+		}
+	}()
 	for rows.Next() {
 		var n types.Next
 		var o types.Objective

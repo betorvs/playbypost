@@ -16,7 +16,12 @@ func (db *DBX) GetPlayers(ctx context.Context, rpgSystem *rpg.RPGSystem) ([]type
 		db.Logger.Error("query on players failed", "error", err.Error())
 		return players, err
 	}
-	defer rows.Close()
+	defer func() {
+		err := rows.Close()
+		if err != nil {
+			db.Logger.Error("error closing rows", "error", err)
+		}
+	}()
 	for rows.Next() {
 		// var p types.Players
 		p := types.NewPlayer()
@@ -52,7 +57,12 @@ func (db *DBX) GetPlayerByID(ctx context.Context, id int, rpgSystem *rpg.RPGSyst
 		db.Logger.Error("query on players by id failed", "error", err.Error())
 		return players, err
 	}
-	defer rows.Close()
+	defer func() {
+		err := rows.Close()
+		if err != nil {
+			db.Logger.Error("error closing rows", "error", err)
+		}
+	}()
 	for rows.Next() {
 		p := types.NewPlayer()
 		c := base.RestoreCreature()
@@ -81,7 +91,12 @@ func (db *DBX) GetPlayerByPlayerID(ctx context.Context, id int, rpgSystem *rpg.R
 		db.Logger.Error("query on players by player_id failed", "error", err.Error())
 		return players, err
 	}
-	defer rows.Close()
+	defer func() {
+		err := rows.Close()
+		if err != nil {
+			db.Logger.Error("error closing rows", "error", err)
+		}
+	}()
 	for rows.Next() {
 		p := types.NewPlayer()
 		c := base.RestoreCreature()
@@ -111,7 +126,12 @@ func (db *DBX) GetPlayerByStageID(ctx context.Context, id int, rpgSystem *rpg.RP
 		db.Logger.Error("query on players by stage_id failed", "error", err.Error())
 		return players, err
 	}
-	defer rows.Close()
+	defer func() {
+		err := rows.Close()
+		if err != nil {
+			db.Logger.Error("error closing rows", "error", err)
+		}
+	}()
 	for rows.Next() {
 		p := types.NewPlayer()
 		c := base.RestoreCreature()
@@ -140,7 +160,12 @@ func (db *DBX) GetPlayerByUserID(ctx context.Context, id, channel string, rpgSys
 		db.Logger.Error("query on players by userid failed", "error", err.Error())
 		return players, err
 	}
-	defer rows.Close()
+	defer func() {
+		err := rows.Close()
+		if err != nil {
+			db.Logger.Error("error closing rows", "error", err)
+		}
+	}()
 	for rows.Next() {
 		p := types.NewPlayer()
 		c := base.RestoreCreature()

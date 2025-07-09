@@ -1,13 +1,21 @@
 package utils
 
-import "os"
+import (
+	"log/slog"
+	"os"
+)
 
 func Save(value, file string) error {
 	f, err := os.Create(file)
 	if err != nil {
 		return err
 	}
-	defer f.Close()
+	defer func() {
+		err := f.Close()
+		if err != nil {
+			slog.Error("error closing file", "error", err)
+		}
+	}()
 	_, err = f.WriteString(value)
 	if err != nil {
 		return err

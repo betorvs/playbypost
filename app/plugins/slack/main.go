@@ -62,7 +62,7 @@ func main() {
 		Handler: mux,
 	}
 	mux.HandleFunc("GET /health", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprint(w, "{\"status\":\"OK\"}")
+		_, _ = fmt.Fprint(w, "{\"status\":\"OK\"}")
 	})
 
 	// create internal app
@@ -596,7 +596,7 @@ func (a *app) events(w http.ResponseWriter, r *http.Request) {
 	headerToken := r.Header.Get(types.HeaderToken)
 	if headerToken != a.admToken {
 		w.WriteHeader(http.StatusForbidden)
-		fmt.Fprint(w, "{\"msg\":\"unauthenticated\"}")
+		_, _ = fmt.Fprint(w, "{\"msg\":\"unauthenticated\"}")
 		return
 	}
 
@@ -605,12 +605,12 @@ func (a *app) events(w http.ResponseWriter, r *http.Request) {
 	err := json.NewDecoder(r.Body).Decode(&obj)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		fmt.Fprint(w, "{\"msg\":\"json decode error\"}")
+		_, _ = fmt.Fprint(w, "{\"msg\":\"json decode error\"}")
 		return
 	}
 	if obj.Channel == "" || obj.UserID == "" || obj.Message == "" {
 		w.WriteHeader(http.StatusBadRequest)
-		fmt.Fprint(w, "{\"msg\":\"missing required fields\"}")
+		_, _ = fmt.Fprint(w, "{\"msg\":\"missing required fields\"}")
 		return
 	}
 	attachment := slack.Attachment{}
@@ -652,7 +652,7 @@ func (a *app) events(w http.ResponseWriter, r *http.Request) {
 		_, _, err := a.slack.PostMessage(obj.Channel, slack.MsgOptionAttachments(attachment))
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
-			fmt.Fprint(w, "{\"msg\":\"cannot send message to slack\"}")
+			_, _ = fmt.Fprint(w, "{\"msg\":\"cannot send message to slack\"}")
 			return
 		}
 	default:
@@ -661,22 +661,22 @@ func (a *app) events(w http.ResponseWriter, r *http.Request) {
 		_, err := a.slack.PostEphemeral(obj.Channel, obj.UserID, slack.MsgOptionAttachments(attachment))
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
-			fmt.Fprint(w, "{\"msg\":\"cannot send private message to slack\"}")
+			_, _ = fmt.Fprint(w, "{\"msg\":\"cannot send private message to slack\"}")
 			return
 		}
 	}
 
 	w.WriteHeader(http.StatusAccepted)
-	fmt.Fprint(w, "{\"msg\":\"Accepted\"}")
+	_, _ = fmt.Fprint(w, "{\"msg\":\"Accepted\"}")
 }
 
 func (a *app) validate(w http.ResponseWriter, r *http.Request) {
 	headerToken := r.Header.Get(types.HeaderToken)
 	if headerToken != a.admToken {
 		w.WriteHeader(http.StatusForbidden)
-		fmt.Fprint(w, "{\"msg\":\"unauthenticated\"}")
+		_, _ = fmt.Fprint(w, "{\"msg\":\"unauthenticated\"}")
 		return
 	}
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprint(w, "{\"msg\":\"authenticated\"}")
+	_, _ = fmt.Fprint(w, "{\"msg\":\"authenticated\"}")
 }

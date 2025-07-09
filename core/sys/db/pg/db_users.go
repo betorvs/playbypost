@@ -16,7 +16,12 @@ func (db *DBX) GetUser(ctx context.Context) ([]types.User, error) {
 		db.Logger.Error("query on users failed", "error", err.Error())
 		return users, err
 	}
-	defer rows.Close()
+	defer func() {
+		err := rows.Close()
+		if err != nil {
+			db.Logger.Error("error closing rows", "error", err)
+		}
+	}()
 	for rows.Next() {
 		var u types.User
 		if err := rows.Scan(&u.ID, &u.UserID, &u.Active); err != nil {
@@ -39,7 +44,12 @@ func (db *DBX) GetUserByUserID(ctx context.Context, id string) (types.User, erro
 		db.Logger.Error("query on users by userid failed", "error", err.Error())
 		return user, err
 	}
-	defer rows.Close()
+	defer func() {
+		err := rows.Close()
+		if err != nil {
+			db.Logger.Error("error closing rows", "error", err)
+		}
+	}()
 	for rows.Next() {
 		var u types.User
 		if err := rows.Scan(&u.ID, &u.UserID, &u.Active); err != nil {
@@ -77,7 +87,12 @@ func (db *DBX) CreateUserTx(ctx context.Context, userid string) (int, error) {
 		db.Logger.Error("tx prepare on queryUser failed", "error", err.Error())
 		return -1, err
 	}
-	defer stmtQueryUser.Close()
+	defer func() {
+		err := stmtQueryUser.Close()
+		if err != nil {
+			db.Logger.Error("error closing stmtQueryUser", "error", err)
+		}
+	}()
 	var userID int
 	err = tx.StmtContext(ctx, stmtQueryUser).QueryRow(userid).Scan(&userID)
 	if err != nil {
@@ -111,7 +126,12 @@ func (db *DBX) createUser(ctx context.Context, userid string, tx *sql.Tx) (int, 
 		db.Logger.Error("tx prepare on story_keys failed", "error", err.Error())
 		return -1, err
 	}
-	defer stmtInsertUser.Close()
+	defer func() {
+		err := stmtInsertUser.Close()
+		if err != nil {
+			db.Logger.Error("error closing stmtInsertUser", "error", err)
+		}
+	}()
 	err = tx.StmtContext(ctx, stmtInsertUser).QueryRow(userid).Scan(&userID)
 	if err != nil {
 		db.Logger.Error("query row insert into users failed", "error", err.Error())

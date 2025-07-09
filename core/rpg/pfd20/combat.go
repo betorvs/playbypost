@@ -5,17 +5,17 @@ func (c *PathfinderCharacter) Attack(kind, weapon string) int {
 	switch kind {
 	case Melee:
 		strenght := c.calcAbilityModifier(Strength)
-		w, ok := c.PFExtended.Weapon.GetWeapon(weapon)
+		w, ok := c.Weapon.GetWeapon(weapon)
 		if ok {
-			p := proficiencyRank(c.PFExtended.Proficiency[w.Kind].Level, c.PFExtended.Level)
+			p := proficiencyRank(c.Proficiency[w.Kind].Level, c.Level)
 			return strenght + p
 		}
 		return strenght
 	case Ranged:
 		dexterity := c.calcAbilityModifier(Dexterity)
-		w, ok := c.PFExtended.Weapon.GetWeapon(weapon)
+		w, ok := c.Weapon.GetWeapon(weapon)
 		if ok {
-			p := proficiencyRank(c.PFExtended.Proficiency[w.Kind].Level, c.PFExtended.Level)
+			p := proficiencyRank(c.Proficiency[w.Kind].Level, c.Level)
 			return dexterity + p
 		}
 		return dexterity
@@ -28,9 +28,9 @@ func (c *PathfinderCharacter) DefenseBonus(kind string) int {
 	dex := c.calcAbilityModifier(Dexterity)
 	switch kind {
 	case Melee:
-		return c.PFExtended.ArmorClassBonus + dex + proficiencyRank(c.PFExtended.Proficiency[ArmorClass].Level, c.PFExtended.Level)
+		return c.ArmorClassBonus + dex + proficiencyRank(c.Proficiency[ArmorClass].Level, c.Level)
 	case Ranged:
-		return c.PFExtended.ArmorClassBonus + dex + proficiencyRank(c.PFExtended.Proficiency[ArmorClass].Level, c.PFExtended.Level)
+		return c.ArmorClassBonus + dex + proficiencyRank(c.Proficiency[ArmorClass].Level, c.Level)
 	}
 	return 0
 }

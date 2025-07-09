@@ -3,6 +3,7 @@ package library
 import (
 	"encoding/json"
 	"io"
+	"log/slog"
 	"os"
 )
 
@@ -26,7 +27,12 @@ func loadFile(file string) ([]byte, error) {
 	if err != nil {
 		return []byte{}, err
 	}
-	defer f.Close()
+	defer func() {
+		err := f.Close()
+		if err != nil {
+			slog.Error("error closing file", "error", err)
+		}
+	}()
 
 	content, err := io.ReadAll(f)
 	if err != nil {

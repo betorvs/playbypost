@@ -16,7 +16,12 @@ func (db *DBX) GetStory(ctx context.Context) ([]types.Story, error) {
 		db.Logger.Error("query on story failed", "error", err.Error())
 		return story, err
 	}
-	defer rows.Close()
+	defer func() {
+		err := rows.Close()
+		if err != nil {
+			db.Logger.Error("error closing rows", "error", err)
+		}
+	}()
 	for rows.Next() {
 		var s types.Story
 		if err := rows.Scan(&s.ID, &s.Title, &s.Announcement, &s.Notes, &s.WriterID); err != nil {
@@ -52,7 +57,12 @@ func (db *DBX) CreateStoryTx(ctx context.Context, title, announcement, notes, en
 		db.Logger.Error("tx prepare on story_keys failed", "error", err.Error())
 		return -1, err
 	}
-	defer stmtStory.Close()
+	defer func() {
+		err := stmtStory.Close()
+		if err != nil {
+			db.Logger.Error("error closing stmtStory", "error", err)
+		}
+	}()
 	var storyID int
 	err = tx.StmtContext(ctx, stmtStory).QueryRow(title, notes, announcement, writerID).Scan(&storyID)
 	if err != nil {
@@ -66,7 +76,12 @@ func (db *DBX) CreateStoryTx(ctx context.Context, title, announcement, notes, en
 		db.Logger.Error("tx prepare on story_keys failed", "error", err.Error())
 		return -1, err
 	}
-	defer stmtStoryKeys.Close()
+	defer func() {
+		err := stmtStoryKeys.Close()
+		if err != nil {
+			db.Logger.Error("error closing stmtStoryKeys", "error", err)
+		}
+	}()
 	var encodingKeyID int
 	err = tx.StmtContext(ctx, stmtStoryKeys).QueryRow(encodingKey, storyID).Scan(&encodingKeyID)
 	if err != nil {
@@ -80,7 +95,12 @@ func (db *DBX) CreateStoryTx(ctx context.Context, title, announcement, notes, en
 		db.Logger.Error("tx prepare on story_keys failed", "error", err.Error())
 		return -1, err
 	}
-	defer stmtAccessStoryKeys.Close()
+	defer func() {
+		err := stmtAccessStoryKeys.Close()
+		if err != nil {
+			db.Logger.Error("error closing stmtAccessStoryKeys", "error", err)
+		}
+	}()
 	var accessStoryID int
 	err = tx.StmtContext(ctx, stmtAccessStoryKeys).QueryRow(writerID, encodingKeyID).Scan(&accessStoryID)
 	if err != nil {
@@ -117,7 +137,12 @@ func (db *DBX) UpdateStoryTx(ctx context.Context, title, announcement, notes str
 		db.Logger.Error("tx prepare on story_keys failed", "error", err.Error())
 		return -1, err
 	}
-	defer stmtStory.Close()
+	defer func() {
+		err := stmtStory.Close()
+		if err != nil {
+			db.Logger.Error("error closing stmtStory", "error", err)
+		}
+	}()
 	var storyID int
 	err = tx.StmtContext(ctx, stmtStory).QueryRow(title, notes, announcement, id).Scan(&storyID)
 	if err != nil {
@@ -140,7 +165,12 @@ func (db *DBX) GetStoryIDByTitle(ctx context.Context, title string) (int, error)
 		db.Logger.Error("query on story by title failed", "error", err.Error())
 		return storyID, err
 	}
-	defer rows.Close()
+	defer func() {
+		err := rows.Close()
+		if err != nil {
+			db.Logger.Error("error closing rows", "error", err)
+		}
+	}()
 	for rows.Next() {
 		if err := rows.Scan(&storyID); err != nil {
 			db.Logger.Error("scan error on story by title", "error", err.Error())
@@ -161,7 +191,12 @@ func (db *DBX) GetStoryByID(ctx context.Context, id int) (types.Story, error) {
 		db.Logger.Error("query on story by id failed", "error", err.Error())
 		return story, err
 	}
-	defer rows.Close()
+	defer func() {
+		err := rows.Close()
+		if err != nil {
+			db.Logger.Error("error closing rows", "error", err)
+		}
+	}()
 	for rows.Next() {
 		if err := rows.Scan(&story.ID, &story.Title, &story.Announcement, &story.Notes, &story.WriterID); err != nil {
 			db.Logger.Error("scan error on story by id", "error", err.Error())
@@ -182,7 +217,12 @@ func (db *DBX) GetStoriesByWriterID(ctx context.Context, id int) ([]types.Story,
 		db.Logger.Error("query on story by writer_id failed", "error", err.Error())
 		return stories, err
 	}
-	defer rows.Close()
+	defer func() {
+		err := rows.Close()
+		if err != nil {
+			db.Logger.Error("error closing rows", "error", err)
+		}
+	}()
 	for rows.Next() {
 		var story types.Story
 		if err := rows.Scan(&story.ID, &story.Title, &story.Announcement, &story.Notes, &story.WriterID); err != nil {
@@ -231,7 +271,12 @@ func (db *DBX) DeleteStoryByID(ctx context.Context, id int) error {
 		db.Logger.Error("query on access_story_keys failed", "error", err.Error())
 		return err
 	}
-	defer rows.Close()
+	defer func() {
+		err := rows.Close()
+		if err != nil {
+			db.Logger.Error("error closing rows", "error", err)
+		}
+	}()
 	var accessStoryID, storyKeyID int
 	for rows.Next() {
 		if err := rows.Scan(&accessStoryID, &storyKeyID); err != nil {
@@ -245,7 +290,12 @@ func (db *DBX) DeleteStoryByID(ctx context.Context, id int) error {
 		db.Logger.Error("tx prepare on access_story_keys failed", "error", err.Error())
 		return err
 	}
-	defer stmtAccessStoryKeys.Close()
+	defer func() {
+		err := stmtAccessStoryKeys.Close()
+		if err != nil {
+			db.Logger.Error("error closing stmtAccessStoryKeys", "error", err)
+		}
+	}()
 	_, err = tx.StmtContext(ctx, stmtAccessStoryKeys).ExecContext(ctx, accessStoryID)
 	if err != nil {
 		db.Logger.Error("exec on access_story_keys failed", "error", err.Error())
@@ -258,7 +308,12 @@ func (db *DBX) DeleteStoryByID(ctx context.Context, id int) error {
 		db.Logger.Error("tx prepare on story_keys failed", "error", err.Error())
 		return err
 	}
-	defer stmtStoryKeys.Close()
+	defer func() {
+		err := stmtStoryKeys.Close()
+		if err != nil {
+			db.Logger.Error("error closing stmtStoryKeys", "error", err)
+		}
+	}()
 	_, err = tx.StmtContext(ctx, stmtStoryKeys).ExecContext(ctx, storyKeyID)
 	if err != nil {
 		db.Logger.Error("exec on story_keys failed", "error", err.Error())
@@ -271,7 +326,12 @@ func (db *DBX) DeleteStoryByID(ctx context.Context, id int) error {
 		db.Logger.Error("tx prepare on story failed", "error", err.Error())
 		return err
 	}
-	defer stmtStory.Close()
+	defer func() {
+		err := stmtStory.Close()
+		if err != nil {
+			db.Logger.Error("error closing stmtStory", "error", err)
+		}
+	}()
 	_, err = tx.StmtContext(ctx, stmtStory).ExecContext(ctx, id)
 	if err != nil {
 		db.Logger.Error("exec on story failed", "error", err.Error())

@@ -23,7 +23,12 @@ func (db *DBX) GetStage(ctx context.Context) ([]types.Stage, error) {
 		db.Logger.Error("query on stage failed", "error", err.Error())
 		return stages, err
 	}
-	defer rows.Close()
+	defer func() {
+		err := rows.Close()
+		if err != nil {
+			db.Logger.Error("error closing rows", "error", err)
+		}
+	}()
 	for rows.Next() {
 		var s types.Stage
 		if err := rows.Scan(&s.ID, &s.Text, &s.StoryID, &s.CreatorID, &s.StorytellerID); err != nil {
@@ -46,7 +51,12 @@ func (db *DBX) GetStageByStoryID(ctx context.Context, id int) ([]types.Stage, er
 		db.Logger.Error("query on stage by story_id failed", "error", err.Error())
 		return stages, err
 	}
-	defer rows.Close()
+	defer func() {
+		err := rows.Close()
+		if err != nil {
+			db.Logger.Error("error closing rows", "error", err)
+		}
+	}()
 	for rows.Next() {
 		var s types.Stage
 		if err := rows.Scan(&s.ID, &s.Text, &s.StoryID, &s.CreatorID, &s.StorytellerID); err != nil {
@@ -69,7 +79,12 @@ func (db *DBX) GetStageByStageID(ctx context.Context, id int) (types.StageAggreg
 		db.Logger.Error("query on stage failed", "error", err.Error())
 		return aggr, err
 	}
-	defer rows.Close()
+	defer func() {
+		err := rows.Close()
+		if err != nil {
+			db.Logger.Error("error closing rows", "error", err)
+		}
+	}()
 	for rows.Next() {
 		var sa types.Stage
 		var encodingKey, announce, notes string
@@ -109,7 +124,12 @@ func (db *DBX) GetStageEncountersByStageID(ctx context.Context, id int) ([]types
 		db.Logger.Error("query on stage_encounters by stage_id failed", "error", err.Error())
 		return list, err
 	}
-	defer rows.Close()
+	defer func() {
+		err := rows.Close()
+		if err != nil {
+			db.Logger.Error("error closing rows", "error", err)
+		}
+	}()
 	for rows.Next() {
 		var s types.StageEncounter
 		var notes, announce, encodingKey string
@@ -148,7 +168,12 @@ func (db *DBX) GetStageEncountersByStageIDWithPagination(ctx context.Context, id
 		db.Logger.Error("query on stage_encounters by stage_id failed", "error", err.Error())
 		return list, lastID, total, err
 	}
-	defer rows.Close()
+	defer func() {
+		err := rows.Close()
+		if err != nil {
+			db.Logger.Error("error closing rows", "error", err)
+		}
+	}()
 	count := 1
 	for rows.Next() {
 		var s types.StageEncounter
@@ -183,7 +208,12 @@ func (db *DBX) GetRunningStageByChannelID(ctx context.Context, channelID, userID
 		db.Logger.Error("query on stage failed", "error", err.Error())
 		return running, err
 	}
-	defer rows.Close()
+	defer func() {
+		err := rows.Close()
+		if err != nil {
+			db.Logger.Error("error closing rows", "error", err)
+		}
+	}()
 	for rows.Next() {
 		var sa types.Stage
 		var encodingKey, announce, notes string
@@ -216,11 +246,11 @@ func (db *DBX) GetRunningStageByChannelID(ctx context.Context, channelID, userID
 		db.Logger.Error("rows err on getStageEncounterByEncounterID", "error", err.Error())
 	}
 	running.Encounter = enc
-	if running.StageAggregated.Stage.UserID == userID {
+	if running.Stage.UserID == userID {
 		storyteller = true
 		if enc.ID == 0 {
 			db.Logger.Debug("running encounter not found", "encounter", enc)
-			encs, err := db.GetStageEncountersByStageID(ctx, running.StageAggregated.Stage.ID)
+			encs, err := db.GetStageEncountersByStageID(ctx, running.Stage.ID)
 			if err != nil {
 				db.Logger.Error("rows err on stage_encounters by stage_id", "error", err.Error())
 			}
@@ -261,7 +291,12 @@ func (db *DBX) GetStageEncounterActivitiesByEncounterID(ctx context.Context, id 
 		db.Logger.Error("query on stage_encounter_activities by encounter_id failed", "error", err.Error())
 		return list, err
 	}
-	defer rows.Close()
+	defer func() {
+		err := rows.Close()
+		if err != nil {
+			db.Logger.Error("error closing rows", "error", err)
+		}
+	}()
 	for rows.Next() {
 		var s types.Activity
 		if err := rows.Scan(&s.ID, &s.Actions, &s.UpstreamID, &s.EncounterID, &s.Processed); err != nil {
@@ -285,7 +320,12 @@ func (db *DBX) GetStageEncounterActivities(ctx context.Context) ([]types.Activit
 		db.Logger.Error("query on stage_encounter_activities failed", "error", err.Error())
 		return list, err
 	}
-	defer rows.Close()
+	defer func() {
+		err := rows.Close()
+		if err != nil {
+			db.Logger.Error("error closing rows", "error", err)
+		}
+	}()
 	for rows.Next() {
 		var s types.Activity
 		if err := rows.Scan(&s.ID, &s.UpstreamID, &s.EncounterID, &s.Actions, &s.Processed); err != nil {
@@ -309,7 +349,12 @@ func (db *DBX) GetStageTaskFromRunningTaskID(ctx context.Context, taskID int) (t
 		db.Logger.Error("query on tasks by task_id failed", "error", err.Error())
 		return t, err
 	}
-	defer rows.Close()
+	defer func() {
+		err := rows.Close()
+		if err != nil {
+			db.Logger.Error("error closing rows", "error", err)
+		}
+	}()
 	for rows.Next() {
 		if err := rows.Scan(&t.Description, &t.Kind, &t.Ability, &t.Skill, &t.Target); err != nil {
 			db.Logger.Error("scan error on tasks by task_id ", "error", err.Error())
@@ -334,7 +379,12 @@ func (db *DBX) GetCreatureFromParticipantsList(ctx context.Context, players []ty
 			db.Logger.Error("query on players failed", "error", err.Error())
 			return playersMap, creatureMap, err
 		}
-		defer rows.Close()
+		defer func() {
+			err := rows.Close()
+			if err != nil {
+				db.Logger.Error("error closing rows", "error", err)
+			}
+		}()
 		for rows.Next() {
 			c := base.RestoreCreature()
 			c.RPG = rpgSystem
@@ -372,7 +422,12 @@ func (db *DBX) GetCreatureFromParticipantsList(ctx context.Context, players []ty
 			db.Logger.Error("query on non_players by id failed", "error", err.Error())
 			return playersMap, creatureMap, err
 		}
-		defer rows.Close()
+		defer func() {
+			err := rows.Close()
+			if err != nil {
+				db.Logger.Error("error closing rows", "error", err)
+			}
+		}()
 		for rows.Next() {
 			c := base.RestoreCreature()
 			c.RPG = rpgSystem
@@ -411,7 +466,12 @@ func (db *DBX) GetNextEncounterByEncounterID(ctx context.Context, id int) (types
 		db.Logger.Error("query on stage_next_encounter by encounter_id failed", "error", err.Error())
 		return ne, err
 	}
-	defer rows.Close()
+	defer func() {
+		err := rows.Close()
+		if err != nil {
+			db.Logger.Error("error closing rows", "error", err)
+		}
+	}()
 	for rows.Next() {
 		if err := rows.Scan(&ne.Text, &ne.UpstreamID, &ne.EncounterID, &ne.NextEncounterID); err != nil {
 			db.Logger.Error("scan error on stage_next_encounter by encounter_id ", "error", err.Error())
@@ -433,7 +493,12 @@ func (db *DBX) GetNextEncounterByStageID(ctx context.Context, id int) ([]types.N
 		db.Logger.Error("query on stage_next_encounter failed", "error", err.Error())
 		return next, err
 	}
-	defer rows.Close()
+	defer func() {
+		err := rows.Close()
+		if err != nil {
+			db.Logger.Error("error closing rows", "error", err)
+		}
+	}()
 	for rows.Next() {
 		var n types.Next
 		var o types.Objective
@@ -471,7 +536,12 @@ func (db *DBX) GetStageEncounterListByStoryID(ctx context.Context, storyID int) 
 		db.Logger.Error("query on auto_play_next_encounter by story_id failed", "error", err.Error())
 		return list, err
 	}
-	defer rows.Close()
+	defer func() {
+		err := rows.Close()
+		if err != nil {
+			db.Logger.Error("error closing rows", "error", err)
+		}
+	}()
 	for rows.Next() {
 		var next types.EncounterWithNext
 		if err := rows.Scan(&next.ID, &next.Encounter, &next.EncounterID, &next.NextEncounter, &next.NextID); err != nil {
@@ -489,7 +559,12 @@ func (db *DBX) GetStageEncounterListByStoryID(ctx context.Context, storyID int) 
 		db.Logger.Error("query on encounters by story_id failed", "error", err.Error())
 		return list, err
 	}
-	defer rowsEncounter.Close()
+	defer func() {
+		err := rowsEncounter.Close()
+		if err != nil {
+			db.Logger.Error("error closing rowsEncounter", "error", err)
+		}
+	}()
 	for rowsEncounter.Next() {
 		var generic types.Options
 		if err := rowsEncounter.Scan(&generic.ID, &generic.Name); err != nil {
@@ -529,7 +604,12 @@ func (db *DBX) getRunningTaskByEncounterID(ctx context.Context, id int) ([]types
 		db.Logger.Error("query on stage_running_tasks by encounter_id failed", "error", err.Error())
 		return tasks, err
 	}
-	defer rows.Close()
+	defer func() {
+		err := rows.Close()
+		if err != nil {
+			db.Logger.Error("error closing rows", "error", err)
+		}
+	}()
 	for rows.Next() {
 		var s types.Options
 		if err := rows.Scan(&s.Name, &s.ID); err != nil {
@@ -556,7 +636,12 @@ func (db *DBX) getStageEncounterByEncounterID(ctx context.Context, id int, phase
 			db.Logger.Error("query on stage_encounters by stage_encounter.id failed", "error", err.Error())
 			return enc, err
 		}
-		defer rows.Close()
+		defer func() {
+			err := rows.Close()
+			if err != nil {
+				db.Logger.Error("error closing rows", "error", err)
+			}
+		}()
 		r = rows
 	case phase > 0 && id == -1:
 		// can return a initiative id
@@ -566,11 +651,21 @@ func (db *DBX) getStageEncounterByEncounterID(ctx context.Context, id int, phase
 			db.Logger.Error("query on stage_encounters by phase equal 3 (running) failed", "error", err.Error())
 			return enc, err
 		}
-		defer rows.Close()
+		defer func() {
+			err := rows.Close()
+			if err != nil {
+				db.Logger.Error("error closing rows", "error", err)
+			}
+		}()
 		r = rows
 	}
 
-	defer r.Close()
+	defer func() {
+		err := r.Close()
+		if err != nil {
+			db.Logger.Error("error closing rows", "error", err)
+		}
+	}()
 	for r.Next() {
 		var s types.StageEncounter
 		var notes, announce, encodingKey string
@@ -609,7 +704,12 @@ func (db *DBX) getParticipantsByStageEncounterID(ctx context.Context, id int) ([
 		db.Logger.Error("query on stage_encounters_participants_players and stage_encounters_participants_non_players failed", "error", err.Error())
 		return players, npcs, err
 	}
-	defer rows.Close()
+	defer func() {
+		err := rows.Close()
+		if err != nil {
+			db.Logger.Error("error closing rows", "error", err)
+		}
+	}()
 	var p types.Options
 	var n types.Options
 	for rows.Next() {

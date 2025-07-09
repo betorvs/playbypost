@@ -32,7 +32,12 @@ func (db *DBX) CreateAutoPlayTx(ctx context.Context, text string, storyID, creat
 		db.Logger.Error("tx prepare on story_keys failed", "error", err.Error())
 		return -1, err
 	}
-	defer stmtStoryKeys.Close()
+	defer func() {
+		err := stmtStoryKeys.Close()
+		if err != nil {
+			db.Logger.Error("error closing stmtStoryKeys", "error", err)
+		}
+	}()
 	var encodingKey string
 	err = tx.StmtContext(ctx, stmtStoryKeys).QueryRow(storyID).Scan(&encodingKey)
 	if err != nil {
@@ -46,7 +51,12 @@ func (db *DBX) CreateAutoPlayTx(ctx context.Context, text string, storyID, creat
 		db.Logger.Error("tx prepare on stmtInsert failed", "error", err.Error())
 		return -1, err
 	}
-	defer stmtInsert.Close()
+	defer func() {
+		err := stmtInsert.Close()
+		if err != nil {
+			db.Logger.Error("error closing stmtInsert", "error", err)
+		}
+	}()
 	var autoPlayID int
 	err = tx.StmtContext(ctx, stmtInsert).QueryRow(text, encodingKey, storyID, creatorID, solo).Scan(&autoPlayID)
 	if err != nil {
@@ -84,14 +94,24 @@ func (db *DBX) AddAutoPlayNext(ctx context.Context, next []types.Next) error {
 		db.Logger.Error("tx prepare on encounters failed", "error", err.Error())
 		return err
 	}
-	defer stmtEncounters.Close()
+	defer func() {
+		err := stmtEncounters.Close()
+		if err != nil {
+			db.Logger.Error("error closing stmtEncounters", "error", err)
+		}
+	}()
 	encountersID := []int{}
 	rows, err := tx.StmtContext(ctx, stmtEncounters).Query(next[0].UpstreamID)
 	if err != nil {
 		db.Logger.Error("query on encounters failed", "error", err.Error())
 		return err
 	}
-	defer rows.Close()
+	defer func() {
+		err := rows.Close()
+		if err != nil {
+			db.Logger.Error("error closing rows", "error", err)
+		}
+	}()
 	for rows.Next() {
 		var id int
 		if err := rows.Scan(&id); err != nil {
@@ -118,7 +138,12 @@ func (db *DBX) AddAutoPlayNext(ctx context.Context, next []types.Next) error {
 			db.Logger.Error("tx prepare on auto_play_next_encounter failed", "error", err.Error())
 			return err
 		}
-		defer stmt.Close()
+		defer func() {
+			err := stmt.Close()
+			if err != nil {
+				db.Logger.Error("error closing stmt", "error", err)
+			}
+		}()
 		var nextEncounterIDDB int
 		err = tx.StmtContext(ctx, stmt).QueryRow(n.Text, n.UpstreamID, n.EncounterID, n.NextEncounterID).Scan(&nextEncounterIDDB)
 		if err != nil {
@@ -133,7 +158,12 @@ func (db *DBX) AddAutoPlayNext(ctx context.Context, next []types.Next) error {
 			db.Logger.Error("tx prepare on auto_play_next_objectives failed", "error", err.Error())
 			return err
 		}
-		defer stmt.Close()
+		defer func() {
+			err := stmt.Close()
+			if err != nil {
+				db.Logger.Error("error closing stmt", "error", err)
+			}
+		}()
 		var objectiveID int
 		err = tx.StmtContext(ctx, stmt).QueryRow(nextEncounterIDDB, n.Objective.Kind, pq.Array(n.Objective.Values)).Scan(&objectiveID)
 		if err != nil {
@@ -172,7 +202,12 @@ func (db *DBX) CreateAutoPlayChannelTx(ctx context.Context, channelID, userID st
 		db.Logger.Error("tx prepare on auto_play failed", "error", err.Error())
 		return -1, err
 	}
-	defer stmt.Close()
+	defer func() {
+		err := stmt.Close()
+		if err != nil {
+			db.Logger.Error("error closing stmt", "error", err)
+		}
+	}()
 	var apID int
 	err = tx.StmtContext(ctx, stmt).QueryRow(autoPlayID).Scan(&apID)
 	if err != nil {
@@ -190,7 +225,12 @@ func (db *DBX) CreateAutoPlayChannelTx(ctx context.Context, channelID, userID st
 		db.Logger.Error("tx prepare SELECT on auto_play_channel failed", "error", err.Error())
 		return -1, err
 	}
-	defer stmt.Close()
+	defer func() {
+		err := stmt.Close()
+		if err != nil {
+			db.Logger.Error("error closing stmt", "error", err)
+		}
+	}()
 	var autoPlayChannelID int
 	err = tx.StmtContext(ctx, stmt).QueryRow(channelID, apID).Scan(&autoPlayChannelID)
 	if err == nil {
@@ -203,7 +243,12 @@ func (db *DBX) CreateAutoPlayChannelTx(ctx context.Context, channelID, userID st
 		db.Logger.Error("tx prepare on encounters failed", "error", err.Error())
 		return -1, err
 	}
-	defer stmtEncounter.Close()
+	defer func() {
+		err := stmtEncounter.Close()
+		if err != nil {
+			db.Logger.Error("error closing stmtEncounter", "error", err)
+		}
+	}()
 	var encounterID int
 	err = tx.StmtContext(ctx, stmtEncounter).QueryRow(autoPlayID).Scan(&encounterID)
 	if err != nil {
@@ -223,7 +268,12 @@ func (db *DBX) CreateAutoPlayChannelTx(ctx context.Context, channelID, userID st
 		db.Logger.Error("tx prepare insert on auto_play_channel failed", "error", err.Error())
 		return -1, err
 	}
-	defer stmt.Close()
+	defer func() {
+		err := stmt.Close()
+		if err != nil {
+			db.Logger.Error("error closing stmt", "error", err)
+		}
+	}()
 	err = tx.StmtContext(ctx, stmt).QueryRow(channelID, apID, true).Scan(&autoPlayChannelID)
 	if err != nil {
 		db.Logger.Error("tx insert on auto_play_channel failed", "error", err.Error())
@@ -267,7 +317,12 @@ func (db *DBX) AddAutoPlayGroup(ctx context.Context, channelID, userID string) e
 		db.Logger.Error("tx prepare SELECT on auto_play_channel failed", "error", err.Error())
 		return err
 	}
-	defer stmt.Close()
+	defer func() {
+		err := stmt.Close()
+		if err != nil {
+			db.Logger.Error("error closing stmt", "error", err)
+		}
+	}()
 	var autoPlayChannelID int
 	err = tx.StmtContext(ctx, stmt).QueryRow(channelID).Scan(&autoPlayChannelID)
 	if err != nil {
@@ -331,7 +386,12 @@ func (db *DBX) UpdateAutoPlayGroup(ctx context.Context, id, count int, date time
 		db.Logger.Error("tx prepare update auto_play_group failed", "error", err.Error())
 		return err
 	}
-	defer stmt.Close()
+	defer func() {
+		err := stmt.Close()
+		if err != nil {
+			db.Logger.Error("error closing stmt", "error", err)
+		}
+	}()
 	_, err = tx.StmtContext(ctx, stmt).Exec(date, count, id)
 	if err != nil {
 		db.Logger.Error("tx update auto_play_group failed", "error", err.Error())
@@ -368,7 +428,12 @@ func (db *DBX) UpdateAutoPlayState(ctx context.Context, autoPlayChannel string, 
 		db.Logger.Error("tx prepare SELECT on queryAutoPlayChannel failed", "error", err.Error())
 		return err
 	}
-	defer stmt.Close()
+	defer func() {
+		err := stmt.Close()
+		if err != nil {
+			db.Logger.Error("error closing stmt", "error", err)
+		}
+	}()
 	var autoPlayChannelID int
 	err = tx.StmtContext(ctx, stmt).QueryRow(autoPlayChannel).Scan(&autoPlayChannelID)
 	if err != nil {
@@ -383,7 +448,12 @@ func (db *DBX) UpdateAutoPlayState(ctx context.Context, autoPlayChannel string, 
 		db.Logger.Error("tx prepare SELECT on queryAutoPlayState failed", "error", err.Error())
 		return err
 	}
-	defer stmt.Close()
+	defer func() {
+		err := stmt.Close()
+		if err != nil {
+			db.Logger.Error("error closing stmt", "error", err)
+		}
+	}()
 	var apsID int
 	err = tx.StmtContext(ctx, stmt).QueryRow(autoPlayChannelID).Scan(&apsID)
 	if err != nil {
@@ -398,7 +468,12 @@ func (db *DBX) UpdateAutoPlayState(ctx context.Context, autoPlayChannel string, 
 			db.Logger.Error("tx prepare to insert into auto_play_state failed", "error", err.Error())
 			return err
 		}
-		defer stmt.Close()
+		defer func() {
+			err := stmt.Close()
+			if err != nil {
+				db.Logger.Error("error closing stmt", "error", err)
+			}
+		}()
 		_, err = tx.StmtContext(ctx, stmt).ExecContext(ctx, autoPlayChannelID, encounterID, true)
 		if err != nil {
 			db.Logger.Error("tx insert into auto_play_state failed", "error", err.Error())
@@ -413,7 +488,12 @@ func (db *DBX) UpdateAutoPlayState(ctx context.Context, autoPlayChannel string, 
 			db.Logger.Error("tx prepare to update on auto_play_state failed", "error", err.Error())
 			return err
 		}
-		defer stmt.Close()
+		defer func() {
+			err := stmt.Close()
+			if err != nil {
+				db.Logger.Error("error closing stmt", "error", err)
+			}
+		}()
 		_, err = tx.StmtContext(ctx, stmt).ExecContext(ctx, encounterID, apsID)
 		if err != nil {
 			db.Logger.Error("tx update on auto_play_state failed", "error", err.Error())
@@ -450,7 +530,12 @@ func (db *DBX) CloseAutoPlayChannel(ctx context.Context, channelID string, autoP
 		db.Logger.Error("tx prepare on auto_play_channel failed", "error", err.Error())
 		return err
 	}
-	defer stmt.Close()
+	defer func() {
+		err := stmt.Close()
+		if err != nil {
+			db.Logger.Error("error closing stmt", "error", err)
+		}
+	}()
 	var autoPlayChannelID int
 	err = tx.StmtContext(ctx, stmt).QueryRow(channelID, autoPlayID).Scan(&autoPlayChannelID)
 	if err != nil {
@@ -464,7 +549,12 @@ func (db *DBX) CloseAutoPlayChannel(ctx context.Context, channelID string, autoP
 		db.Logger.Error("tx prepare on auto_play_channel failed", "error", err.Error())
 		return err
 	}
-	defer stmt.Close()
+	defer func() {
+		err := stmt.Close()
+		if err != nil {
+			db.Logger.Error("error closing stmt", "error", err)
+		}
+	}()
 	_, err = tx.StmtContext(ctx, stmt).ExecContext(ctx, autoPlayChannelID)
 	if err != nil {
 		db.Logger.Error("tx exec on auto_play_channel failed", "error", err.Error())
@@ -477,7 +567,12 @@ func (db *DBX) CloseAutoPlayChannel(ctx context.Context, channelID string, autoP
 		db.Logger.Error("tx prepare on auto_play_group failed", "error", err.Error())
 		return err
 	}
-	defer stmt.Close()
+	defer func() {
+		err := stmt.Close()
+		if err != nil {
+			db.Logger.Error("error closing stmt", "error", err)
+		}
+	}()
 	_, err = tx.StmtContext(ctx, stmt).ExecContext(ctx, autoPlayChannelID)
 	if err != nil {
 		db.Logger.Error("tx exec on auto_play_group failed", "error", err.Error())
@@ -490,7 +585,12 @@ func (db *DBX) CloseAutoPlayChannel(ctx context.Context, channelID string, autoP
 		db.Logger.Error("tx prepare on auto_play_state failed", "error", err.Error())
 		return err
 	}
-	defer stmt.Close()
+	defer func() {
+		err := stmt.Close()
+		if err != nil {
+			db.Logger.Error("error closing stmt", "error", err)
+		}
+	}()
 	_, err = tx.StmtContext(ctx, stmt).ExecContext(ctx, autoPlayChannelID)
 	if err != nil {
 		db.Logger.Error("tx exec on auto_play_state failed", "error", err.Error())
@@ -527,7 +627,12 @@ func (db *DBX) DeleteAutoPlayNextEncounter(ctx context.Context, id int) error {
 		db.Logger.Error("tx prepare on auto_play_next_encounter failed", "error", err.Error())
 		return err
 	}
-	defer stmt.Close()
+	defer func() {
+		err := stmt.Close()
+		if err != nil {
+			db.Logger.Error("error closing stmt", "error", err)
+		}
+	}()
 	var nextID, objectiveID int
 	err = tx.StmtContext(ctx, stmt).QueryRow(id).Scan(&nextID, &objectiveID)
 	if err != nil {
@@ -541,7 +646,12 @@ func (db *DBX) DeleteAutoPlayNextEncounter(ctx context.Context, id int) error {
 		db.Logger.Error("tx prepare on auto_play_next_objectives failed", "error", err.Error())
 		return err
 	}
-	defer stmt.Close()
+	defer func() {
+		err := stmt.Close()
+		if err != nil {
+			db.Logger.Error("error closing stmt", "error", err)
+		}
+	}()
 	_, err = tx.StmtContext(ctx, stmt).ExecContext(ctx, objectiveID)
 	if err != nil {
 		db.Logger.Error("tx exec on auto_play_next_objectives failed", "error", err.Error())
@@ -554,7 +664,12 @@ func (db *DBX) DeleteAutoPlayNextEncounter(ctx context.Context, id int) error {
 		db.Logger.Error("tx prepare on auto_play_next_encounter failed", "error", err.Error())
 		return err
 	}
-	defer stmt.Close()
+	defer func() {
+		err := stmt.Close()
+		if err != nil {
+			db.Logger.Error("error closing stmt", "error", err)
+		}
+	}()
 	_, err = tx.StmtContext(ctx, stmt).ExecContext(ctx, nextID)
 	if err != nil {
 		db.Logger.Error("tx exec on auto_play_next_encounter failed", "error", err.Error())
@@ -587,7 +702,12 @@ func (db *DBX) addUserAndGroup(ctx context.Context, userID string, autoPlayChann
 		db.Logger.Error("tx prepare on queryUser failed", "error", err.Error())
 		return -1, err
 	}
-	defer stmt.Close()
+	defer func() {
+		err := stmt.Close()
+		if err != nil {
+			db.Logger.Error("error closing stmt", "error", err)
+		}
+	}()
 	var validUserID int
 	err = tx.StmtContext(ctx, stmt).QueryRow(userID).Scan(&validUserID)
 	if err != nil {
@@ -611,7 +731,12 @@ func (db *DBX) addUserAndGroup(ctx context.Context, userID string, autoPlayChann
 		db.Logger.Error("tx prepare on queryUser failed", "error", err.Error())
 		return -1, err
 	}
-	defer stmt.Close()
+	defer func() {
+		err := stmt.Close()
+		if err != nil {
+			db.Logger.Error("error closing stmt", "error", err)
+		}
+	}()
 	var groupID int
 	err = tx.StmtContext(ctx, stmt).QueryRow(validUserID, autoPlayChannelID).Scan(&groupID)
 	if err != nil {
@@ -630,7 +755,12 @@ func (db *DBX) addUserAndGroup(ctx context.Context, userID string, autoPlayChann
 		db.Logger.Error("tx prepare insert into auto_play_group failed", "error", err.Error())
 		return -1, err
 	}
-	defer stmt.Close()
+	defer func() {
+		err := stmt.Close()
+		if err != nil {
+			db.Logger.Error("error closing stmt", "error", err)
+		}
+	}()
 	_, err = tx.StmtContext(ctx, stmt).ExecContext(ctx, validUserID, autoPlayChannelID, time.Now(), true)
 	if err != nil {
 		db.Logger.Error("tx insert into auto_play_group failed", "error", err.Error())

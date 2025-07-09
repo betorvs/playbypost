@@ -3,6 +3,7 @@ package finder
 import (
 	"bufio"
 	"fmt"
+	"log/slog"
 	"os"
 	"regexp"
 	"strings"
@@ -29,7 +30,12 @@ func ParserDBMigration(migrationFile string) (Migration, error) {
 		fmt.Println(err)
 		return migration, err
 	}
-	defer file.Close()
+	defer func() {
+		err := file.Close()
+		if err != nil {
+			slog.Error("error closing file", "error", err)
+		}
+	}()
 
 	// Create a scanner
 	scanner := bufio.NewScanner(file)

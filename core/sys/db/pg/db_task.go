@@ -15,7 +15,12 @@ func (db *DBX) CreateTask(ctx context.Context, description, ability, skill strin
 		db.Logger.Error("prepare insert into tasks failed", "error", err.Error())
 		return -1, err
 	}
-	defer stmt.Close()
+	defer func() {
+		err := stmt.Close()
+		if err != nil {
+			db.Logger.Error("error closing stmt", "error", err)
+		}
+	}()
 	var res int
 	err = stmt.QueryRow(description, kind, ability, skill, target).Scan(&res)
 	if err != nil {
@@ -33,7 +38,12 @@ func (db *DBX) GetTask(ctx context.Context) ([]types.Task, error) {
 		db.Logger.Error("query on tasks failed", "error", err.Error())
 		return t, err
 	}
-	defer rows.Close()
+	defer func() {
+		err := rows.Close()
+		if err != nil {
+			db.Logger.Error("error closing rows", "error", err)
+		}
+	}()
 	for rows.Next() {
 		var tl types.Task
 		if err := rows.Scan(&tl.ID, &tl.Description, &tl.Kind, &tl.Ability, &tl.Skill, &tl.Target); err != nil {
@@ -66,7 +76,12 @@ func (db *DBX) UpdateTaskByID(ctx context.Context, description, ability, skill s
 		db.Logger.Error("prepare update tasks failed", "error", err.Error())
 		return err
 	}
-	defer stmt.Close()
+	defer func() {
+		err := stmt.Close()
+		if err != nil {
+			db.Logger.Error("error closing stmt", "error", err)
+		}
+	}()
 	_, err = stmt.ExecContext(ctx, description, ability, skill, kind, target, id)
 	if err != nil {
 		db.Logger.Error("exec update tasks failed", "error", err.Error())
@@ -109,7 +124,12 @@ func (db *DBX) DeleteTaskByID(ctx context.Context, id int) error {
 		db.Logger.Error("tx prepare on tasks failed", "error", err.Error())
 		return err
 	}
-	defer stmtTask.Close()
+	defer func() {
+		err := stmtTask.Close()
+		if err != nil {
+			db.Logger.Error("error closing stmtTask", "error", err)
+		}
+	}()
 	_, err = tx.StmtContext(ctx, stmtTask).ExecContext(ctx, id)
 	if err != nil {
 		db.Logger.Error("exec on tasks failed", "error", err.Error())
