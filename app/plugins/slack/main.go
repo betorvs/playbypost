@@ -247,7 +247,7 @@ func (a *app) middlewareSlashCommand(evt *socketmode.Event, client *socketmode.C
 					Text: &slack.TextBlockObject{
 						Type:  "plain_text",
 						Text:  v.Name,
-						Emoji: true,
+						Emoji: boolPtr(true),
 					},
 					Value: fmt.Sprintf(`cuni;%s;%s;%s;%d`, cmd.ChannelID, cmd.UserID, v.Value, v.ID),
 				})
@@ -266,7 +266,7 @@ func (a *app) middlewareSlashCommand(evt *socketmode.Event, client *socketmode.C
 								Placeholder: &slack.TextBlockObject{
 									Type:  "plain_text",
 									Text:  "Select an item",
-									Emoji: true,
+									Emoji: boolPtr(true),
 								},
 								ActionID: "static_select-action",
 								Options:  options,
@@ -342,7 +342,7 @@ func (a *app) middlewareSlashCommand(evt *socketmode.Event, client *socketmode.C
 					Text: &slack.TextBlockObject{
 						Type:  "plain_text",
 						Text:  v.Name,
-						Emoji: true,
+						Emoji: boolPtr(true),
 					},
 					Value: fmt.Sprintf(`cuni;%s;%s;%s;%d`, cmd.ChannelID, cmd.UserID, v.Value, v.ID),
 				})
@@ -361,7 +361,7 @@ func (a *app) middlewareSlashCommand(evt *socketmode.Event, client *socketmode.C
 								Placeholder: &slack.TextBlockObject{
 									Type:  "plain_text",
 									Text:  "Select an item",
-									Emoji: true,
+									Emoji: boolPtr(true),
 								},
 								ActionID: "static_select-action",
 								Options:  options,
@@ -397,7 +397,7 @@ func (a *app) middlewareSlashCommand(evt *socketmode.Event, client *socketmode.C
 					Text: &slack.TextBlockObject{
 						Type:  "plain_text",
 						Text:  v.Name,
-						Emoji: true,
+						Emoji: boolPtr(true),
 					},
 					Value: fmt.Sprintf(`cuni;%s;%s;%s;%d`, cmd.ChannelID, cmd.UserID, v.Value, v.ID),
 				})
@@ -416,7 +416,7 @@ func (a *app) middlewareSlashCommand(evt *socketmode.Event, client *socketmode.C
 								Placeholder: &slack.TextBlockObject{
 									Type:  "plain_text",
 									Text:  "Select an item",
-									Emoji: true,
+									Emoji: boolPtr(true),
 								},
 								ActionID: "static_select-action",
 								Options:  options,
@@ -680,3 +680,5 @@ func (a *app) validate(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	_, _ = fmt.Fprint(w, "{\"msg\":\"authenticated\"}")
 }
+
+func boolPtr(b bool) *bool { return &b }
