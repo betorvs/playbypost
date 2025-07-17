@@ -67,7 +67,12 @@ func (db *DBX) GetUsersByWriterID(ctx context.Context, writerID int) ([]types.Us
 		db.Logger.Error(fmt.Sprintf("GetUsersByWriterID: %v", err))
 		return nil, err
 	}
-	defer rows.Close()
+	defer func() {
+		err := rows.Close()
+		if err != nil {
+			db.Logger.Error(fmt.Sprintf("GetUsersByWriterID rows close: %v", err))
+		}
+	}()
 
 	var users []types.User
 	for rows.Next() {
@@ -106,7 +111,12 @@ func (db *DBX) GetWritersByUserID(ctx context.Context, userID int) ([]types.Writ
 		db.Logger.Error(fmt.Sprintf("GetWritersByUserID: %v", err))
 		return nil, err
 	}
-	defer rows.Close()
+	defer func() {
+		err := rows.Close()
+		if err != nil {
+			db.Logger.Error(fmt.Sprintf("GetWritersByUserID rows close: %v", err))
+		}
+	}()
 
 	var writers []types.Writer
 	for rows.Next() {

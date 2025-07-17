@@ -268,7 +268,13 @@ func verify(table string) {
 		fmt.Println("error ", err.Error())
 		os.Exit(1)
 	}
-	defer rows.Close()
+	defer func() {
+		err := rows.Close()
+		if err != nil {
+			fmt.Println("error ", err.Error())
+			os.Exit(1)
+		}
+	}()
 	fmt.Printf("Schema for table %s:\n", table)
 	for rows.Next() {
 		var columnName, dataType string
@@ -302,7 +308,13 @@ func verify(table string) {
 		fmt.Println("error ", err.Error())
 		os.Exit(1)
 	}
-	defer fkRows.Close()
+	defer func() {
+		err := fkRows.Close()
+		if err != nil {
+			fmt.Println("error ", err.Error())
+			os.Exit(1)
+		}
+	}()
 
 	fmt.Printf("\nForeign Key Constraints for table %s:\n", table)
 	foundFK := false

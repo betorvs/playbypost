@@ -14,7 +14,7 @@ import (
 )
 
 var (
-	migrationFile, queryString, queryDir string
+	queryString, queryDir string
 )
 
 type Report struct {

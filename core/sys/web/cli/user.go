@@ -110,7 +110,12 @@ func (c *Cli) DeleteWriterUserAssociation(id int) error {
 	if err != nil {
 		return err
 	}
-	defer resp.Body.Close()
+	defer func() {
+		err := resp.Body.Close()
+		if err != nil {
+			fmt.Println("error closing response body", err.Error())
+		}
+	}()
 	if resp.StatusCode != http.StatusOK {
 		return fmt.Errorf("status code not expected %d", resp.StatusCode)
 	}
