@@ -36,6 +36,34 @@ func (db *DBX) GetUser(ctx context.Context) ([]types.User, error) {
 	return users, nil
 }
 
+func (db *DBX) GetUsersByID(ctx context.Context, id int) ([]types.User, error) {
+	users := []types.User{}
+	query := "SELECT id, userid, active FROM users WHERE id = $1" // dev:finder+query
+	rows, err := db.Conn.QueryContext(ctx, query, id)
+	if err != nil {
+		db.Logger.Error("query on users by id failed", "error", err.Error())
+		return users, err
+	}
+	defer func() {
+		err := rows.Close()
+		if err != nil {
+			db.Logger.Error("error closing rows", "error", err)
+		}
+	}()
+	for rows.Next() {
+		var u types.User
+		if err := rows.Scan(&u.ID, &u.UserID, &u.Active); err != nil {
+			db.Logger.Error("scan error on users by id", "error", err.Error())
+		}
+		users = append(users, u)
+	}
+	// Check for errors FROM iterating over rows.
+	if err := rows.Err(); err != nil {
+		db.Logger.Error("rows err on users by id", "error", err.Error())
+	}
+	return users, nil
+}
+
 func (db *DBX) GetUserByUserID(ctx context.Context, id string) (types.User, error) {
 	user := types.User{}
 	query := "SELECT id, userid, active FROM users WHERE userid = $1" // dev:finder+query

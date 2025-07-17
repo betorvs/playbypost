@@ -229,6 +229,37 @@ func (a *app) middlewareSlashCommand(evt *socketmode.Event, client *socketmode.C
 		}
 		client.Ack(*evt.Request, payload2)
 		return
+	case "/iamwriter":
+		writerUsername := strings.TrimSpace(strings.Replace(cmd.Text, "/iamwriter", "", 1))
+
+		// Call backend to associate writer and user
+		var responseContent string
+		writer, err := a.web.GetWriterByUsername(writerUsername)
+		if err != nil {
+			a.logger.Error("error getting writer by username", "error", err.Error())
+			responseContent = fmt.Sprintf("Sorry, it did not work to find writer %s", writerUsername)
+		} else {
+			user, err := a.web.GetUserByUserID(cmd.UserID)
+			if err != nil {
+				a.logger.Error("error getting user by userid", "error", err.Error())
+				responseContent = fmt.Sprintf("Sorry, it did not work to find user %s", cmd.UserName)
+			} else {
+				_, err := a.web.CreateWriterUserAssociation(writer.ID, user.ID)
+				if err != nil {
+					a.logger.Error("error creating writer user association", "error", err.Error())
+					responseContent = fmt.Sprintf("Sorry, it did not work to associate writer %s with user %s", writerUsername, cmd.UserName)
+				} else {
+					responseContent = fmt.Sprintf("Successfully associated you with writer: %s", writerUsername)
+				}
+			}
+		}
+
+		payload := map[string]interface{}{
+			"text":          responseContent,
+			"response_type": "ephemeral",
+		}
+		client.Ack(*evt.Request, payload)
+		return
 	case types.Opt: // opt
 		msg, err := a.web.PostCommandComposed(cmd.UserID, types.Opt, cmd.ChannelID)
 		if err != nil {

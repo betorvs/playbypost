@@ -1,8 +1,6 @@
-//go:build integration
-
 package integration_test
 
-//
+// //go:build integration
 
 import (
 	"encoding/json"
@@ -27,6 +25,79 @@ var (
 	}
 )
 
+func createBaseStoryEncounter(t *testing.T, h *cli.Cli, name, random string) (types.Writer, types.Story) {
+	writerUsername := fmt.Sprintf("writer-%s-%s", name, random)
+	_, err2 := h.CreateWriter(writerUsername, "asdQWE123")
+	if err2 != nil {
+		t.Error("error creating writer")
+	}
+	writers, err3 := h.GetWriter()
+	if err3 != nil {
+		t.Error("error getting writers")
+	}
+	if len(writers) == 0 {
+		t.Error("error writers empty")
+	}
+	writer1 := types.Writer{}
+	for _, w := range writers {
+		if w.Username == writerUsername {
+			writer1 = w
+		}
+	}
+	if writer1.ID == 0 {
+		t.Error("error writer1 not found")
+	}
+	storyTitle := fmt.Sprintf("story-%s-%s", name, random)
+	annouce := fmt.Sprintf("annouce-%s-%s", name, random)
+	note := fmt.Sprintf("note-%s-%s", name, random)
+	_, err4 := h.CreateStory(storyTitle, annouce, note, writer1.ID)
+	if err4 != nil {
+		t.Error("error creating story")
+	}
+	stories, err5 := h.GetStory()
+	if err5 != nil {
+		t.Error("error getting stories")
+	}
+	if len(stories) == 0 {
+		t.Error("error stories empty")
+	}
+	story1 := types.Story{}
+	for _, s := range stories {
+		if s.Title == storyTitle {
+			story1 = s
+		}
+	}
+	if story1.Announcement == annouce {
+		t.Error("error story1 announcement not encrypted")
+	}
+
+	return writer1, story1
+}
+
+func createBaseStage(t *testing.T, h *cli.Cli, name, random string, storyStage types.Story, writerStage types.Writer) (string, types.Stage) {
+	// create stage
+	stageText := fmt.Sprintf("stage text %s-%s", name, random)
+	storyteller := fmt.Sprintf("storyteller-%s-%s", name, random)
+	_, err8 := h.CreateStage(stageText, storyteller, storyStage.ID, writerStage.ID)
+	if err8 != nil {
+		t.Error("error creating stage")
+	}
+	stages, err9 := h.GetStage()
+	if err9 != nil {
+		t.Error("error getting stages")
+	}
+	stage1 := types.Stage{}
+	for _, s := range stages {
+		if s.Text == stageText {
+			stage1 = s
+		}
+	}
+	if stage1.ID == 0 {
+		t.Error("error stage1 not found")
+	}
+	return storyteller, stage1
+}
+
 func TestIntegration(t *testing.T) {
 	// Test code here
 	t.Log("Integration test")
@@ -43,53 +114,12 @@ func TestIntegration(t *testing.T) {
 	if h == nil {
 		t.Error("error creating client")
 	}
+
+	// create writer, story and encounters and check text encryption
 	{
-		t.Log("Test create writer, story and encounters and check text encryption")
+		t.Log("Test create writer, story and encounters and check text encryption - 01")
 		random := utils.RandomString(6)
-		writerUsername := fmt.Sprintf("writer-%s", random)
-		_, err2 := h.CreateWriter(writerUsername, "asdQWE123")
-		if err2 != nil {
-			t.Error("error creating writer")
-		}
-		writers, err3 := h.GetWriter()
-		if err3 != nil {
-			t.Error("error getting writers")
-		}
-		if len(writers) == 0 {
-			t.Error("error writers empty")
-		}
-		writer1 := types.Writer{}
-		for _, w := range writers {
-			if w.Username == writerUsername {
-				writer1 = w
-			}
-		}
-		if writer1.ID == 0 {
-			t.Error("error writer1 not found")
-		}
-		storyTitle := fmt.Sprintf("story-%s", random)
-		annouce := fmt.Sprintf("annouce-%s", random)
-		note := fmt.Sprintf("note-%s", random)
-		_, err4 := h.CreateStory(storyTitle, annouce, note, writer1.ID)
-		if err4 != nil {
-			t.Error("error creating story")
-		}
-		stories, err5 := h.GetStory()
-		if err5 != nil {
-			t.Error("error getting stories")
-		}
-		if len(stories) == 0 {
-			t.Error("error stories empty")
-		}
-		story1 := types.Story{}
-		for _, s := range stories {
-			if s.Title == storyTitle {
-				story1 = s
-			}
-		}
-		if story1.Announcement == annouce {
-			t.Error("error story1 announcement not encrypted")
-		}
+		writer1, story1 := createBaseStoryEncounter(t, h, "test01", random)
 		encounter1Title := fmt.Sprintf("encounter-1-%s", random)
 		encounter1Note := fmt.Sprintf("encounter-1-note-%s", random)
 		encounter1Announce := fmt.Sprintf("encounter-1-announce-%s", random)
@@ -133,45 +163,14 @@ func TestIntegration(t *testing.T) {
 		if encounter2.LastEncounter == false {
 			t.Error("error encounter2 last encounter not true")
 		}
+		t.Log("Test create writer, story and encounters and check text encryption - 01 - ok")
 	}
+
+	// auto play
 	{
-		t.Log("Test auto play")
+		t.Log("Test auto play - 02")
 		random := utils.RandomString(6)
-		writerUsername := fmt.Sprintf("writer-%s", random)
-		_, err2 := h.CreateWriter(writerUsername, "asdQWE123")
-		if err2 != nil {
-			t.Error("error creating writer")
-		}
-		writers, err3 := h.GetWriter()
-		if err3 != nil {
-			t.Error("error getting writers")
-		}
-		writerAutoPlay := types.Writer{}
-		for _, w := range writers {
-			if w.Username == writerUsername {
-				writerAutoPlay = w
-			}
-		}
-		if writerAutoPlay.ID == 0 {
-			t.Error("error writerAutoPlay not found")
-		}
-		storyTitle := fmt.Sprintf("story-auto-play-%s", random)
-		annouce := fmt.Sprintf("annouce-auto-play-%s", random)
-		note := fmt.Sprintf("note-auto-play-%s", random)
-		_, err4 := h.CreateStory(storyTitle, annouce, note, writerAutoPlay.ID)
-		if err4 != nil {
-			t.Error("error creating story")
-		}
-		stories, err5 := h.GetStory()
-		if err5 != nil {
-			t.Error("error getting stories")
-		}
-		storyAutoPlay := types.Story{}
-		for _, s := range stories {
-			if s.Title == storyTitle {
-				storyAutoPlay = s
-			}
-		}
+		writerAutoPlay, storyAutoPlay := createBaseStoryEncounter(t, h, "test02", random)
 		for k, v := range autoPlayEncounters {
 			first := false
 			end := false
@@ -329,46 +328,14 @@ func TestIntegration(t *testing.T) {
 			t.Log("error solo-next response empty", "msg", msgSoloNext.Msg)
 			t.Error("error solo-next response empty")
 		}
-
+		t.Log("Test auto play - 02 - ok")
 	}
+
+	// stage
 	{
-		t.Log("Test stage")
+		t.Log("Test stage - 03")
 		random := utils.RandomString(6)
-		writerUsername := fmt.Sprintf("writer-%s", random)
-		_, err2 := h.CreateWriter(writerUsername, "asdQWE123")
-		if err2 != nil {
-			t.Error("error creating writer")
-		}
-		writers, err3 := h.GetWriter()
-		if err3 != nil {
-			t.Error("error getting writers")
-		}
-		writerStage := types.Writer{}
-		for _, w := range writers {
-			if w.Username == writerUsername {
-				writerStage = w
-			}
-		}
-		if writerStage.ID == 0 {
-			t.Error("error writerStage not found")
-		}
-		storyTitle := fmt.Sprintf("story-stage-%s", random)
-		annouce := fmt.Sprintf("annouce-stage-%s", random)
-		note := fmt.Sprintf("note-stage-%s", random)
-		_, err4 := h.CreateStory(storyTitle, annouce, note, writerStage.ID)
-		if err4 != nil {
-			t.Error("error creating story")
-		}
-		stories, err5 := h.GetStory()
-		if err5 != nil {
-			t.Error("error getting stories")
-		}
-		storyStage := types.Story{}
-		for _, s := range stories {
-			if s.Title == storyTitle {
-				storyStage = s
-			}
-		}
+		writerStage, storyStage := createBaseStoryEncounter(t, h, "test03", random)
 		// create encounter
 		encounter1Title := fmt.Sprintf("encounter-1-%s", random)
 		encounter1Note := fmt.Sprintf("encounter-1-note-%s", random)
@@ -387,28 +354,9 @@ func TestIntegration(t *testing.T) {
 		if err7 != nil {
 			t.Error("error creating task")
 		}
-		// storyteller
-		storyteller := fmt.Sprintf("storyteller-%s", random)
-		channelStage := fmt.Sprintf("channel-stage-%s", random)
-		// create stage
-		stageText := fmt.Sprintf("stage text %s", random)
-		_, err8 := h.CreateStage(stageText, storyteller, storyStage.ID, writerStage.ID)
-		if err8 != nil {
-			t.Error("error creating stage")
-		}
-		stages, err9 := h.GetStage()
-		if err9 != nil {
-			t.Error("error getting stages")
-		}
-		stage1 := types.Stage{}
-		for _, s := range stages {
-			if s.Text == stageText {
-				stage1 = s
-			}
-		}
-		if stage1.ID == 0 {
-			t.Error("error stage1 not found")
-		}
+
+		// create storyteller, stage
+		storyteller, stage1 := createBaseStage(t, h, "test03", random, storyStage, writerStage)
 
 		// add encounter to stage
 		encounters, err10 := h.GetEncounters()
@@ -433,6 +381,7 @@ func TestIntegration(t *testing.T) {
 			t.Error("error generating player", "error", err12.Error())
 		}
 		// start stage
+		channelStage := fmt.Sprintf("channel-stage-%s", random)
 		_, err13 := h.StartStage(stage1.ID, channelStage)
 		if err13 != nil {
 			t.Error("error starting stage")
@@ -465,10 +414,11 @@ func TestIntegration(t *testing.T) {
 		if len(storytellerMsg2.Opts) == 0 {
 			t.Error("error storyteller 2 response empty")
 		}
-
+		t.Log("Test stage - 03 - ok")
 	}
+	// validator
 	{
-		t.Log("Test validator")
+		t.Log("Test validator - 04")
 		random := utils.RandomString(6)
 		writerUsername := fmt.Sprintf("writer-%s", random)
 		_, err2 := h.CreateWriter(writerUsername, "asdQWE123")
@@ -535,7 +485,77 @@ func TestIntegration(t *testing.T) {
 				}
 			}
 		}
-
+		t.Log("Test validator - 04 - ok")
 	}
+	// delete writer user association
+	{
+		t.Log("Test delete writer user association - 05")
+		random := utils.RandomString(6)
+		writerDelete, storyDelete := createBaseStoryEncounter(t, h, "test05", random)
+		_, stageDelete := createBaseStage(t, h, "test05", random, storyDelete, writerDelete)
 
+		playerDeleteUsername := fmt.Sprintf("player-delete-%s", random)
+		playerDeleteID := fmt.Sprintf("player-delete-id-%s", random)
+		_, err1 := h.GeneratePlayer(playerDeleteUsername, playerDeleteID, 0, stageDelete.ID)
+		if err1 != nil {
+			t.Errorf("error creating user: %v", err1)
+		}
+		users, err := h.GetPlayers()
+		if err != nil {
+			t.Errorf("error getting users: %v", err)
+		}
+		user := types.Players{}
+		for _, u := range users {
+			if u.Name == playerDeleteUsername {
+				user = u
+			}
+		}
+		if user.ID == 0 {
+			t.Error("error user not found")
+		}
+
+		_, err = h.CreateWriterUserAssociation(writerDelete.ID, user.ID)
+		if err != nil {
+			t.Errorf("error creating writer user association: %v", err)
+		}
+
+		// Verify association exists before deletion
+		associationExists, err := h.CheckWriterUserAssociationExists(writerDelete.ID, user.ID)
+		if err != nil {
+			t.Errorf("error checking writer user association: %v", err)
+		}
+		if !associationExists {
+			t.Error("writer user association should exist before deletion")
+		}
+		// get all associations
+		associations, err := h.GetWriterUsersAssociation()
+		if err != nil {
+			t.Errorf("error getting writer user association: %v", err)
+		}
+		association := types.WriterUserAssociation{}
+		for _, a := range associations {
+			t.Log("association", "id", a.ID, "writer_id", a.WriterID, "user_id", a.UserID)
+			if a.WriterID == writerDelete.ID && a.UserID == user.ID {
+				association = a
+			}
+		}
+		if association.ID == 0 {
+			t.Error("error association not found")
+		}
+
+		// Delete the association
+		err = h.DeleteWriterUserAssociation(association.ID)
+		if err != nil {
+			t.Errorf("error deleting writer user association: %v", err)
+		}
+		// Verify association does not exist after deletion
+		associationExists, err = h.CheckWriterUserAssociationExists(writerDelete.ID, user.ID)
+		if err != nil {
+			t.Errorf("error checking writer user association after deletion: %v", err)
+		}
+		if associationExists {
+			t.Error("writer user association should not exist after deletion")
+		}
+		t.Log("Test delete writer user association - 05 - ok")
+	}
 }

@@ -80,6 +80,18 @@ var (
 			},
 			Description: "Main Play by Post command",
 		},
+		{
+			Name:        "iamwriter",
+			Description: "Identify yourself as a writer",
+			Options: []*discordgo.ApplicationCommandOption{
+				{
+					Type:        discordgo.ApplicationCommandOptionString,
+					Name:        "writer_username",
+					Description: "The username of the writer you want to associate with",
+					Required:    true,
+				},
+			},
+		},
 	}
 )
 
@@ -277,6 +289,49 @@ func (a *app) interactionCommand(s *discordgo.Session, i *discordgo.InteractionC
 				if err != nil {
 					a.logger.Error("error responding to interaction", "error", err)
 				}
+			}
+
+		case "iamwriter":
+			options := i.ApplicationCommandData().Options
+			optionMap := make(map[string]*discordgo.ApplicationCommandInteractionDataOption, len(options))
+			for _, opt := range options {
+				optionMap[opt.Name] = opt
+			}
+			writerUsername := optionMap["writer_username"].StringValue()
+
+			// Call backend to associate writer and user
+			var responseContent string
+			writer, err := a.web.GetWriterByUsername(writerUsername)
+			if err != nil {
+				a.logger.Error("error getting writer by username", "error", err.Error())
+				responseContent = fmt.Sprintf("Sorry, it did not work to find writer %s", writerUsername)
+			} else {
+				user, err := a.web.GetUserByUserID(userid)
+				if err != nil {
+					a.logger.Error("error getting user by userid", "error", err.Error())
+					responseContent = fmt.Sprintf("Sorry, it did not work to find user %s", username)
+				} else {
+					_, err := a.web.CreateWriterUserAssociation(writer.ID, user.ID)
+					if err != nil {
+						a.logger.Error("error creating writer user association", "error", err.Error())
+						responseContent = fmt.Sprintf("Sorry, it did not work to associate writer %s with user %s", writerUsername, username)
+					} else {
+						responseContent = fmt.Sprintf("Successfully associated you with writer: %s", writerUsername)
+					}
+				}
+			}
+
+			response := &discordgo.InteractionResponse{
+				Type: discordgo.InteractionResponseChannelMessageWithSource,
+				Data: &discordgo.InteractionResponseData{
+					Content:    responseContent,
+					Flags:      discordgo.MessageFlagsEphemeral,
+					Components: nil,
+				},
+			}
+			err = s.InteractionRespond(i.Interaction, response)
+			if err != nil {
+				a.logger.Error("error responding to interaction", "error", err)
 			}
 
 		case "play-by-post":

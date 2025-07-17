@@ -49,4 +49,5 @@ var (
 	outputFormat       string // cmd: list all
 	objectKind         string // cmd: validator
 	objectID           int    // cmd: validator
+	id                 int    // cmd: writer, delete-association
 )

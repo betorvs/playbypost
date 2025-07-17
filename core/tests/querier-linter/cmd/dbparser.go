@@ -39,7 +39,7 @@ var dbparserCmd = &cobra.Command{
 	Long:    ``,
 	Run: func(cmd *cobra.Command, args []string) {
 
-		migration, err := finder.ParserDBMigration(migrationFile)
+		migration, err := finder.ParseAllDBMigrations("core/sys/db/data/migrations")
 		if err != nil {
 			fmt.Println("Error parsing Migration", err)
 		}
@@ -54,8 +54,8 @@ var dbparserCmd = &cobra.Command{
 				os.Exit(1)
 			}
 			for _, file := range list {
-				// fmt.Println("file: ", file)
-				codeFile := fmt.Sprintf("%v%v", queryDir, file)
+				codeFile := fmt.Sprintf("%v/%v", queryDir, file)
+				// fmt.Println("codeFile: ", codeFile)
 				res, err := finder.QueriesFromDir(codeFile)
 				if err != nil {
 					fmt.Println(err)
@@ -90,6 +90,7 @@ var dbparserCmd = &cobra.Command{
 					// fmt.Printf("columns in query: %v\n", values)
 					for _, v := range values.Columns {
 						_, ok := migration.Tables[values.Name]
+						// fmt.Println("migration.Tables[values.Name]: ", migration.Tables[values.Name])
 						if ok {
 							lower := strings.ToLower(v)
 							if !slices.Contains(migration.Tables[values.Name].Columns, lower) {
@@ -124,7 +125,6 @@ var dbparserCmd = &cobra.Command{
 func init() {
 	rootCmd.AddCommand(dbparserCmd)
 
-	dbparserCmd.Flags().StringVar(&migrationFile, "file", "", "Migration UP file to be parsed")
 	dbparserCmd.Flags().StringVar(&queryString, "query", "", "Query SQL string")
 	dbparserCmd.Flags().StringVar(&queryDir, "dir", "", "Directory with go files with required annotations")
 }

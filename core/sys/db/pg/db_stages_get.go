@@ -262,7 +262,7 @@ func (db *DBX) GetRunningStageByChannelID(ctx context.Context, channelID, userID
 
 	// players
 	if !storyteller {
-		players, err := db.GetPlayerByUserID(ctx, userID, channelID, rpgSystem)
+		players, err := db.GetPlayerByUserIDChannel(ctx, userID, channelID, rpgSystem)
 		if err != nil {
 			db.Logger.Error("rows err on players", "error", err.Error())
 		}

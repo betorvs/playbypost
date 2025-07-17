@@ -390,7 +390,7 @@ func (a *WorkerAPI) parseCommand(cmd types.Activity) error {
 
 	case strings.HasPrefix(cmd.Actions["command"], parser.Task):
 		a.logger.Info("task command")
-		player, err := a.db.GetPlayerByUserID(a.ctx, cmd.Actions["userid"], cmd.Actions["channel"], a.rpg)
+		player, err := a.db.GetPlayerByUserIDChannel(a.ctx, cmd.Actions["userid"], cmd.Actions["channel"], a.rpg)
 		if err != nil {
 			a.logger.Error("error getting player by user id", "error", err.Error())
 			return err
