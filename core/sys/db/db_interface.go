@@ -16,6 +16,14 @@ type DBClient interface {
 	// Writers
 	GetWriters(ctx context.Context, active bool) ([]types.Writer, error)
 	CreateWriters(ctx context.Context, username, password string) (int, error)
+	CreateWriterUserAssociation(ctx context.Context, writerID, userID int) (int, error)
+	GetUsersByWriterID(ctx context.Context, writerID int) ([]types.User, error)
+	GetWritersByUserID(ctx context.Context, userID int) ([]types.Writer, error)
+	CheckWriterExists(ctx context.Context, writerID int) (bool, error)
+	CheckUserExists(ctx context.Context, userID int) (bool, error)
+	CheckWriterUserAssociationExists(ctx context.Context, writerID, userID int) (bool, error)
+	GetWriterUsersAssociation(ctx context.Context) ([]types.WriterUserAssociation, error)
+	DeleteWriterUserAssociation(ctx context.Context, id int) error
 	GetWriterByID(ctx context.Context, id int) (types.Writer, error)
 	GetWriterByUsername(ctx context.Context, username string) (types.Writer, error)
 	// story
@@ -74,6 +82,7 @@ type DBClient interface {
 	UpdateNPC(ctx context.Context, id int, creature *base.Creature, extension map[string]interface{}, destroyed bool) error
 	// users
 	GetUser(ctx context.Context) ([]types.User, error)
+	GetUsersByID(ctx context.Context, id int) ([]types.User, error)
 	GetUserByUserID(ctx context.Context, id string) (types.User, error)
 	CreateUserTx(ctx context.Context, userid string) (int, error)
 	// Initiative
@@ -87,9 +96,11 @@ type DBClient interface {
 	GetPlayerByID(ctx context.Context, id int, rpgSystem *rpg.RPGSystem) (types.Players, error)
 	GetPlayerByPlayerID(ctx context.Context, id int, rpgSystem *rpg.RPGSystem) (types.Players, error)
 	GetPlayerByStageID(ctx context.Context, id int, rpgSystem *rpg.RPGSystem) ([]types.Players, error)
-	GetPlayerByUserID(ctx context.Context, id, channel string, rpgSystem *rpg.RPGSystem) (types.Players, error)
+	GetPlayerByUserIDChannel(ctx context.Context, id, channel string, rpgSystem *rpg.RPGSystem) (types.Players, error)
+	GetPlayerByUserID(ctx context.Context, id int, rpgSystem *rpg.RPGSystem) (types.Players, error)
 	SavePlayerTx(ctx context.Context, id, storyID int, creature *base.Creature, extension map[string]interface{}) (int, error)
 	UpdatePlayer(ctx context.Context, id int, creature *base.Creature, extension map[string]interface{}, destroyed bool) error
+	UpdatePlayerDetails(ctx context.Context, id int, name, rpg string) error
 	// Chat
 	AddChatInformation(ctx context.Context, username, userid, channel, chat string) (int, error)
 	GetChatInformation(ctx context.Context) ([]types.ChatInfo, error)

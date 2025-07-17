@@ -73,3 +73,24 @@ func (db *DBX) UpdatePlayer(ctx context.Context, id int, creature *base.Creature
 	}
 	return nil
 }
+
+func (db *DBX) UpdatePlayerDetails(ctx context.Context, id int, name, rpg string) error {
+	query := "UPDATE players SET character_name = $1, rpg = $2 WHERE id = $3" // dev:finder+query
+	stmt, err := db.Conn.PrepareContext(ctx, query)
+	if err != nil {
+		db.Logger.Error("update player details prepare failed", "error", err.Error())
+		return err
+	}
+	defer func() {
+		err := stmt.Close()
+		if err != nil {
+			db.Logger.Error("error closing stmt", "error", err)
+		}
+	}()
+	_, err = stmt.ExecContext(ctx, name, rpg, id)
+	if err != nil {
+		db.Logger.Error("update player details exec failed", "error", err.Error())
+		return err
+	}
+	return nil
+}

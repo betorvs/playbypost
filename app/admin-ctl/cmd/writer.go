@@ -53,6 +53,29 @@ var writersCmd = &cobra.Command{
 				os.Exit(1)
 			}
 			app.Logger.Info(msg.Msg, "username", username)
+
+		case "association":
+			associations, err := app.Web.GetWriterUsersAssociation()
+			if err != nil {
+				app.Logger.Error("get writer users association", "error", err.Error())
+				os.Exit(1)
+			}
+			for _, v := range associations {
+				app.Logger.Info("association", "id", v.ID, "writer_id", v.WriterID, "user_id", v.UserID)
+			}
+		case "delete-association":
+
+			if id == 0 {
+				app.Logger.Error("id is required")
+				os.Exit(1)
+			}
+
+			err := app.Web.DeleteWriterUserAssociation(id)
+			if err != nil {
+				app.Logger.Error("delete writer user association", "error", err.Error())
+				os.Exit(1)
+			}
+			app.Logger.Info("writer user association deleted", "id", id)
 		default:
 			app.Logger.Info("writers command called")
 		}
@@ -63,4 +86,5 @@ func init() {
 	rootCmd.AddCommand(writersCmd)
 	writersCmd.Flags().StringVarP(&username, "username", "u", "", " username to be used")
 	writersCmd.Flags().StringVar(&password, "password", "", "password should be unique")
+	writersCmd.Flags().IntVar(&id, "id", 0, "id of the writer user association to delete")
 }

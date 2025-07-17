@@ -152,7 +152,7 @@ func (db *DBX) GetPlayerByStageID(ctx context.Context, id int, rpgSystem *rpg.RP
 	return players, nil
 }
 
-func (db *DBX) GetPlayerByUserID(ctx context.Context, id, channel string, rpgSystem *rpg.RPGSystem) (types.Players, error) {
+func (db *DBX) GetPlayerByUserIDChannel(ctx context.Context, id, channel string, rpgSystem *rpg.RPGSystem) (types.Players, error) {
 	players := types.Players{}
 	query := "SELECT p.id, p.character_name, p.stage_id, p.player_id, p.destroyed, p.abilities, p.skills, p.extensions, p.rpg, u.userid, c.channel FROM players AS p JOIN users AS u ON p.player_id = u.id JOIN stage_channel AS c ON c.upstream_id = p.stage_id WHERE u.userid = $1" // dev:finder+query
 	rows, err := db.Conn.QueryContext(ctx, query, id)
@@ -187,4 +187,36 @@ func (db *DBX) GetPlayerByUserID(ctx context.Context, id, channel string, rpgSys
 		db.Logger.Error("rows err on players by userid ", "error", err.Error())
 	}
 	return players, nil
+}
+
+func (db *DBX) GetPlayerByUserID(ctx context.Context, id int, rpgSystem *rpg.RPGSystem) (types.Players, error) {
+	player := types.Players{}
+	query := "SELECT id, character_name, stage_id, player_id, destroyed, abilities, skills, extensions, rpg FROM players WHERE player_id = $1" // dev:finder+query
+	rows, err := db.Conn.QueryContext(ctx, query, id)
+	if err != nil {
+		db.Logger.Error("query on players by userid failed", "error", err.Error())
+		return player, err
+	}
+	defer func() {
+		err := rows.Close()
+		if err != nil {
+			db.Logger.Error("error closing rows", "error", err)
+		}
+	}()
+	for rows.Next() {
+		p := types.NewPlayer()
+		c := base.RestoreCreature()
+		if err := rows.Scan(&p.ID, &p.Name, &p.StageID, &p.PlayerID, &p.Destroyed, &c.Abilities, &c.Skills, &p.Extensions, &p.RPG); err != nil {
+			db.Logger.Error("scan error on players by userid ", "error", err.Error())
+		}
+		if p.ID > 0 {
+			types.CreatureToPlayer(p, c)
+			player = *p
+		}
+	}
+	// Check for errors FROM iterating over rows.
+	if err := rows.Err(); err != nil {
+		db.Logger.Error("rows err on players by userid ", "error", err.Error())
+	}
+	return player, nil
 }

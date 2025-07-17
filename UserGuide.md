@@ -120,6 +120,26 @@ You can find admin token in the logs, like `msg="adding admin user one year toke
 ./admin-ctl writer create -u YOUR-USERNAME --password YOUR-PASSWORD --token ADMIN-TOKEN
 ```
 
+### Associate a User with a Writer
+
+Once you have created a writer, you can associate a Discord or Slack user with that writer using the `/iamwriter` command. This allows the bot to identify the user as a specific writer within the game.
+
+**Discord:**
+
+```
+/iamwriter writer_username
+```
+
+Replace `writer_username` with the username of the writer you created using the `admin-ctl` tool.
+
+**Slack:**
+
+```
+/play-by-post iamwriter writer_username
+```
+
+Replace `writer_username` with the username of the writer you created using the `admin-ctl` tool.
+
 IMPORTANT: All tokens expires in each restart of this application. Admin token and Writers tokens (For Web interface).
 
 ### Access your local Web Interface
@@ -131,4 +151,4 @@ At home page, you can find more information about all related concepts and how t
 
 ## Feedback
 
-Please, share with me what do you think about it and how can we improve it. Thanks and Enjoy! 
+Please, share with me what do you think about it and how can we improve it. Thanks and Enjoy!

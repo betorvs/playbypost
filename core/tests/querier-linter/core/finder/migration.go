@@ -3,7 +3,6 @@ package finder
 import (
 	"bufio"
 	"fmt"
-	"log/slog"
 	"os"
 	"regexp"
 	"strings"
@@ -18,47 +17,30 @@ type Migration struct {
 	Tables map[string]Table `json:"tables"`
 }
 
-func ParserDBMigration(migrationFile string) (Migration, error) {
+func parseMigrationContent(content string) (Migration, error) {
 	// create a migration struct
 	migration := Migration{
 		Tables: make(map[string]Table),
 	}
-	// read the migration file
-	// Open the file
-	file, err := os.Open(migrationFile)
-	if err != nil {
-		fmt.Println(err)
-		return migration, err
-	}
-	defer func() {
-		err := file.Close()
-		if err != nil {
-			slog.Error("error closing file", "error", err)
-		}
-	}()
 
 	// Create a scanner
-	scanner := bufio.NewScanner(file)
+	scanner := bufio.NewScanner(strings.NewReader(content))
 
 	// Read and print lines
 	table := Table{}
 	tableString := ""
 	for scanner.Scan() {
 		line := scanner.Text()
-		// fmt.Println(line)
 		if line != "" {
 			// check if line is ending migration block
 			if line == ");" && table.Name != "" {
 				migration.Tables[tableString] = table
+				// fmt.Println("tableString: ", tableString)
 			}
 			// check if it is a create table
-			// match := reTableName.FindString(line)
 			m := checkTableName(line)
 			if m != "" {
-				// if tableString != m && table.Name != "" {
-				// 	migration.Tables[tableString] = table
-				// }
-				// fmt.Println(m, "table found")
+				// fmt.Println("m: ", m)
 				table = Table{Name: m}
 				tableString = m
 			}
@@ -66,7 +48,6 @@ func ParserDBMigration(migrationFile string) (Migration, error) {
 			// check if it is a column
 			columnMatch := checkColumnName(line)
 			if columnMatch != "" {
-				// fmt.Println(columnMatch, "column found")
 				table.Columns = append(table.Columns, strings.TrimSpace(columnMatch))
 			}
 		}
@@ -80,9 +61,50 @@ func ParserDBMigration(migrationFile string) (Migration, error) {
 	return migration, nil
 }
 
+func ParserDBMigration(migrationFile string) (Migration, error) {
+	// fmt.Println("migrationFile: ", migrationFile)
+	content, err := os.ReadFile(migrationFile)
+	if err != nil {
+		return Migration{}, err
+	}
+	// fmt.Println("content: ", string(content))
+	return parseMigrationContent(string(content))
+}
+
+func ParseAllDBMigrations(migrationsDir string) (Migration, error) {
+	allMigrations := Migration{
+		Tables: make(map[string]Table),
+	}
+
+	files, err := os.ReadDir(migrationsDir)
+	if err != nil {
+		return allMigrations, err
+	}
+
+	for _, file := range files {
+		// fmt.Println("file: ", file.Name())
+		if !file.IsDir() && strings.HasSuffix(file.Name(), ".up.sql") {
+			filePath := fmt.Sprintf("%s/%s", migrationsDir, file.Name())
+			migration, err := ParserDBMigration(filePath)
+			if err != nil {
+				return allMigrations, err
+			}
+			for k, v := range migration.Tables {
+				// fmt.Println("k: ", k)
+				allMigrations.Tables[k] = v
+			}
+		}
+	}
+	return allMigrations, nil
+}
+
 func checkTableName(line string) string {
 	match := reTableName.FindString(line)
-	return strings.ReplaceAll(match, " (", "")
+	// fmt.Println("match: ", match)
+	if match != "UNIQUE" {
+		return strings.ReplaceAll(match, " (", "")
+	}
+	return ""
 }
 
 func checkColumnName(line string) string {

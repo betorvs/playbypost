@@ -36,7 +36,7 @@ var (
 )
 
 func main() {
-	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
+	logger := slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelDebug}))
 	slog.SetDefault(logger)
 	logger.Info("starting admin web server", "version", Version, "port", Port)
 	ctx := context.Background()
@@ -85,6 +85,16 @@ func main() {
 	// writers
 	srv.Register("GET /api/v1/writer", app.GetWriters)
 	srv.Register("POST /api/v1/writer", app.CreateWriters)
+	srv.Register("GET /api/v1/writer/association", app.GetWriterUsersAssociation)
+	srv.Register("POST /api/v1/writer/user", app.CreateWriterUserAssociation)
+	srv.Register("DELETE /api/v1/writer/association/{id}", app.DeleteWriterUserAssociation)
+
+	// users
+	srv.Register("GET /api/v1/user/{id}", app.GetUsersByUserID)
+
+	// characters
+	srv.Register("GET /api/v1/characters", app.GetCharacters)
+	srv.Register("PUT /api/v1/characters/{id}", app.UpdateCharacter)
 
 	// story
 	srv.Register("GET /api/v1/story", app.GetStory)

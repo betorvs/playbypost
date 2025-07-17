@@ -45,6 +45,11 @@ const Layout = ({ Logoff }: Props) => {
             </NavLink>{" "}
           </li>
           <li className="nav-item">
+            <NavLink className="nav-link" to="/characters">
+            {t("common.character", {ns: ['main','home']})}
+            </NavLink>{" "}
+          </li>
+          <li className="nav-item">
             <NavLink className="nav-link" to="/stages">
             {t("common.stage", {ns: ['main','home']})}
             </NavLink>{" "}

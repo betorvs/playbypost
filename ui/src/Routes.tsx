@@ -38,6 +38,8 @@ import StageNextEncounter from "./pages/StageNextEncounter";
 import EditStory from "./pages/EditStory";
 import EditEncounter from "./pages/EditEncounter";
 import EditTask from "./pages/EditTask";
+import CharacterListPage from "./pages/CharacterListPage";
+import CharacterEditPage from "./pages/CharacterEditPage";
 
 const PrivateRoutes = () => {
   const { authenticated } = useContext(AuthContext);
@@ -113,6 +115,10 @@ const Routes = () => {
           <Route path="/users" element={<UsersPage />} />
           <Route path="/users/:id" element={<UserAsStoryteller />} />
           <Route path="/users/player/:id" element={<UserAsPlayer />} />
+        </Route>
+        <Route path="/characters"  >
+          <Route path="/characters" element={<CharacterListPage />} />
+          <Route path="/characters/:id/edit" element={<CharacterEditPage />} />
         </Route>
         <Route path="*" element={<NoMatch />} />
       </Route>

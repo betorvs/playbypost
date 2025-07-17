@@ -11,10 +11,10 @@ require (
 	github.com/slack-go/slack v0.17.3
 	github.com/spf13/cobra v1.9.1
 	github.com/spf13/viper v1.20.1
-	golang.org/x/crypto v0.39.0
+	golang.org/x/crypto v0.40.0
 )
 
-require github.com/go-viper/mapstructure/v2 v2.3.0 // indirect
+require github.com/go-viper/mapstructure/v2 v2.4.0 // indirect
 
 require (
 	github.com/bwmarrin/discordgo v0.29.0
@@ -32,7 +32,7 @@ require (
 	github.com/subosito/gotenv v1.6.0 // indirect
 	go.uber.org/atomic v1.11.0 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
-	golang.org/x/exp v0.0.0-20250620022241-b7579e27df2b
+	golang.org/x/exp v0.0.0-20250711185948-6ae5c78190dc
 	golang.org/x/sys v0.34.0 // indirect
 	golang.org/x/text v0.27.0 // indirect
 	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c // indirect
