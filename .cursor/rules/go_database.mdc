@@ -1,0 +1,453 @@
+# Database Patterns for Go Play-by-Post System
+
+## **Migration Management**
+
+### **Migration File Structure**
+- Use sequential numbering: `000001_create_base_tables.up.sql`
+- Always include corresponding `.down.sql` files
+- Store in `core/sys/db/data/migrations/`
+- Use `golang-migrate/migrate/v4` with embedded filesystem
+
+```sql
+-- ✅ DO: Proper migration structure
+-- 000001_create_base_tables.up.sql
+CREATE TABLE writers (
+  id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  username VARCHAR(50) UNIQUE NOT NULL,
+  password text NOT NULL,
+  active BOOLEAN NOT NULL DEFAULT TRUE
+);
+
+-- 000001_create_base_tables.down.sql
+DROP TABLE IF EXISTS writers;
+```
+
+### **Migration Commands**
+- Use `admin-ctl db` commands for migration management
+- Always test both up and down migrations
+- Use `admin-ctl db ping` to verify connectivity
+
+```bash
+# ✅ DO: Proper migration workflow
+./admin-ctl db ping
+./admin-ctl db create
+./admin-ctl db up
+./admin-ctl db down  # for testing rollback
+```
+
+## **Database Connection Patterns**
+
+### **Connection Setup**
+- Use connection pooling with proper limits
+- Implement 30-second timeouts for all operations
+- Always use context-aware operations
+
+```go
+// ✅ DO: Proper connection setup
+func NewDB(conn string, logger *slog.Logger) DBClient {
+    db, err := pg.New(conn)
+    if err != nil {
+        logger.Error("sql open error", "error", err.Error())
+        os.Exit(2)
+    }
+
+    // Set connection limits for connection pooling
+    db.SetMaxOpenConns(20)
+    db.SetMaxIdleConns(20)
+
+    // force a connection and test that it worked
+    err = db.Ping()
+    if err != nil {
+        logger.Error("error ping ", "error", err.Error())
+        os.Exit(1)
+    }
+    logger.Info("connection to database okay")
+
+    return &pg.DBX{
+        Conn:   db,
+        Logger: logger,
+    }
+}
+
+// ❌ DON'T: Missing connection limits or error handling
+func NewDB(conn string) *sql.DB {
+    db, _ := sql.Open("postgres", conn)
+    return db
+}
+```
+
+### **Resource Cleanup**
+- Always use `defer` with error handling for resource cleanup
+- Close prepared statements, result sets, and connections properly
+- Log cleanup errors for debugging
+
+```go
+// ✅ DO: Proper resource cleanup
+defer func() {
+    err := db.Close()
+    if err != nil {
+        logger.Error("error closing db", "error", err)
+    }
+}()
+
+stmt, err := db.PrepareContext(ctx, query)
+if err != nil {
+    return err
+}
+defer func() {
+    err := stmt.Close()
+    if err != nil {
+        logger.Error("error closing stmt", "error", err)
+    }
+}()
+
+// ❌ DON'T: Missing error handling in cleanup
+defer db.Close()
+defer stmt.Close()
+```
+
+## **Query Patterns**
+
+### **Prepared Statements**
+- Use prepared statements for repeated queries
+- Always close prepared statements with error handling
+- Use parameterized queries to prevent SQL injection
+
+```go
+// ✅ DO: Prepared statements with proper cleanup
+func (db *DBX) CreateWriters(ctx context.Context, username, password string) (int, error) {
+    query := "INSERT INTO writers(username, password) VALUES($1, $2) RETURNING id"
+    stmt, err := db.Conn.PrepareContext(ctx, query)
+    if err != nil {
+        db.Logger.Error("prepare insert into writers failed", "error", err.Error())
+        return -1, err
+    }
+    defer func() {
+        err := stmt.Close()
+        if err != nil {
+            db.Logger.Error("error closing stmt", "error", err)
+        }
+    }()
+    
+    var res int
+    err = stmt.QueryRow(username, password).Scan(&res)
+    if err != nil {
+        db.Logger.Error("query row insert into writers failed", "error", err.Error())
+        return -1, db.parsePostgresError(err)
+    }
+    return res, nil
+}
+
+// ❌ DON'T: String concatenation or missing cleanup
+func (db *DBX) CreateWriters(ctx context.Context, username, password string) (int, error) {
+    query := "INSERT INTO writers(username, password) VALUES('" + username + "', '" + password + "') RETURNING id"
+    stmt, _ := db.Conn.PrepareContext(ctx, query)
+    defer stmt.Close()
+    
+    var res int
+    err := stmt.QueryRow().Scan(&res)
+    return res, err
+}
+```
+
+### **Result Set Handling**
+- Always close result sets with error handling
+- Check for iteration errors after `rows.Next()`
+- Use proper scanning with error checking
+
+```go
+// ✅ DO: Proper result set handling
+func (db *DBX) GetWriters(ctx context.Context, active bool) ([]types.Writer, error) {
+    query := "SELECT id, username FROM writers"
+    if active {
+        query = "SELECT id, username FROM writers WHERE active = true"
+    }
+    
+    users := []types.Writer{}
+    rows, err := db.Conn.QueryContext(ctx, query)
+    if err != nil {
+        db.Logger.Error("query on writers failed", "error", err.Error())
+        return users, err
+    }
+    defer func() {
+        err := rows.Close()
+        if err != nil {
+            db.Logger.Error("error closing rows", "error", err)
+        }
+    }()
+    
+    for rows.Next() {
+        var user types.Writer
+        if err := rows.Scan(&user.ID, &user.Username); err != nil {
+            db.Logger.Error("scan error on writers", "error", err.Error())
+        }
+        users = append(users, user)
+    }
+    
+    // Check for errors from iterating over rows
+    if err := rows.Err(); err != nil {
+        db.Logger.Error("rows error on writers", "error", err.Error())
+    }
+    return users, nil
+}
+
+// ❌ DON'T: Missing error checking or cleanup
+func (db *DBX) GetWriters(ctx context.Context, active bool) ([]types.Writer, error) {
+    query := "SELECT id, username FROM writers"
+    rows, err := db.Conn.QueryContext(ctx, query)
+    if err != nil {
+        return nil, err
+    }
+    
+    users := []types.Writer{}
+    for rows.Next() {
+        var user types.Writer
+        rows.Scan(&user.ID, &user.Username)
+        users = append(users, user)
+    }
+    return users, nil
+}
+```
+
+## **Transaction Patterns**
+
+### **Transaction Management**
+- Use context-aware transactions
+- Implement proper rollback on errors
+- Use defer for transaction cleanup
+
+```go
+// ✅ DO: Proper transaction handling
+func (db *DBX) CreateStoryTx(ctx context.Context, title, announcement, notes, encodingKey string, writerID int) (int, error) {
+    tx, err := db.Conn.BeginTx(ctx, nil)
+    if err != nil {
+        return -1, err
+    }
+    defer func() {
+        if err != nil {
+            tx.Rollback()
+        }
+    }()
+    
+    // Perform operations within transaction
+    var storyID int
+    err = tx.QueryRowContext(ctx, "INSERT INTO story(title, announcement, notes, writer_id) VALUES($1, $2, $3, $4) RETURNING id",
+        title, announcement, notes, writerID).Scan(&storyID)
+    if err != nil {
+        return -1, err
+    }
+    
+    // Insert encoding key
+    _, err = tx.ExecContext(ctx, "INSERT INTO story_keys(encoding_key, story_id) VALUES($1, $2)",
+        encodingKey, storyID)
+    if err != nil {
+        return -1, err
+    }
+    
+    err = tx.Commit()
+    if err != nil {
+        return -1, err
+    }
+    
+    return storyID, nil
+}
+
+// ❌ DON'T: Missing rollback or error handling
+func (db *DBX) CreateStoryTx(ctx context.Context, title, announcement, notes, encodingKey string, writerID int) (int, error) {
+    tx, err := db.Conn.BeginTx(ctx, nil)
+    if err != nil {
+        return -1, err
+    }
+    
+    var storyID int
+    err = tx.QueryRowContext(ctx, "INSERT INTO story(title, announcement, notes, writer_id) VALUES($1, $2, $3, $4) RETURNING id",
+        title, announcement, notes, writerID).Scan(&storyID)
+    if err != nil {
+        return -1, err
+    }
+    
+    tx.Commit()
+    return storyID, nil
+}
+```
+
+## **Error Handling**
+
+### **PostgreSQL Error Parsing**
+- Implement custom error parsing for PostgreSQL errors
+- Provide meaningful error messages
+- Log errors with context
+
+```go
+// ✅ DO: Proper error parsing
+func (db *DBX) parsePostgresError(err error) error {
+    if pgErr, ok := err.(*pq.Error); ok {
+        switch pgErr.Code {
+        case "23505": // unique_violation
+            return fmt.Errorf("duplicate entry: %s", pgErr.Constraint)
+        case "23503": // foreign_key_violation
+            return fmt.Errorf("foreign key constraint violation: %s", pgErr.Constraint)
+        case "23502": // not_null_violation
+            return fmt.Errorf("required field missing: %s", pgErr.Column)
+        default:
+            return fmt.Errorf("database error: %s", pgErr.Message)
+        }
+    }
+    return err
+}
+
+// ❌ DON'T: Generic error handling
+func (db *DBX) parsePostgresError(err error) error {
+    return err
+}
+```
+
+## **Schema Design Patterns**
+
+### **Table Structure**
+- Use `bigint GENERATED ALWAYS AS IDENTITY` for primary keys
+- Implement proper foreign key constraints
+- Use appropriate data types and constraints
+
+```sql
+-- ✅ DO: Proper table structure
+CREATE TABLE writers (
+  id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  username VARCHAR(50) UNIQUE NOT NULL,
+  password text NOT NULL,
+  active BOOLEAN NOT NULL DEFAULT TRUE
+);
+
+CREATE TABLE story (
+  id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  title VARCHAR(50) UNIQUE NOT NULL,
+  notes text,
+  announcement text,
+  writer_id int NOT NULL REFERENCES writers(id),
+  rpg VARCHAR(25),
+  UNIQUE(title, writer_id)
+);
+
+-- ❌ DON'T: Missing constraints or improper types
+CREATE TABLE writers (
+  id SERIAL PRIMARY KEY,
+  username VARCHAR(50),
+  password VARCHAR(50)
+);
+```
+
+### **Many-to-Many Relationships**
+- Use junction tables for many-to-many relationships
+- Implement proper foreign key constraints
+- Use composite primary keys when appropriate
+
+```sql
+-- ✅ DO: Many-to-many relationship
+CREATE TABLE writer_users (
+  id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  writer_id int NOT NULL REFERENCES writers(id) ON DELETE CASCADE,
+  user_id int NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  UNIQUE(writer_id, user_id)
+);
+
+-- ❌ DON'T: Missing constraints or improper structure
+CREATE TABLE writer_users (
+  writer_id int,
+  user_id int
+);
+```
+
+## **Performance Optimization**
+
+### **Indexing Strategy**
+- Create indexes on frequently queried columns
+- Use composite indexes for multi-column queries
+- Consider partial indexes for filtered queries
+
+```sql
+-- ✅ DO: Proper indexing
+CREATE INDEX idx_writers_username ON writers(username);
+CREATE INDEX idx_story_writer_id ON story(writer_id);
+CREATE INDEX idx_encounters_story_id ON encounters(story_id);
+
+-- For composite queries
+CREATE INDEX idx_story_title_writer ON story(title, writer_id);
+
+-- ❌ DON'T: Missing indexes on foreign keys
+-- No indexes on frequently queried columns
+```
+
+### **Query Optimization**
+- Use `EXPLAIN ANALYZE` to analyze query performance
+- Avoid `SELECT *` in production queries
+- Use appropriate WHERE clauses to limit result sets
+
+```go
+// ✅ DO: Optimized queries
+func (db *DBX) GetStoriesByWriterID(ctx context.Context, writerID int) ([]types.Story, error) {
+    query := "SELECT id, title, notes, announcement, writer_id, rpg FROM story WHERE writer_id = $1"
+    rows, err := db.Conn.QueryContext(ctx, query, writerID)
+    // ... rest of implementation
+}
+
+// ❌ DON'T: Inefficient queries
+func (db *DBX) GetStoriesByWriterID(ctx context.Context, writerID int) ([]types.Story, error) {
+    query := "SELECT * FROM story"
+    rows, err := db.Conn.QueryContext(ctx, query)
+    // ... filter in application code
+}
+```
+
+## **Security Best Practices**
+
+### **SQL Injection Prevention**
+- Always use parameterized queries
+- Never concatenate user input into SQL strings
+- Validate and sanitize input data
+
+```go
+// ✅ DO: Parameterized queries
+query := "SELECT id, username FROM writers WHERE username = $1"
+rows, err := stmt.QueryContext(ctx, username)
+
+// ❌ DON'T: String concatenation
+query := "SELECT id, username FROM writers WHERE username = '" + username + "'"
+rows, err := db.Query(query)
+```
+
+### **Data Validation**
+- Validate input data before database operations
+- Use appropriate data types and constraints
+- Implement proper error handling for validation failures
+
+```go
+// ✅ DO: Input validation
+func (a MainApi) CreateWriters(w http.ResponseWriter, r *http.Request) {
+    obj := types.Writer{}
+    err := json.NewDecoder(r.Body).Decode(&obj)
+    if err != nil {
+        a.s.ErrJSON(w, http.StatusBadRequest, "json decode error")
+        return
+    }
+    
+    if obj.Username == "" {
+        a.s.ErrJSON(w, http.StatusBadRequest, "username cannot be empty")
+        return
+    }
+    
+    // Continue with database operation
+}
+
+// ❌ DON'T: Missing validation
+func (a MainApi) CreateWriters(w http.ResponseWriter, r *http.Request) {
+    obj := types.Writer{}
+    json.NewDecoder(r.Body).Decode(&obj)
+    
+    // Direct database operation without validation
+    a.db.CreateWriters(a.ctx, obj.Username, obj.Password)
+}
+```
+description:
+globs:
+alwaysApply: false
+---

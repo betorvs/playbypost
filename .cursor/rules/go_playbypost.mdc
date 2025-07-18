@@ -1,0 +1,541 @@
+# Go Play-by-Post RPG Gaming System Development Rules
+
+## **Project Architecture & Structure**
+
+### **Core Directory Organization**
+- **`app/`**: Application entry points and main binaries
+  - `server/`: Main web server application
+  - `admin-ctl/`: Administrative CLI tool
+  - `plugins/`: Discord and Slack bot plugins
+- **`core/`**: Core business logic and shared packages
+  - `sys/`: System-level packages (database, web, auth, etc.)
+  - `rpg/`: RPG system implementations (D10HM, PFD20, etc.)
+  - `initiative/`: Turn management and initiative systems
+  - `parser/`: Command parsing and autoplay logic
+  - `rules/`: Game rules and mechanics
+- **`ui/`**: React TypeScript frontend application
+- **`docs/`**: Project documentation and diagrams
+- **`library/`**: RPG system JSON definitions
+
+### **Database Migration Patterns**
+- Use `golang-migrate/migrate/v4` for database migrations
+- Store migrations in `core/sys/db/data/migrations/`
+- Follow naming convention: `000001_create_base_tables.up.sql`
+- Always include corresponding `.down.sql` files
+- Use `admin-ctl db` commands for migration management
+
+```sql
+-- ✅ DO: Proper migration structure
+CREATE TABLE writers (
+  id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  username VARCHAR(50) UNIQUE NOT NULL,
+  password text NOT NULL,
+  active BOOLEAN NOT NULL DEFAULT TRUE
+);
+
+-- ❌ DON'T: Missing down migration or improper constraints
+CREATE TABLE writers (
+  id SERIAL PRIMARY KEY,
+  username VARCHAR(50)
+);
+```
+
+## **Authentication & Security**
+
+### **Password Hashing & Session Management**
+- Use `bcrypt` for password hashing with cost 8-12
+- Implement session-based authentication with token expiration
+- Store sessions in memory with proper cleanup
+- Use random string generation for tokens (48+ characters)
+
+```go
+// ✅ DO: Proper password hashing
+hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), 8)
+if err != nil {
+    return err
+}
+
+// ✅ DO: Session token generation
+sessionToken := utils.RandomString(48)
+expiresAt := time.Now().Add(3000 * time.Second)
+
+// ❌ DON'T: Plain text passwords or weak tokens
+password := "plaintext"
+token := "weak"
+```
+
+### **Text Encryption for Sensitive Data**
+- Use AES-GCM encryption for story announcements and notes
+- Generate unique 16-character encoding keys per story
+- Store encryption keys separately from encrypted data
+
+```go
+// ✅ DO: Proper text encryption
+newEncodingKey := utils.RandomString(16)
+encryptedText, err := utils.EncryptText(plainText, newEncodingKey)
+if err != nil {
+    return err
+}
+
+// ❌ DON'T: Store sensitive data unencrypted
+announcement := "secret story details"
+```
+
+## **Database Patterns**
+
+### **Connection Management**
+- Use connection pooling with proper limits (20 max open, 20 max idle)
+- Always use `defer` with error handling for resource cleanup
+- Implement 30-second timeouts for database operations
+- Use context-aware operations throughout
+
+```go
+// ✅ DO: Proper connection management
+db.SetMaxOpenConns(20)
+db.SetMaxIdleConns(20)
+
+defer func() {
+    err := db.Close()
+    if err != nil {
+        logger.Error("error closing db", "error", err)
+    }
+}()
+
+// ✅ DO: Context-aware operations
+ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+defer cancel()
+rows, err := db.QueryContext(ctx, query)
+
+// ❌ DON'T: Missing error handling or context
+defer db.Close()
+rows, err := db.Query(query)
+```
+
+### **Query Patterns**
+- Use prepared statements for repeated queries
+- Always close prepared statements and result sets
+- Implement proper error parsing for PostgreSQL errors
+- Use parameterized queries to prevent SQL injection
+
+```go
+// ✅ DO: Prepared statements with proper cleanup
+stmt, err := db.PrepareContext(ctx, query)
+if err != nil {
+    return err
+}
+defer func() {
+    err := stmt.Close()
+    if err != nil {
+        logger.Error("error closing stmt", "error", err)
+    }
+}()
+
+// ✅ DO: Parameterized queries
+query := "SELECT id, username FROM writers WHERE username = $1"
+rows, err := stmt.QueryContext(ctx, username)
+
+// ❌ DON'T: String concatenation or missing cleanup
+query := "SELECT * FROM writers WHERE username = '" + username + "'"
+rows, err := db.Query(query)
+```
+
+## **API Design Patterns**
+
+### **HTTP Handler Structure**
+- Use consistent authentication checks at the start of handlers
+- Implement proper HTTP status codes and error responses
+- Use structured logging with slog
+- Validate input data before processing
+
+```go
+// ✅ DO: Consistent handler pattern
+func (a MainApi) GetWriters(w http.ResponseWriter, r *http.Request) {
+    if a.Session.CheckAuth(r) {
+        a.s.ErrJSON(w, http.StatusForbidden, "required authentication headers")
+        return
+    }
+    
+    obj, err := a.db.GetWriters(a.ctx, false)
+    if err != nil {
+        a.s.ErrJSON(w, http.StatusBadRequest, "users database issue")
+        return
+    }
+    
+    a.s.JSON(w, obj)
+}
+
+// ❌ DON'T: Inconsistent error handling or missing auth
+func (a MainApi) GetWriters(w http.ResponseWriter, r *http.Request) {
+    obj, err := a.db.GetWriters(a.ctx, false)
+    if err != nil {
+        return
+    }
+    json.NewEncoder(w).Encode(obj)
+}
+```
+
+### **Response Patterns**
+- Use consistent JSON response structures
+- Implement proper error messages for debugging
+- Use structured logging with context fields
+
+```go
+// ✅ DO: Structured responses
+type Login struct {
+    Status      string    `json:"status"`
+    Message     string    `json:"message"`
+    AccessToken string    `json:"access_token"`
+    ExpireOn    time.Time `json:"expire_on"`
+    UserID      int       `json:"user_id"`
+}
+
+// ✅ DO: Structured logging
+logger.Error("database operation failed", "error", err.Error(), "operation", "get_writers")
+
+// ❌ DON'T: Inconsistent response formats
+type Response struct {
+    Data interface{} `json:"data"`
+    Err  string      `json:"error"`
+}
+```
+
+## **Plugin Architecture**
+
+### **Discord & Slack Integration**
+- Use web client (`core/sys/web/cli`) for backend communication
+- Implement proper command handling and validation
+- Use environment variables for configuration
+- Implement health checks and graceful shutdown
+
+```go
+// ✅ DO: Plugin initialization pattern
+type app struct {
+    logger   *slog.Logger
+    web      *cli.Cli
+    slack    *slack.Client
+    admToken string
+}
+
+func main() {
+    logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
+    playbypost := utils.GetEnv("PLAYBYPOST_SERVER", "http://localhost:3000")
+    adminToken, err := utils.Read(adminFile)
+    if err != nil {
+        logger.Error("error reading creds file", "error", err.Error())
+    }
+    
+    play := cli.NewHeaders(playbypost, adminUser, adminToken)
+    
+    // Health check
+    err = play.Ping()
+    if err != nil {
+        logger.Error("error connecting with backend", "error", err.Error())
+        os.Exit(1)
+    }
+}
+
+// ❌ DON'T: Hardcoded values or missing error handling
+func main() {
+    client := slack.New("token")
+    play := cli.NewHeaders("http://localhost:3000", "admin", "token")
+}
+```
+
+## **Frontend Patterns (React/TypeScript)**
+
+### **Authentication Context**
+- Use React Context for authentication state management
+- Implement session storage for token persistence
+- Use proper TypeScript interfaces for type safety
+
+```typescript
+// ✅ DO: Proper auth context
+interface AuthContextData {
+  authenticated: boolean;
+  setAuthenticated: (value: boolean) => void;
+  Logoff: () => void;
+}
+
+const AuthContext = createContext<AuthContextData>(initialValue);
+
+// ✅ DO: Session management
+function SaveToken(token: string, expire: EpochTimeStamp, user_id: number, username: string): void {
+  sessionStorage.setItem("token", token);
+  sessionStorage.setItem("expire", expire.toString());
+  sessionStorage.setItem("user_id", user_id.toString());
+  sessionStorage.setItem("username", username);
+}
+
+// ❌ DON'T: Global variables or unsafe storage
+window.authToken = token;
+localStorage.setItem("password", password);
+```
+
+### **API Integration**
+- Use consistent error handling for API calls
+- Implement proper loading states and error boundaries
+- Use TypeScript interfaces for API responses
+
+```typescript
+// ✅ DO: Proper API integration
+async function clickLogin(e: React.FormEvent<HTMLFormElement>) {
+  e.preventDefault();
+  const apiURL = UseLocation();
+  const urlAPI = new URL("login", apiURL);
+  
+  try {
+    const response = await fetch(urlAPI, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        username: username,
+        password: password,
+      }),
+    });
+    
+    if (response.ok) {
+      const data = await response.text();
+      const res: SessionToken = JSON.parse(data);
+      SaveToken(res.access_token, res.expire_on, res.user_id, username);
+      handleLogin();
+    } else {
+      alert("Please check your login information.");
+    }
+  } catch (error) {
+    console.error("Login failed:", error);
+  }
+}
+
+// ❌ DON'T: Missing error handling or unsafe parsing
+const response = await fetch("/login", { method: "POST" });
+const data = await response.json();
+```
+
+## **Testing Patterns**
+
+### **Integration Testing**
+- Use build tags for integration tests (`//go:build integration`)
+- Implement proper test setup and teardown
+- Use random strings for test data isolation
+- Test complete workflows end-to-end
+
+```go
+// ✅ DO: Integration test structure
+//go:build integration
+
+func TestIntegration(t *testing.T) {
+    creds, err := utils.Read("../../../creds")
+    if err != nil {
+        t.Error("error loading creds")
+    }
+    
+    server := "http://localhost:3000"
+    h := cli.NewHeaders(server, "admin", creds)
+    
+    random := utils.RandomString(6)
+    writerUsername := fmt.Sprintf("writer-%s", random)
+    
+    // Test complete workflow
+    _, err = h.CreateWriter(writerUsername, "asdQWE123")
+    if err != nil {
+        t.Error("error creating writer")
+    }
+}
+
+// ❌ DON'T: Hardcoded test data or missing cleanup
+func TestIntegration(t *testing.T) {
+    h := cli.NewHeaders("http://localhost:3000", "admin", "token")
+    _, err := h.CreateWriter("testuser", "password")
+    if err != nil {
+        t.Error("error")
+    }
+}
+```
+
+### **Unit Testing**
+- Use table-driven tests for comprehensive coverage
+- Mock external dependencies
+- Test both success and error cases
+- Use proper test naming conventions
+
+```go
+// ✅ DO: Table-driven tests
+func TestPasswordHashing(t *testing.T) {
+    tests := []struct {
+        name     string
+        password string
+        wantErr  bool
+    }{
+        {"valid password", "testpass123", false},
+        {"empty password", "", true},
+        {"short password", "123", true},
+    }
+    
+    for _, tt := range tests {
+        t.Run(tt.name, func(t *testing.T) {
+            _, err := bcrypt.GenerateFromPassword([]byte(tt.password), 8)
+            if (err != nil) != tt.wantErr {
+                t.Errorf("GenerateFromPassword() error = %v, wantErr %v", err, tt.wantErr)
+            }
+        })
+    }
+}
+
+// ❌ DON'T: Single test cases or missing error scenarios
+func TestPasswordHashing(t *testing.T) {
+    _, err := bcrypt.GenerateFromPassword([]byte("password"), 8)
+    if err != nil {
+        t.Error("hashing failed")
+    }
+}
+```
+
+## **Configuration Management**
+
+### **Environment Variables**
+- Use consistent environment variable naming
+- Provide sensible defaults for development
+- Use proper configuration loading patterns
+
+```go
+// ✅ DO: Environment variable management
+func LoadDBEnvVars() string {
+    host := GetEnv("PGHOST", "localhost")
+    user := GetEnv("PGUSER", "postgres")
+    pass := GetEnv("PGPASSWORD", "mypassword")
+    dbname := GetEnv("PDATABASE", "playbypost")
+    sslMode := GetEnv("SSLMode", "disable")
+    dbEnvPort := GetEnv("PGPORT", "5432")
+    
+    return fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=%s",
+        host, port, user, pass, dbname, sslMode)
+}
+
+// ❌ DON'T: Hardcoded values or missing defaults
+func LoadDBEnvVars() string {
+    return "host=localhost port=5432 user=postgres password=secret dbname=playbypost"
+}
+```
+
+## **RPG System Integration**
+
+### **System Abstraction**
+- Use interfaces for RPG system implementations
+- Implement proper type safety for different systems
+- Use JSON definitions for system data
+
+```go
+// ✅ DO: RPG system abstraction
+type RPGSystem struct {
+    Name    string
+    Systems map[string]interface{}
+}
+
+func LoadRPGSystemsDefault(system string) *RPGSystem {
+    switch system {
+    case D10HM:
+        return &RPGSystem{Name: "D10HomeMade"}
+    case PFD20:
+        return &RPGSystem{Name: "Pathfinder"}
+    default:
+        return &RPGSystem{Name: "Unknown"}
+    }
+}
+
+// ❌ DON'T: Hardcoded system logic or missing abstraction
+func LoadRPGSystem(system string) string {
+    if system == "d10" {
+        return "D10HomeMade"
+    }
+    return "Unknown"
+}
+```
+
+## **Error Handling & Logging**
+
+### **Structured Logging**
+- Use `log/slog` for structured logging
+- Include relevant context fields in log messages
+- Use appropriate log levels (Debug, Info, Error)
+
+```go
+// ✅ DO: Structured logging
+logger := slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelDebug}))
+slog.SetDefault(logger)
+
+logger.Info("starting admin web server", "version", Version, "port", Port)
+logger.Error("database operation failed", "error", err.Error(), "operation", "create_writer")
+
+// ❌ DON'T: Unstructured logging or missing context
+log.Println("server started")
+log.Printf("error: %v", err)
+```
+
+### **Error Propagation**
+- Use proper error wrapping with context
+- Implement custom error types when needed
+- Return meaningful error messages
+
+```go
+// ✅ DO: Proper error handling
+func (db *DBX) CreateWriters(ctx context.Context, username, password string) (int, error) {
+    query := "INSERT INTO writers(username, password) VALUES($1, $2) RETURNING id"
+    stmt, err := db.Conn.PrepareContext(ctx, query)
+    if err != nil {
+        db.Logger.Error("prepare insert into writers failed", "error", err.Error())
+        return -1, fmt.Errorf("failed to prepare statement: %w", err)
+    }
+    defer func() {
+        err := stmt.Close()
+        if err != nil {
+            db.Logger.Error("error closing stmt", "error", err)
+        }
+    }()
+    
+    var res int
+    err = stmt.QueryRow(username, password).Scan(&res)
+    if err != nil {
+        db.Logger.Error("query row insert into writers failed", "error", err.Error())
+        return -1, db.parsePostgresError(err)
+    }
+    return res, nil
+}
+
+// ❌ DON'T: Ignoring errors or generic error messages
+func (db *DBX) CreateWriters(ctx context.Context, username, password string) (int, error) {
+    query := "INSERT INTO writers(username, password) VALUES($1, $2) RETURNING id"
+    stmt, _ := db.Conn.PrepareContext(ctx, query)
+    defer stmt.Close()
+    
+    var res int
+    err := stmt.QueryRow(username, password).Scan(&res)
+    if err != nil {
+        return -1, err
+    }
+    return res, nil
+}
+```
+
+## **Performance & Best Practices**
+
+### **Resource Management**
+- Always close resources with proper error handling
+- Use connection pooling for database connections
+- Implement proper timeouts for all operations
+
+### **Code Organization**
+- Follow Go naming conventions
+- Use interfaces for dependency injection
+- Implement proper separation of concerns
+
+### **Security**
+- Never log sensitive information
+- Use parameterized queries to prevent SQL injection
+- Implement proper input validation
+- Use HTTPS in production environments
+description:
+globs:
+alwaysApply: false
+---
