@@ -30,3 +30,8 @@ node_modules/
 # Task files
 # tasks.json
 # tasks/ 
+
+# Gemini and Cursor user-specific files
+/.cursor/mcp.json
+/.gemini/
+/gemini-memory.json
