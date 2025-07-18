@@ -1,0 +1,713 @@
+# React/TypeScript Frontend Patterns for Play-by-Post System
+
+## **Project Structure**
+
+### **Directory Organization**
+- **`ui/src/pages/`**: Main page components
+- **`ui/src/components/`**: Reusable UI components
+- **`ui/src/context/`**: React Context providers
+- **`ui/src/functions/`**: API integration functions
+- **`ui/src/types/`**: TypeScript type definitions
+- **`ui/src/translation/`**: Internationalization files
+
+### **Component Organization**
+- Use functional components with hooks
+- Separate concerns: pages, components, and utilities
+- Follow consistent naming conventions
+
+```typescript
+// ✅ DO: Proper component structure
+// ui/src/pages/Login.tsx
+import React, { useState, useContext } from "react";
+import { useNavigate } from "react-router-dom";
+import { AuthContext } from "../context/AuthContext";
+import { Form } from "react-bootstrap";
+import Button from "react-bootstrap/Button";
+
+const Login = () => {
+  const { setAuthenticated } = useContext(AuthContext);
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const navigate = useNavigate();
+
+  // Component logic here
+  return (
+    // JSX here
+  );
+};
+
+export default Login;
+
+// ❌ DON'T: Class components or mixed concerns
+class Login extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { username: "", password: "" };
+  }
+  // ...
+}
+```
+
+## **Authentication Patterns**
+
+### **Context-Based Authentication**
+- Use React Context for global authentication state
+- Implement proper session management
+- Use TypeScript interfaces for type safety
+
+```typescript
+// ✅ DO: Authentication context
+// ui/src/context/AuthContext.tsx
+import React, { createContext, useContext, useState } from "react";
+import CheckSession from "./CheckSession";
+
+interface AuthContextData {
+  authenticated: boolean;
+  setAuthenticated: (value: boolean) => void;
+  Logoff: () => void;
+}
+
+const initialValue = {
+  authenticated: false,
+  setAuthenticated: () => {},
+  Logoff: () => {},
+};
+
+const AuthContext = createContext<AuthContextData>(initialValue);
+
+const AuthProvider = ({ children }: { children: React.ReactNode }) => {
+  const amIAuth = CheckSession();
+  const [authenticated, setAuthenticated] = useState(amIAuth);
+
+  function Logoff() {
+    setAuthenticated(false);
+    CleanSession();
+  }
+
+  return (
+    <AuthContext.Provider value={{ authenticated, setAuthenticated, Logoff }}>
+      {children}
+    </AuthContext.Provider>
+  );
+};
+
+export { AuthContext, AuthProvider };
+
+// ❌ DON'T: Global variables or unsafe state
+window.authState = { authenticated: false };
+localStorage.setItem("auth", JSON.stringify({ authenticated: true }));
+```
+
+### **Session Management**
+- Use sessionStorage for temporary data
+- Implement proper token expiration checking
+- Clean up session data on logout
+
+```typescript
+// ✅ DO: Session management
+// ui/src/context/SaveToken.tsx
+function SaveToken(
+  token: string,
+  expire: EpochTimeStamp,
+  user_id: number,
+  username: string
+): void {
+  sessionStorage.setItem("token", token);
+  sessionStorage.setItem("expire", expire.toString());
+  sessionStorage.setItem("user_id", user_id.toString());
+  sessionStorage.setItem("username", username);
+}
+
+// ui/src/context/CheckSession.tsx
+function CheckSession(): boolean {
+  const expire = sessionStorage.getItem("expire") || "";
+  const inputDate = new Date(expire);
+  const currentDate = new Date();
+  
+  if (inputDate < currentDate) {
+    CleanSession();
+    return false;
+  } else if (currentDate < inputDate) {
+    return true;
+  }
+  return false;
+}
+
+// ❌ DON'T: Unsafe storage or missing expiration
+function SaveToken(token: string): void {
+  localStorage.setItem("token", token);
+  // No expiration check
+}
+```
+
+## **API Integration Patterns**
+
+### **Consistent API Calls**
+- Use fetch with proper error handling
+- Implement loading states and error boundaries
+- Use TypeScript interfaces for API responses
+
+```typescript
+// ✅ DO: Proper API integration
+// ui/src/pages/Login.tsx
+async function clickLogin(e: React.FormEvent<HTMLFormElement>) {
+  e.preventDefault();
+  const apiURL = UseLocation();
+  const urlAPI = new URL("login", apiURL);
+  
+  try {
+    const response = await fetch(urlAPI, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        username: username,
+        password: password,
+      }),
+    });
+    
+    if (response.ok) {
+      const data = await response.text();
+      const res: SessionToken = JSON.parse(data);
+      SaveToken(res.access_token, res.expire_on, res.user_id, username);
+      handleLogin();
+    } else {
+      alert("Please check your login information.");
+    }
+  } catch (error) {
+    console.error("Login failed:", error);
+  }
+}
+
+// ❌ DON'T: Missing error handling or unsafe parsing
+const response = await fetch("/login", { method: "POST" });
+const data = await response.json();
+SaveToken(data.token);
+```
+
+### **API Function Organization**
+- Create dedicated functions for API calls
+- Use consistent error handling patterns
+- Implement proper TypeScript types
+
+```typescript
+// ✅ DO: Organized API functions
+// ui/src/functions/Users.tsx
+export const getUsers = async (): Promise<User[]> => {
+  const apiURL = UseLocation();
+  const urlAPI = new URL("api/v1/user", apiURL);
+  
+  try {
+    const response = await fetch(urlAPI, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        "X-Access-Token": GetToken(),
+        "X-Username": GetUsername(),
+      },
+    });
+    
+    if (response.ok) {
+      const data = await response.text();
+      return JSON.parse(data);
+    } else {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+  } catch (error) {
+    console.error("Failed to fetch users:", error);
+    throw error;
+  }
+};
+
+// ❌ DON'T: Inline API calls or missing types
+const getUsers = async () => {
+  const response = await fetch("/api/v1/user");
+  return response.json();
+};
+```
+
+## **Component Patterns**
+
+### **Form Handling**
+- Use controlled components for form inputs
+- Implement proper validation
+- Use React Bootstrap for consistent styling
+
+```typescript
+// ✅ DO: Form handling
+const Login = () => {
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setIsLoading(true);
+    
+    try {
+      await clickLogin(e);
+    } catch (error) {
+      console.error("Login failed:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <Form onSubmit={handleSubmit}>
+      <Form.Group className="mb-3">
+        <Form.Label>Username</Form.Label>
+        <Form.Control
+          type="text"
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
+          required
+        />
+      </Form.Group>
+      <Form.Group className="mb-3">
+        <Form.Label>Password</Form.Label>
+        <Form.Control
+          type="password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          required
+        />
+      </Form.Group>
+      <Button type="submit" disabled={isLoading}>
+        {isLoading ? "Logging in..." : "Login"}
+      </Button>
+    </Form>
+  );
+};
+
+// ❌ DON'T: Uncontrolled components or missing validation
+const Login = () => {
+  return (
+    <form>
+      <input type="text" />
+      <input type="password" />
+      <button type="submit">Login</button>
+    </form>
+  );
+};
+```
+
+### **List Components**
+- Use proper key props for list items
+- Implement loading and error states
+- Use consistent data fetching patterns
+
+```typescript
+// ✅ DO: List component
+const UsersList = () => {
+  const [users, setUsers] = useState<User[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        setLoading(true);
+        const data = await getUsers();
+        setUsers(data);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Failed to fetch users");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUsers();
+  }, []);
+
+  if (loading) return <div>Loading users...</div>;
+  if (error) return <div>Error: {error}</div>;
+
+  return (
+    <div>
+      {users.map((user) => (
+        <UserCard key={user.id} user={user} />
+      ))}
+    </div>
+  );
+};
+
+// ❌ DON'T: Missing keys or error handling
+const UsersList = () => {
+  const [users, setUsers] = useState([]);
+
+  useEffect(() => {
+    getUsers().then(setUsers);
+  }, []);
+
+  return (
+    <div>
+      {users.map((user) => (
+        <UserCard user={user} />
+      ))}
+    </div>
+  );
+};
+```
+
+## **TypeScript Patterns**
+
+### **Type Definitions**
+- Create proper interfaces for all data structures
+- Use consistent naming conventions
+- Export types from dedicated files
+
+```typescript
+// ✅ DO: Type definitions
+// ui/src/types/Users.tsx
+export interface User {
+  id: number;
+  name: string;
+  userid: string;
+  active: boolean;
+}
+
+export interface SessionToken {
+  status: string;
+  message: string;
+  access_token: string;
+  expire_on: EpochTimeStamp;
+  user_id: number;
+}
+
+export interface LoginCredentials {
+  username: string;
+  password: string;
+}
+
+// ❌ DON'T: Inline types or inconsistent naming
+const user = {
+  id: 1,
+  name: "John",
+  userId: "user123", // Inconsistent naming
+  isActive: true,    // Inconsistent naming
+};
+```
+
+### **Context Types**
+- Define proper types for context values
+- Use TypeScript generics for flexible contexts
+- Provide default values with proper typing
+
+```typescript
+// ✅ DO: Context types
+interface AuthContextData {
+  authenticated: boolean;
+  setAuthenticated: (value: boolean) => void;
+  Logoff: () => void;
+}
+
+const initialValue: AuthContextData = {
+  authenticated: false,
+  setAuthenticated: () => {},
+  Logoff: () => {},
+};
+
+const AuthContext = createContext<AuthContextData>(initialValue);
+
+// ❌ DON'T: Untyped contexts or missing defaults
+const AuthContext = createContext({});
+```
+
+## **Styling Patterns**
+
+### **React Bootstrap Integration**
+- Use React Bootstrap components consistently
+- Implement responsive design patterns
+- Use proper spacing and layout components
+
+```typescript
+// ✅ DO: React Bootstrap usage
+import { Container, Row, Col, Card, Button, Form } from "react-bootstrap";
+
+const UserCard = ({ user }: { user: User }) => {
+  return (
+    <Card className="mb-3">
+      <Card.Body>
+        <Card.Title>{user.name}</Card.Title>
+        <Card.Text>User ID: {user.userid}</Card.Text>
+        <Button variant="primary" size="sm">
+          View Details
+        </Button>
+      </Card.Body>
+    </Card>
+  );
+};
+
+// ❌ DON'T: Mixed styling approaches
+const UserCard = ({ user }: { user: User }) => {
+  return (
+    <div style={{ border: "1px solid black", padding: "10px" }}>
+      <h3>{user.name}</h3>
+      <p>User ID: {user.userid}</p>
+      <button>View Details</button>
+    </div>
+  );
+};
+```
+
+## **Error Handling Patterns**
+
+### **Error Boundaries**
+- Implement error boundaries for component error handling
+- Use proper error logging
+- Provide user-friendly error messages
+
+```typescript
+// ✅ DO: Error boundary
+class ErrorBoundary extends React.Component<
+  { children: React.ReactNode },
+  { hasError: boolean }
+> {
+  constructor(props: { children: React.ReactNode }) {
+    super(props);
+    this.state = { hasError: false };
+  }
+
+  static getDerivedStateFromError(error: Error) {
+    return { hasError: true };
+  }
+
+  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
+    console.error("Error caught by boundary:", error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return <h1>Something went wrong. Please refresh the page.</h1>;
+    }
+
+    return this.props.children;
+  }
+}
+
+// ❌ DON'T: Missing error handling
+const Component = () => {
+  // No error handling
+  return <div>Content</div>;
+};
+```
+
+### **Async Error Handling**
+- Use try-catch blocks for async operations
+- Implement proper error states
+- Provide meaningful error messages
+
+```typescript
+// ✅ DO: Async error handling
+const fetchData = async () => {
+  try {
+    setLoading(true);
+    setError(null);
+    
+    const data = await apiCall();
+    setData(data);
+  } catch (err) {
+    const errorMessage = err instanceof Error ? err.message : "Unknown error occurred";
+    setError(errorMessage);
+    console.error("API call failed:", err);
+  } finally {
+    setLoading(false);
+  }
+};
+
+// ❌ DON'T: Missing error handling
+const fetchData = async () => {
+  const data = await apiCall();
+  setData(data);
+};
+```
+
+## **Performance Patterns**
+
+### **Memoization**
+- Use React.memo for expensive components
+- Implement useMemo for expensive calculations
+- Use useCallback for function dependencies
+
+```typescript
+// ✅ DO: Performance optimization
+const ExpensiveComponent = React.memo(({ data }: { data: User[] }) => {
+  const processedData = useMemo(() => {
+    return data.map(user => ({
+      ...user,
+      displayName: user.name.toUpperCase()
+    }));
+  }, [data]);
+
+  const handleClick = useCallback((userId: number) => {
+    console.log("User clicked:", userId);
+  }, []);
+
+  return (
+    <div>
+      {processedData.map(user => (
+        <UserCard key={user.id} user={user} onClick={handleClick} />
+      ))}
+    </div>
+  );
+});
+
+// ❌ DON'T: Unnecessary re-renders
+const ExpensiveComponent = ({ data }: { data: User[] }) => {
+  const processedData = data.map(user => ({
+    ...user,
+    displayName: user.name.toUpperCase()
+  }));
+
+  const handleClick = (userId: number) => {
+    console.log("User clicked:", userId);
+  };
+
+  return (
+    <div>
+      {processedData.map(user => (
+        <UserCard key={user.id} user={user} onClick={handleClick} />
+      ))}
+    </div>
+  );
+};
+```
+
+## **Testing Patterns**
+
+### **Component Testing**
+- Test component rendering and interactions
+- Mock API calls and external dependencies
+- Test error states and loading states
+
+```typescript
+// ✅ DO: Component testing
+import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { AuthProvider } from "../context/AuthContext";
+import Login from "../pages/Login";
+
+describe("Login Component", () => {
+  it("renders login form", () => {
+    render(
+      <AuthProvider>
+        <Login />
+      </AuthProvider>
+    );
+    
+    expect(screen.getByLabelText(/username/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/password/i)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /login/i })).toBeInTheDocument();
+  });
+
+  it("handles form submission", async () => {
+    const mockFetch = jest.fn(() =>
+      Promise.resolve({
+        ok: true,
+        text: () => Promise.resolve(JSON.stringify({
+          access_token: "token",
+          expire_on: Date.now() + 3600000,
+          user_id: 1
+        }))
+      })
+    );
+    global.fetch = mockFetch;
+
+    render(
+      <AuthProvider>
+        <Login />
+      </AuthProvider>
+    );
+
+    fireEvent.change(screen.getByLabelText(/username/i), {
+      target: { value: "testuser" }
+    });
+    fireEvent.change(screen.getByLabelText(/password/i), {
+      target: { value: "password" }
+    });
+    fireEvent.click(screen.getByRole("button", { name: /login/i }));
+
+    await waitFor(() => {
+      expect(mockFetch).toHaveBeenCalledWith(
+        expect.any(String),
+        expect.objectContaining({
+          method: "POST",
+          body: JSON.stringify({
+            username: "testuser",
+            password: "password"
+          })
+        })
+      );
+    });
+  });
+});
+
+// ❌ DON'T: Missing tests or incomplete coverage
+describe("Login Component", () => {
+  it("renders", () => {
+    render(<Login />);
+    // No assertions
+  });
+});
+```
+
+## **Internationalization**
+
+### **Translation Setup**
+- Use consistent translation keys
+- Implement proper fallback mechanisms
+- Support multiple languages
+
+```typescript
+// ✅ DO: Internationalization
+// ui/src/translation/english/translation.json
+{
+  "login": {
+    "title": "Login",
+    "username": "Username",
+    "password": "Password",
+    "submit": "Login",
+    "error": "Invalid credentials"
+  }
+}
+
+// ui/src/i18n.tsx
+import { useTranslation } from "react-i18next";
+
+const Login = () => {
+  const { t } = useTranslation();
+
+  return (
+    <Form>
+      <h1>{t("login.title")}</h1>
+      <Form.Group>
+        <Form.Label>{t("login.username")}</Form.Label>
+        <Form.Control type="text" />
+      </Form.Group>
+      <Form.Group>
+        <Form.Label>{t("login.password")}</Form.Label>
+        <Form.Control type="password" />
+      </Form.Group>
+      <Button type="submit">{t("login.submit")}</Button>
+    </Form>
+  );
+};
+
+// ❌ DON'T: Hardcoded strings
+const Login = () => {
+  return (
+    <Form>
+      <h1>Login</h1>
+      <Form.Group>
+        <Form.Label>Username</Form.Label>
+        <Form.Control type="text" />
+      </Form.Group>
+    </Form>
+  );
+};
+```
+description:
+globs:
+alwaysApply: false
+---

@@ -1,0 +1,691 @@
+# Plugin Architecture Patterns for Play-by-Post System
+
+## **Plugin Structure**
+
+### **Directory Organization**
+- **`app/plugins/discord/`**: Discord bot implementation
+- **`app/plugins/slack/`**: Slack bot implementation
+- **`core/sys/web/cli/`**: Shared web client for backend communication
+
+### **Plugin Initialization Pattern**
+- Use consistent initialization structure
+- Implement proper error handling and logging
+- Use environment variables for configuration
+
+```go
+// ✅ DO: Plugin initialization pattern
+package main
+
+import (
+    "context"
+    "log/slog"
+    "net/http"
+    "os"
+    "os/signal"
+    "syscall"
+    "time"
+
+    "github.com/betorvs/playbypost/core/sys/web/cli"
+    "github.com/betorvs/playbypost/core/utils"
+)
+
+type app struct {
+    logger   *slog.Logger
+    web      *cli.Cli
+    slack    *slack.Client
+    admToken string
+}
+
+func main() {
+    logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
+    slog.SetDefault(logger)
+    logger.Info("starting slack bot", "version", Version)
+    
+    // Load configuration from environment
+    token := os.Getenv("SLACK_AUTH_TOKEN")
+    appToken := os.Getenv("SLACK_APP_TOKEN")
+    playbypost := utils.GetEnv("PLAYBYPOST_SERVER", "http://localhost:3000")
+    adminUser := utils.GetEnv("ADMIN_USER", "admin")
+    adminFile := utils.GetEnv("CREDS_FILE", "./creds")
+    
+    // Load admin token
+    adminToken, err := utils.Read(adminFile)
+    if err != nil {
+        logger.Error("error reading creds file", "error", err.Error())
+    }
+    
+    // Initialize web client
+    play := cli.NewHeaders(playbypost, adminUser, adminToken)
+    
+    // Health check
+    err = play.Ping()
+    if err != nil {
+        logger.Error("error connecting with backend", "error", err.Error())
+        os.Exit(1)
+    }
+    logger.Info("connected to backend")
+    
+    // Initialize plugin
+    a := app{
+        logger:   logger,
+        web:      play,
+        slack:    slack.New(token),
+        admToken: adminToken,
+    }
+    
+    // Setup HTTP server
+    mux := http.NewServeMux()
+    server := &http.Server{
+        Addr:    ":8091",
+        Handler: mux,
+    }
+    
+    // Register health endpoint
+    mux.HandleFunc("GET /health", func(w http.ResponseWriter, r *http.Request) {
+        _, _ = fmt.Fprint(w, "{\"status\":\"OK\"}")
+    })
+    
+    // Register plugin endpoints
+    mux.HandleFunc("POST /api/v1/event", a.events)
+    mux.HandleFunc("GET /api/v1/validate", a.validate)
+    
+    // Graceful shutdown
+    sigChan := make(chan os.Signal, 1)
+    signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
+    
+    go func() {
+        <-sigChan
+        logger.Info("shutting down server")
+        
+        ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+        defer cancel()
+        
+        if err := server.Shutdown(ctx); err != nil {
+            logger.Error("server shutdown error", "error", err)
+        }
+    }()
+    
+    logger.Info("server starting", "addr", server.Addr)
+    if err := server.ListenAndServe(); err != http.ErrServerClosed {
+        logger.Error("server error", "error", err)
+        os.Exit(1)
+    }
+}
+
+// ❌ DON'T: Missing error handling or hardcoded values
+func main() {
+    token := "hardcoded-token"
+    client := slack.New(token)
+    play := cli.NewHeaders("http://localhost:3000", "admin", "token")
+    
+    // No error handling or health checks
+    server := &http.Server{Addr: ":8091"}
+    server.ListenAndServe()
+}
+```
+
+## **Web Client Integration**
+
+### **Shared Web Client Usage**
+- Use `core/sys/web/cli` for all backend communication
+- Implement proper authentication headers
+- Use consistent error handling patterns
+
+```go
+// ✅ DO: Web client integration
+// core/sys/web/cli/cli.go
+type Cli struct {
+    baseURL    string
+    adminUser  string
+    adminToken string
+    client     *http.Client
+}
+
+func NewHeaders(baseURL, adminUser, adminToken string) *Cli {
+    return &Cli{
+        baseURL:    baseURL,
+        adminUser:  adminUser,
+        adminToken: adminToken,
+        client:     &http.Client{Timeout: 30 * time.Second},
+    }
+}
+
+func (c *Cli) Ping() error {
+    url := fmt.Sprintf("%s/health", c.baseURL)
+    resp, err := c.client.Get(url)
+    if err != nil {
+        return err
+    }
+    defer func() {
+        err := resp.Body.Close()
+        if err != nil {
+            // Log error but don't return it
+        }
+    }()
+    
+    if resp.StatusCode != http.StatusOK {
+        return fmt.Errorf("health check failed with status: %d", resp.StatusCode)
+    }
+    return nil
+}
+
+func (c *Cli) CreateWriter(username, password string) (int, error) {
+    url := fmt.Sprintf("%s/api/v1/writer", c.baseURL)
+    data := map[string]string{
+        "username": username,
+        "password": password,
+    }
+    
+    jsonData, err := json.Marshal(data)
+    if err != nil {
+        return -1, err
+    }
+    
+    req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonData))
+    if err != nil {
+        return -1, err
+    }
+    
+    req.Header.Set("Content-Type", "application/json")
+    req.Header.Set("X-Access-Token", c.adminToken)
+    req.Header.Set("X-Username", c.adminUser)
+    
+    resp, err := c.client.Do(req)
+    if err != nil {
+        return -1, err
+    }
+    defer func() {
+        err := resp.Body.Close()
+        if err != nil {
+            // Log error but don't return it
+        }
+    }()
+    
+    if resp.StatusCode != http.StatusOK {
+        return -1, fmt.Errorf("create writer failed with status: %d", resp.StatusCode)
+    }
+    
+    var result map[string]interface{}
+    if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+        return -1, err
+    }
+    
+    // Extract writer ID from response
+    if msg, ok := result["msg"].(string); ok {
+        // Parse "user id X" message
+        parts := strings.Fields(msg)
+        if len(parts) >= 3 && parts[0] == "user" && parts[1] == "id" {
+            if id, err := strconv.Atoi(parts[2]); err == nil {
+                return id, nil
+            }
+        }
+    }
+    
+    return -1, fmt.Errorf("unable to parse writer ID from response")
+}
+
+// ❌ DON'T: Direct HTTP calls or missing headers
+func createWriter(username, password string) error {
+    resp, err := http.Post("http://localhost:3000/api/v1/writer", "application/json", nil)
+    if err != nil {
+        return err
+    }
+    defer resp.Body.Close()
+    return nil
+}
+```
+
+## **Command Handling**
+
+### **Discord Command Structure**
+- Use proper command registration
+- Implement command validation
+- Use consistent response patterns
+
+```go
+// ✅ DO: Discord command handling
+var commands = []*discordgo.ApplicationCommand{
+    {
+        Name:        "iamwriter",
+        Description: "Identify as a writer",
+        Options: []*discordgo.ApplicationCommandOption{
+            {
+                Type:        discordgo.ApplicationCommandOptionString,
+                Name:        "writer_username",
+                Description: "Your writer username",
+                Required:    true,
+            },
+        },
+    },
+}
+
+func (a *app) interactionCommand(s *discordgo.Session, i *discordgo.InteractionCreate) {
+    if i.Type != discordgo.InteractionApplicationCommand {
+        return
+    }
+    
+    switch i.ApplicationCommandData().Name {
+    case "iamwriter":
+        a.handleIamWriter(s, i)
+    default:
+        s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+            Type: discordgo.InteractionResponseChannelMessageWithSource,
+            Data: &discordgo.InteractionResponseData{
+                Content: "Unknown command",
+            },
+        })
+    }
+}
+
+func (a *app) handleIamWriter(s *discordgo.Session, i *discordgo.InteractionCreate) {
+    options := i.ApplicationCommandData().Options
+    if len(options) == 0 {
+        s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+            Type: discordgo.InteractionResponseChannelMessageWithSource,
+            Data: &discordgo.InteractionResponseData{
+                Content: "Writer username is required",
+            },
+        })
+        return
+    }
+    
+    writerUsername := options[0].StringValue()
+    userID := i.Member.User.ID
+    
+    // Call backend API
+    err := a.web.CreateWriterUserAssociation(writerUsername, userID)
+    if err != nil {
+        a.logger.Error("failed to create writer association", "error", err.Error())
+        s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+            Type: discordgo.InteractionResponseChannelMessageWithSource,
+            Data: &discordgo.InteractionResponseData{
+                Content: "Failed to associate user with writer",
+            },
+        })
+        return
+    }
+    
+    s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+        Type: discordgo.InteractionResponseChannelMessageWithSource,
+        Data: &discordgo.InteractionResponseData{
+            Content: fmt.Sprintf("Successfully associated with writer: %s", writerUsername),
+        },
+    })
+}
+
+// ❌ DON'T: Missing validation or error handling
+func (a *app) handleIamWriter(s *discordgo.Session, i *discordgo.InteractionCreate) {
+    writerUsername := i.ApplicationCommandData().Options[0].StringValue()
+    userID := i.Member.User.ID
+    
+    a.web.CreateWriterUserAssociation(writerUsername, userID)
+    
+    s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+        Type: discordgo.InteractionResponseChannelMessageWithSource,
+        Data: &discordgo.InteractionResponseData{
+            Content: "Success",
+        },
+    })
+}
+```
+
+### **Slack Command Structure**
+- Use proper Slack API patterns
+- Implement command validation
+- Handle Slack-specific response formats
+
+```go
+// ✅ DO: Slack command handling
+func (a *app) events(w http.ResponseWriter, r *http.Request) {
+    body, err := io.ReadAll(r.Body)
+    if err != nil {
+        a.logger.Error("error reading request body", "error", err.Error())
+        http.Error(w, "Bad request", http.StatusBadRequest)
+        return
+    }
+    
+    event, err := slackevents.ParseEvent(body, slackevents.OptionNoVerifyToken())
+    if err != nil {
+        a.logger.Error("error parsing event", "error", err.Error())
+        http.Error(w, "Bad request", http.StatusBadRequest)
+        return
+    }
+    
+    switch event.Type {
+    case slackevents.URLVerification:
+        var r *slackevents.ChallengeResponse
+        err := json.Unmarshal(body, &r)
+        if err != nil {
+            a.logger.Error("error unmarshaling challenge", "error", err.Error())
+            http.Error(w, "Bad request", http.StatusBadRequest)
+            return
+        }
+        w.Header().Set("Content-Type", "text")
+        _, _ = fmt.Fprint(w, r.Challenge)
+        
+    case slackevents.CallbackEvent:
+        innerEvent := event.InnerEvent
+        switch ev := innerEvent.Data.(type) {
+        case *slackevents.AppMentionEvent:
+            a.handleAppMention(ev)
+        case *slackevents.MessageEvent:
+            a.handleMessage(ev)
+        }
+    }
+}
+
+func (a *app) handleAppMention(event *slackevents.AppMentionEvent) {
+    text := strings.TrimSpace(strings.TrimPrefix(event.Text, fmt.Sprintf("<@%s>", a.slack.UserID)))
+    
+    if strings.HasPrefix(text, "iamwriter") {
+        parts := strings.Fields(text)
+        if len(parts) < 2 {
+            a.postMessage(event.Channel, "Usage: @bot iamwriter <writer_username>")
+            return
+        }
+        
+        writerUsername := parts[1]
+        userID := event.User
+        
+        err := a.web.CreateWriterUserAssociation(writerUsername, userID)
+        if err != nil {
+            a.logger.Error("failed to create writer association", "error", err.Error())
+            a.postMessage(event.Channel, "Failed to associate user with writer")
+            return
+        }
+        
+        a.postMessage(event.Channel, fmt.Sprintf("Successfully associated with writer: %s", writerUsername))
+    }
+}
+
+func (a *app) postMessage(channel, text string) {
+    _, _, err := a.slack.PostMessage(channel, slack.MsgOptionText(text, false))
+    if err != nil {
+        a.logger.Error("error posting message", "error", err.Error())
+    }
+}
+
+// ❌ DON'T: Missing error handling or validation
+func (a *app) handleAppMention(event *slackevents.AppMentionEvent) {
+    text := event.Text
+    if strings.Contains(text, "iamwriter") {
+        writerUsername := strings.Fields(text)[1]
+        userID := event.User
+        
+        a.web.CreateWriterUserAssociation(writerUsername, userID)
+        a.slack.PostMessage(event.Channel, "Success")
+    }
+}
+```
+
+## **Error Handling & Logging**
+
+### **Structured Logging**
+- Use `log/slog` for consistent logging
+- Include relevant context in log messages
+- Use appropriate log levels
+
+```go
+// ✅ DO: Structured logging
+func (a *app) handleMessage(event *slackevents.MessageEvent) {
+    a.logger.Info("received message",
+        "user", event.User,
+        "channel", event.Channel,
+        "text", event.Text,
+        "timestamp", event.TimeStamp,
+    )
+    
+    // Process message
+    if strings.Contains(event.Text, "help") {
+        a.logger.Debug("help requested", "user", event.User)
+        a.postMessage(event.Channel, "Available commands: iamwriter <username>")
+    }
+}
+
+func (a *app) validate(w http.ResponseWriter, r *http.Request) {
+    a.logger.Info("validation request", "method", r.Method, "path", r.URL.Path)
+    
+    response := map[string]string{
+        "status": "ok",
+        "message": "Plugin is running",
+    }
+    
+    w.Header().Set("Content-Type", "application/json")
+    if err := json.NewEncoder(w).Encode(response); err != nil {
+        a.logger.Error("error encoding response", "error", err.Error())
+        http.Error(w, "Internal server error", http.StatusInternalServerError)
+        return
+    }
+}
+
+// ❌ DON'T: Unstructured logging or missing context
+func (a *app) handleMessage(event *slackevents.MessageEvent) {
+    fmt.Printf("Message: %s\n", event.Text)
+    
+    if strings.Contains(event.Text, "help") {
+        a.postMessage(event.Channel, "Help")
+    }
+}
+```
+
+### **Error Propagation**
+- Use proper error wrapping
+- Return meaningful error messages
+- Log errors with context
+
+```go
+// ✅ DO: Error handling
+func (a *app) createWriterAssociation(writerUsername, userID string) error {
+    if writerUsername == "" {
+        return fmt.Errorf("writer username cannot be empty")
+    }
+    
+    if userID == "" {
+        return fmt.Errorf("user ID cannot be empty")
+    }
+    
+    err := a.web.CreateWriterUserAssociation(writerUsername, userID)
+    if err != nil {
+        return fmt.Errorf("failed to create writer association: %w", err)
+    }
+    
+    a.logger.Info("writer association created",
+        "writer", writerUsername,
+        "user", userID,
+    )
+    
+    return nil
+}
+
+// ❌ DON'T: Generic error handling
+func (a *app) createWriterAssociation(writerUsername, userID string) error {
+    err := a.web.CreateWriterUserAssociation(writerUsername, userID)
+    if err != nil {
+        return err
+    }
+    return nil
+}
+```
+
+## **Configuration Management**
+
+### **Environment Variables**
+- Use consistent environment variable naming
+- Provide sensible defaults
+- Validate required configuration
+
+```go
+// ✅ DO: Configuration management
+func loadConfig() (*Config, error) {
+    config := &Config{
+        SlackAuthToken:     os.Getenv("SLACK_AUTH_TOKEN"),
+        SlackAppToken:      os.Getenv("SLACK_APP_TOKEN"),
+        DiscordToken:       os.Getenv("DISCORD_TOKEN"),
+        DiscordGuildID:     os.Getenv("DISCORD_GUILD_ID"),
+        PlaybypostServer:   utils.GetEnv("PLAYBYPOST_SERVER", "http://localhost:3000"),
+        AdminUser:          utils.GetEnv("ADMIN_USER", "admin"),
+        CredsFile:          utils.GetEnv("CREDS_FILE", "./creds"),
+        ServerPort:         utils.GetEnv("SERVER_PORT", "8091"),
+    }
+    
+    // Validate required configuration
+    if config.SlackAuthToken == "" && config.DiscordToken == "" {
+        return nil, fmt.Errorf("either SLACK_AUTH_TOKEN or DISCORD_TOKEN must be set")
+    }
+    
+    if config.SlackAuthToken != "" && config.SlackAppToken == "" {
+        return nil, fmt.Errorf("SLACK_APP_TOKEN is required when using Slack")
+    }
+    
+    if config.DiscordToken != "" && config.DiscordGuildID == "" {
+        return nil, fmt.Errorf("DISCORD_GUILD_ID is required when using Discord")
+    }
+    
+    return config, nil
+}
+
+type Config struct {
+    SlackAuthToken   string
+    SlackAppToken    string
+    DiscordToken     string
+    DiscordGuildID   string
+    PlaybypostServer string
+    AdminUser        string
+    CredsFile        string
+    ServerPort       string
+}
+
+// ❌ DON'T: Hardcoded values or missing validation
+func loadConfig() *Config {
+    return &Config{
+        SlackAuthToken: os.Getenv("SLACK_AUTH_TOKEN"),
+        ServerPort:     "8091",
+    }
+}
+```
+
+## **Health Checks & Monitoring**
+
+### **Health Endpoint**
+- Implement proper health check endpoints
+- Include plugin status information
+- Use consistent response format
+
+```go
+// ✅ DO: Health check implementation
+func (a *app) healthHandler(w http.ResponseWriter, r *http.Request) {
+    // Check backend connectivity
+    backendStatus := "ok"
+    if err := a.web.Ping(); err != nil {
+        backendStatus = "error"
+        a.logger.Error("backend health check failed", "error", err.Error())
+    }
+    
+    response := map[string]interface{}{
+        "status": "ok",
+        "timestamp": time.Now().UTC().Format(time.RFC3339),
+        "version": Version,
+        "backend": map[string]string{
+            "status": backendStatus,
+            "url":    a.web.BaseURL(),
+        },
+    }
+    
+    w.Header().Set("Content-Type", "application/json")
+    if err := json.NewEncoder(w).Encode(response); err != nil {
+        a.logger.Error("error encoding health response", "error", err.Error())
+        http.Error(w, "Internal server error", http.StatusInternalServerError)
+        return
+    }
+}
+
+// ❌ DON'T: Simple health check without status
+func (a *app) healthHandler(w http.ResponseWriter, r *http.Request) {
+    fmt.Fprint(w, "OK")
+}
+```
+
+## **Security Best Practices**
+
+### **Token Management**
+- Never log sensitive tokens
+- Use environment variables for configuration
+- Implement proper token validation
+
+```go
+// ✅ DO: Secure token handling
+func (a *app) validateToken(token string) bool {
+    if token == "" {
+        a.logger.Warn("empty token provided")
+        return false
+    }
+    
+    // Validate token format (basic check)
+    if len(token) < 10 {
+        a.logger.Warn("token too short")
+        return false
+    }
+    
+    // Don't log the actual token
+    a.logger.Debug("token validation", "length", len(token), "valid", true)
+    return true
+}
+
+// ❌ DON'T: Logging sensitive information
+func (a *app) validateToken(token string) bool {
+    a.logger.Info("validating token", "token", token)
+    return len(token) > 0
+}
+```
+
+### **Input Validation**
+- Validate all user inputs
+- Sanitize data before processing
+- Implement proper error responses
+
+```go
+// ✅ DO: Input validation
+func (a *app) validateWriterUsername(username string) error {
+    if username == "" {
+        return fmt.Errorf("writer username cannot be empty")
+    }
+    
+    if len(username) > 50 {
+        return fmt.Errorf("writer username too long (max 50 characters)")
+    }
+    
+    // Check for valid characters
+    if !regexp.MustCompile(`^[a-zA-Z0-9_-]+$`).MatchString(username) {
+        return fmt.Errorf("writer username contains invalid characters")
+    }
+    
+    return nil
+}
+
+func (a *app) handleIamWriter(s *discordgo.Session, i *discordgo.InteractionCreate) {
+    writerUsername := i.ApplicationCommandData().Options[0].StringValue()
+    
+    if err := a.validateWriterUsername(writerUsername); err != nil {
+        s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+            Type: discordgo.InteractionResponseChannelMessageWithSource,
+            Data: &discordgo.InteractionResponseData{
+                Content: fmt.Sprintf("Invalid writer username: %s", err.Error()),
+            },
+        })
+        return
+    }
+    
+    // Continue with processing
+}
+
+// ❌ DON'T: Missing validation
+func (a *app) handleIamWriter(s *discordgo.Session, i *discordgo.InteractionCreate) {
+    writerUsername := i.ApplicationCommandData().Options[0].StringValue()
+    // No validation
+    a.createWriterAssociation(writerUsername, i.Member.User.ID)
+}
+```
+description:
+globs:
+alwaysApply: false
+---
