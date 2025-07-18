@@ -35,3 +35,4 @@ node_modules/
 /.cursor/mcp.json
 /.gemini/
 /gemini-memory.json
+/.taskmaster/config.json
