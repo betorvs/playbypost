@@ -36,3 +36,4 @@ node_modules/
 /.gemini/
 /gemini-memory.json
 /.taskmaster/config.json
+/.taskmaster/state.json
