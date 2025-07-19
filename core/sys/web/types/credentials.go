@@ -14,11 +14,18 @@ type Credentials struct {
 
 // each session contains the username of the user and the time at which it expires
 type Session struct {
-	Username    string
-	Token       string
-	Expiry      time.Time
-	UserID      int
-	EncodingKey string
+	Username     string
+	Token        string
+	Expiry       time.Time
+	UserID       int
+	EncodingKey  string
+	ClientType   string
+	ClientInfo   string
+	IPAddress    string
+	UserAgent    string
+	CreatedAt    time.Time
+	UpdatedAt    time.Time
+	LastActivity time.Time
 }
 
 // we'll use this method later to determine if the session has expired

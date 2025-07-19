@@ -13,6 +13,10 @@ import (
 
 type DBClient interface {
 	Close() error
+	// Sessions
+	CreateSession(ctx context.Context, session types.Session) error
+	GetSessionByToken(ctx context.Context, token string) (types.Session, error)
+	DeleteSessionByToken(ctx context.Context, token string) error
 	// Writers
 	GetWriters(ctx context.Context, active bool) ([]types.Writer, error)
 	CreateWriters(ctx context.Context, username, password string) (int, error)

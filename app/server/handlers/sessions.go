@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"log/slog"
 	"net/http"
-	"sync"
 	"time"
 
 	"github.com/betorvs/playbypost/core/sys/db"
@@ -16,17 +15,11 @@ import (
 )
 
 type Session struct {
-	admin    string
-	logger   *slog.Logger
-	db       db.DBClient
-	s        *server.SvrWeb
-	ctx      context.Context
-	Sessions Sessions
-}
-
-type Sessions struct {
-	Current map[string]types.Session
-	mu      *sync.Mutex
+	admin  string
+	logger *slog.Logger
+	db     db.DBClient
+	s      *server.SvrWeb
+	ctx    context.Context
 }
 
 func NewSession(admin string, logger *slog.Logger, db db.DBClient, s *server.SvrWeb, ctx context.Context) *Session {
@@ -36,48 +29,42 @@ func NewSession(admin string, logger *slog.Logger, db db.DBClient, s *server.Svr
 		db:     db,
 		s:      s,
 		ctx:    ctx,
-		Sessions: Sessions{
-			Current: make(map[string]types.Session),
-			mu:      &sync.Mutex{},
-		},
 	}
-}
-
-func (m *Sessions) Add(index string, value types.Session) {
-	m.mu.Lock()
-	m.Current[index] = value
-	m.mu.Unlock()
-}
-
-func (m *Sessions) Remove(index string) {
-	m.mu.Lock()
-	delete(m.Current, index)
-	m.mu.Unlock()
 }
 
 func (a *Session) AddAdminSession(admin, token string) {
 	expiresAt := time.Now().Add(8760 * time.Hour)
 	session := types.Session{
-		Username: admin,
-		Token:    token,
-		Expiry:   expiresAt,
+		Username:     admin,
+		Token:        token,
+		Expiry:       expiresAt,
+		ClientType:   "admin-ctl",
+		ClientInfo:   "local",
+		IPAddress:    "localhost",
+		UserAgent:    "internal",
+		CreatedAt:    time.Now(),
+		UpdatedAt:    time.Now(),
+		LastActivity: time.Now(),
 	}
-	a.Sessions.Add(admin, session)
+	err := a.db.CreateSession(a.ctx, session)
+	if err != nil {
+		a.logger.Error("failed to create admin session", "error", err)
+	}
 }
 
 func (a *Session) CheckAuth(r *http.Request) bool {
-
 	headerToken := r.Header.Get(types.HeaderToken)
-	headerUsername := r.Header.Get(types.HeaderUsername)
-	if headerToken != "" && headerUsername != "" {
-		v, ok := a.Sessions.Current[headerUsername]
-		if !ok || v.IsExpired() || headerToken != v.Token {
-			return true
-		}
-		return false
+	if headerToken == "" {
+		return true
 	}
-
-	return true
+	session, err := a.db.GetSessionByToken(a.ctx, headerToken)
+	if err != nil {
+		return true
+	}
+	if session.IsExpired() {
+		return true
+	}
+	return false
 }
 
 func (a *Session) Signin(w http.ResponseWriter, r *http.Request) {
@@ -103,20 +90,24 @@ func (a *Session) Signin(w http.ResponseWriter, r *http.Request) {
 	sessionToken := utils.RandomString(48) // uuid.NewString()
 	expiresAt := time.Now().Add(3000 * time.Second)
 
-	s, ok := a.Sessions.Current[creds.Username]
-	if ok && !s.IsExpired() {
-		sessionToken = s.Token
-		expiresAt = s.Expiry
-		a.logger.Info("user already logged in", "user", creds.Username)
-	} else {
-		a.logger.Info("login added", "user", creds.Username)
-		session := types.Session{
-			Username: creds.Username,
-			Token:    sessionToken,
-			Expiry:   expiresAt,
-			UserID:   user.ID,
-		}
-		a.Sessions.Add(creds.Username, session)
+	session := types.Session{
+		Username: creds.Username,
+		Token:    sessionToken,
+		Expiry:   expiresAt,
+		UserID:   user.ID,
+		ClientType:   "web",
+		ClientInfo:   r.RemoteAddr,
+		IPAddress:    r.RemoteAddr,
+		UserAgent:    r.UserAgent(),
+		CreatedAt:    time.Now(),
+		UpdatedAt:    time.Now(),
+		LastActivity: time.Now(),
+	}
+	err = a.db.CreateSession(a.ctx, session)
+	if err != nil {
+		a.logger.Error("failed to create session", "error", err)
+		a.s.ErrJSON(w, http.StatusInternalServerError, "failed to create session")
+		return
 	}
 
 	login := types.Login{
@@ -130,60 +121,20 @@ func (a *Session) Signin(w http.ResponseWriter, r *http.Request) {
 }
 
 func (a *Session) Logout(w http.ResponseWriter, r *http.Request) {
-	if a.CheckAuth(r) {
-		a.s.ErrJSON(w, http.StatusForbidden, "required authentication headers")
+	headerToken := r.Header.Get(types.HeaderToken)
+	if headerToken == "" {
+		a.s.ErrJSON(w, http.StatusUnauthorized, "missing token")
 		return
 	}
-	headerToken := r.Header.Get(types.HeaderToken)
-	headerUsername := r.Header.Get(types.HeaderUsername)
-	s, ok := a.Sessions.Current[headerUsername]
-	if headerToken == s.Token && ok {
-		a.Sessions.Remove(headerUsername)
-	} else {
-		a.s.ErrJSON(w, http.StatusBadRequest, "user not found")
+	err := a.db.DeleteSessionByToken(a.ctx, headerToken)
+	if err != nil {
+		a.logger.Error("failed to delete session", "error", err)
+		a.s.ErrJSON(w, http.StatusInternalServerError, "failed to delete session")
 		return
 	}
 	login := types.Login{
 		Status:  "ok",
-		Message: "logged off",
-	}
-	a.s.JSON(w, login)
-}
-
-func (a *Session) Refresh(w http.ResponseWriter, r *http.Request) {
-	if a.CheckAuth(r) {
-		a.s.ErrJSON(w, http.StatusForbidden, "required authentication headers")
-		return
-	}
-	headerUsername := r.Header.Get(types.HeaderUsername)
-	s, ok := a.Sessions.Current[headerUsername]
-	if !ok {
-		a.s.ErrJSON(w, http.StatusUnauthorized, "require login first")
-		return
-	}
-	userID := s.UserID
-	if s.IsExpired() {
-		a.Sessions.Remove(headerUsername)
-		a.s.ErrJSON(w, http.StatusUnauthorized, "token expired, do log in again")
-		return
-	}
-	newSessionToken := utils.RandomString(48) // uuid.NewString()
-	expiresAt := time.Now().Add(300 * time.Second)
-
-	session := types.Session{
-		Username: headerUsername,
-		Token:    newSessionToken,
-		Expiry:   expiresAt,
-		UserID:   userID,
-	}
-	a.Sessions.Add(headerUsername, session)
-
-	login := types.Login{
-		Status:      "ok",
-		Message:     "refresh okay",
-		AccessToken: newSessionToken,
-		ExpireOn:    expiresAt,
-		UserID:      userID,
+		Message: "logged out",
 	}
 	a.s.JSON(w, login)
 }

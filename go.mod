@@ -11,10 +11,16 @@ require (
 	github.com/slack-go/slack v0.17.3
 	github.com/spf13/cobra v1.9.1
 	github.com/spf13/viper v1.20.1
+	github.com/stretchr/testify v1.10.0
 	golang.org/x/crypto v0.40.0
 )
 
-require github.com/go-viper/mapstructure/v2 v2.4.0 // indirect
+require (
+	github.com/davecgh/go-spew v1.1.1 // indirect
+	github.com/go-viper/mapstructure/v2 v2.4.0 // indirect
+	github.com/pmezard/go-difflib v1.0.0 // indirect
+	github.com/stretchr/objx v0.5.2 // indirect
+)
 
 require (
 	github.com/bwmarrin/discordgo v0.29.0
