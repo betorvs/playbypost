@@ -1,7 +1,7 @@
 import GetUsername from "../context/GetUsername";
 import GetToken from "../context/GetToken";
 import UseLocation from "../context/UseLocation";
-import CleanSession from "../context/CleanSession";
+// import CleanSession from "../context/CleanSession";
 import { RunningChannels } from "../types/Channel";
 
 const FetchChannel = async (
@@ -22,7 +22,7 @@ const FetchChannel = async (
     setChannel(JSON.parse(data));
   } else if (response.status === 403) {
     console.log("Not authorized");
-    CleanSession();
+    // CleanSession();
   }
 };
 
@@ -45,7 +45,7 @@ const FetchRunningChannel = async (
     setChannel(JSON.parse(data));
   } else if (response.status === 403) {
     console.log("Not authorized");
-    CleanSession();
+    // CleanSession();
   }
 }
 

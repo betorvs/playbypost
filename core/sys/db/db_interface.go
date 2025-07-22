@@ -17,6 +17,12 @@ type DBClient interface {
 	CreateSession(ctx context.Context, session types.Session) error
 	GetSessionByToken(ctx context.Context, token string) (types.Session, error)
 	DeleteSessionByToken(ctx context.Context, token string) error
+	DeleteExpiredSessions(ctx context.Context) error
+	GetAllSessions(ctx context.Context) ([]types.Session, error)
+
+	// Session Events
+	CreateSessionEvent(ctx context.Context, event types.SessionEvent) error
+	GetSessionEvents(ctx context.Context) ([]types.SessionEvent, error)
 	// Writers
 	GetWriters(ctx context.Context, active bool) ([]types.Writer, error)
 	CreateWriters(ctx context.Context, username, password string) (int, error)

@@ -1,7 +1,7 @@
 import GetUsername from "../context/GetUsername";
 import GetToken from "../context/GetToken";
 import UseLocation from "../context/UseLocation";
-import CleanSession from "../context/CleanSession";
+// import CleanSession from "../context/CleanSession"; 
 import Players from "../types/Players";
 
 const UpdateCharacter = async (
@@ -27,7 +27,7 @@ const UpdateCharacter = async (
       return true;
     } else if (response.status === 403) {
       console.error("Not authorized to update character.");
-      CleanSession();
+      // CleanSession();
       return false;
     } else {
       const errorData = await response.text();

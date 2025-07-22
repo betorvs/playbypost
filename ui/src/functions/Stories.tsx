@@ -2,7 +2,7 @@ import GetUsername from "../context/GetUsername";
 import GetToken from "../context/GetToken";
 import Story from "../types/Story";
 import UseLocation from "../context/UseLocation";
-import CleanSession from "../context/CleanSession";
+// import CleanSession from "../context/CleanSession";
 
 const FetchStoriesByUserID = async (
   userID: number,
@@ -23,7 +23,7 @@ const FetchStoriesByUserID = async (
     setStory(JSON.parse(data));
   } else if (response.status === 403) {
     console.log("Not authorized");
-    CleanSession();
+    // CleanSession();
   }
 };
 
@@ -46,7 +46,7 @@ const FetchStory = async (
     setStory(JSON.parse(data));
   } else if (response.status === 403) {
     console.log("Not authorized");
-    CleanSession();
+    // CleanSession();
   }
 };
 
@@ -65,7 +65,7 @@ const DeleteStoryByID = async (id: number): Promise<void> => {
     console.log("Story deleted");
   } else if (response.status === 403) {
     console.log("Not authorized");
-    CleanSession();
+    // CleanSession();
   }
 }
 

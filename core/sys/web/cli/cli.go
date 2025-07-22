@@ -64,6 +64,7 @@ func makeHeaders(user, token, id, story, channel string) map[string]string {
 	if token != "" {
 		headers[types.HeaderToken] = token
 	}
+	fmt.Println("headers", headers)
 	return headers
 }
 

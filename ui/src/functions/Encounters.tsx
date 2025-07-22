@@ -2,7 +2,7 @@ import GetUsername from "../context/GetUsername";
 import GetToken from "../context/GetToken";
 import Encounter from "../types/Encounter";
 import UseLocation from "../context/UseLocation";
-import CleanSession from "../context/CleanSession";
+// import CleanSession from "../context/CleanSession";
 
 const FetchEncounters = async (
   id: string,
@@ -23,7 +23,7 @@ const FetchEncounters = async (
     setEncounters(JSON.parse(data));
   } else if (response.status === 403) {
     console.log("Not authorized");
-    CleanSession();
+    // CleanSession();
   }
 };
 
@@ -62,7 +62,7 @@ const FetchEncountersWithPagination = async (
     }
   } else if (response.status === 403) {
     console.log("Not authorized");
-    CleanSession();
+    // CleanSession();
   }
 };
 
@@ -85,7 +85,7 @@ const FetchEncounter = async (
     setEncounter(JSON.parse(data));
   } else if (response.status === 403) {
     console.log("Not authorized");
-    CleanSession();
+    // CleanSession();
   }
 };
 
@@ -104,7 +104,7 @@ const DeleteEncounterByID = async (id: number): Promise<void> => {
     console.log("Encounter deleted");
   } else if (response.status === 403) {
     console.log("Not authorized");
-    CleanSession();
+    // CleanSession();
   }
 }
 

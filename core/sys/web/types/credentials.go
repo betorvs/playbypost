@@ -1,6 +1,8 @@
 package types
 
-import "time"
+import (
+	"time"
+)
 
 const (
 	HeaderToken    string = "X-Access-Token"
@@ -39,4 +41,18 @@ type Login struct {
 	AccessToken string    `json:"access_token"`
 	ExpireOn    time.Time `json:"expire_on"`
 	UserID      int       `json:"user_id"`
+}
+
+type SessionEvent struct {
+	ID        int       `json:"id"`
+	SessionID string    `json:"session_id"`
+	EventType string    `json:"event_type"`
+	Timestamp time.Time `json:"timestamp"`
+	Data      string    `json:"data"`
+}
+
+type SessionEventRequest struct {
+	SessionID string `json:"session_id"`
+	EventType string `json:"event_type"`
+	Data      string `json:"data"`
 }

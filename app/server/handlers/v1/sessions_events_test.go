@@ -1,23 +1,56 @@
-package handlers
+package v1
 
 import (
-	"bytes"
 	"context"
 	"encoding/json"
 	"log/slog"
 	"net/http"
 	"net/http/httptest"
-	"sync"
 	"testing"
 	"time"
 
 	"github.com/betorvs/playbypost/core/sys/web/server"
 	"github.com/betorvs/playbypost/core/sys/web/types"
 	"github.com/betorvs/playbypost/core/tests/mock/dbclient"
+	"github.com/betorvs/playbypost/core/tests/mock/sessionchecker"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
-	"golang.org/x/crypto/bcrypt"
 )
+
+// type MockSessionChecker struct {
+// 	mock.Mock
+// }
+
+// func (m *MockSessionChecker) CheckAuth(r *http.Request) bool {
+// 	args := m.Called(r)
+// 	return args.Bool(0)
+// }
+
+// func (m *MockSessionChecker) AddAdminSession(admin, token string) {
+// 	m.Called(admin, token)
+// }
+
+// func (m *MockSessionChecker) Admin() string {
+// 	args := m.Called()
+// 	return args.String(0)
+// }
+
+// func (m *MockSessionChecker) GetActiveSessions() map[string]types.Session {
+// 	args := m.Called()
+// 	return args.Get(0).(map[string]types.Session)
+// }
+
+// func (m *MockSessionChecker) Logout(w http.ResponseWriter, r *http.Request) {
+// 	m.Called(w, r)
+// }
+
+// func (m *MockSessionChecker) ValidateSession(w http.ResponseWriter, r *http.Request) {
+// 	m.Called(w, r)
+// }
+
+// func (m *MockSessionChecker) Signin(w http.ResponseWriter, r *http.Request) {
+// 	m.Called(w, r)
+// }
 
 // MockDBClient is a mock implementation of the DBClient interface
 
@@ -43,6 +76,21 @@ import (
 // func (m *MockDBClient) DeleteSessionByToken(ctx context.Context, token string) error {
 // 	args := m.Called(ctx, token)
 // 	return args.Error(0)
+// }
+
+// func (m *MockDBClient) DeleteExpiredSessions(ctx context.Context) error {
+// 	args := m.Called(ctx)
+// 	return args.Error(0)
+// }
+
+// func (m *MockDBClient) CreateSessionEvent(ctx context.Context, event types.SessionEvent) error {
+// 	args := m.Called(ctx, event)
+// 	return args.Error(0)
+// }
+
+// func (m *MockDBClient) GetSessionEvents(ctx context.Context) ([]types.SessionEvent, error) {
+// 	args := m.Called(ctx)
+// 	return args.Get(0).([]types.SessionEvent), args.Error(1)
 // }
 
 // func (m *MockDBClient) GetWriters(ctx context.Context, active bool) ([]types.Writer, error) {
@@ -555,169 +603,84 @@ import (
 // 	return args.Error(0)
 // }
 
-// func (m *MockDBClient) CreateSessionEvent(ctx context.Context, event types.SessionEvent) error {
-// 	args := m.Called(ctx, event)
-// 	return args.Error(0)
-// }
-
-// func (m *MockDBClient) DeleteExpiredSessions(ctx context.Context) error {
-// 	args := m.Called(ctx)
-// 	return args.Error(0)
-// }
-
-// func (m *MockDBClient) GetSessionEvents(ctx context.Context) ([]types.SessionEvent, error) {
-// 	args := m.Called(ctx)
-// 	return args.Get(0).([]types.SessionEvent), args.Error(1)
-// }
-
-func TestSignin(t *testing.T) {
+func TestGetSessionEvents(t *testing.T) {
 	mockDB := new(dbclient.MockDBClient)
-	s := &Session{
-		db:     mockDB,
-		s:      server.NewServer(0, slog.Default()),
-		ctx:    context.Background(),
-		logger: slog.Default(),
-		Sessions: Sessions{
-			Current: make(map[string]types.Session),
-			mu:      &sync.Mutex{},
-		},
+	mockSession := new(sessionchecker.MockSessionChecker)
+	s := &MainApi{
+		db:      mockDB,
+		s:       server.NewServer(0, slog.Default()),
+		ctx:     context.Background(),
+		logger:  slog.Default(),
+		Session: mockSession,
 	}
 
-	creds := types.Credentials{Username: "testuser", Password: "password"}
-	body, _ := json.Marshal(creds)
-	req := httptest.NewRequest("POST", "/login", bytes.NewBuffer(body))
+	// Mock authentication to always return true
+	mockSession.On("CheckAuth", mock.Anything).Return(false)
+
+	// Use fixed timestamps to avoid time precision issues
+	fixedTime := time.Date(2025, time.July, 21, 16, 2, 21, 0, time.Local)
+	expectedEvents := []types.SessionEvent{
+		{ID: 1, SessionID: "session1", EventType: "login", Timestamp: fixedTime, Data: "{}"},
+		{ID: 2, SessionID: "session1", EventType: "logout", Timestamp: fixedTime, Data: "{}"},
+	}
+	mockDB.On("GetSessionEvents", mock.Anything).Return(expectedEvents, nil)
+
+	req := httptest.NewRequest("GET", "/api/v1/session_events", nil)
+	req.Header.Set("X-Access-Token", "test-token")
 	rr := httptest.NewRecorder()
 
-	// Generate a proper bcrypt hash for "password"
-	hashedPassword, _ := bcrypt.GenerateFromPassword([]byte("password"), bcrypt.DefaultCost)
-	writer := types.Writer{ID: 1, Username: "testuser", Password: string(hashedPassword)}
-	mockDB.On("GetWriterByUsername", mock.Anything, "testuser").Return(writer, nil)
-	mockDB.On("CreateSession", mock.Anything, mock.AnythingOfType("types.Session")).Return(nil)
-
-	s.Signin(rr, req)
+	s.GetSessionEvents(rr, req)
 
 	assert.Equal(t, http.StatusOK, rr.Code)
-	mockDB.AssertExpectations(t)
-}
 
-func TestLogout(t *testing.T) {
-	mockDB := new(dbclient.MockDBClient)
-	s := &Session{
-		db:     mockDB,
-		s:      server.NewServer(0, slog.Default()),
-		ctx:    context.Background(),
-		logger: slog.Default(),
-		Sessions: Sessions{
-			Current: make(map[string]types.Session),
-			mu:      &sync.Mutex{},
-		},
+	var actualEvents []types.SessionEvent
+	json.NewDecoder(rr.Body).Decode(&actualEvents)
+
+	// Compare events without timestamps first, then compare timestamps separately
+	for i, expected := range expectedEvents {
+		actual := actualEvents[i]
+		assert.Equal(t, expected.ID, actual.ID)
+		assert.Equal(t, expected.SessionID, actual.SessionID)
+		assert.Equal(t, expected.EventType, actual.EventType)
+		assert.Equal(t, expected.Data, actual.Data)
+		// Compare timestamps with tolerance for JSON marshaling precision
+		assert.WithinDuration(t, expected.Timestamp, actual.Timestamp, time.Millisecond)
 	}
 
-	req := httptest.NewRequest("POST", "/logout", nil)
-	req.Header.Set("X-Access-Token", "testtoken")
+	mockDB.AssertExpectations(t)
+	mockSession.AssertExpectations(t)
+}
+
+func TestGetActiveSessions(t *testing.T) {
+	mockDB := new(dbclient.MockDBClient)
+	mockSession := new(sessionchecker.MockSessionChecker)
+	s := &MainApi{
+		db:      mockDB,
+		s:       server.NewServer(0, slog.Default()),
+		ctx:     context.Background(),
+		logger:  slog.Default(),
+		Session: mockSession,
+	}
+
+	// Mock authentication to always return true
+	mockSession.On("CheckAuth", mock.Anything).Return(false)
+
+	expectedSessions := map[string]types.Session{
+		"session1": {Token: "session1", Username: "user1"},
+		"session2": {Token: "session2", Username: "user2"},
+	}
+	mockSession.On("GetActiveSessions").Return(expectedSessions)
+
+	req := httptest.NewRequest("GET", "/api/v1/active_sessions", nil)
+	req.Header.Set("X-Access-Token", "test-token")
 	rr := httptest.NewRecorder()
 
-	mockDB.On("DeleteSessionByToken", mock.Anything, "testtoken").Return(nil)
-
-	s.Logout(rr, req)
+	s.GetActiveSessions(rr, req)
 
 	assert.Equal(t, http.StatusOK, rr.Code)
-	mockDB.AssertExpectations(t)
-}
 
-func TestSessionExpiry(t *testing.T) {
-	// Test expired session (expiry in the past)
-	expiredSession := types.Session{
-		Username: "testuser",
-		Token:    "expired-token",
-		Expiry:   time.Now().Add(-1 * time.Hour), // 1 hour ago
-	}
-	assert.True(t, expiredSession.IsExpired(), "Session should be expired")
-
-	// Test valid session (expiry in the future)
-	validSession := types.Session{
-		Username: "testuser",
-		Token:    "valid-token",
-		Expiry:   time.Now().Add(1 * time.Hour), // 1 hour from now
-	}
-	assert.False(t, validSession.IsExpired(), "Session should not be expired")
-
-	// Test session expiring right now
-	nowSession := types.Session{
-		Username: "testuser",
-		Token:    "now-token",
-		Expiry:   time.Now(),
-	}
-	assert.True(t, nowSession.IsExpired(), "Session should be expired when expiry is now")
-}
-
-func TestSessionTimezoneHandling(t *testing.T) {
-	// Test that timezone handling works correctly
-	now := time.Now()
-
-	// Create a session with current time
-	session := types.Session{
-		Username:     "testuser",
-		Token:        "test-token",
-		Expiry:       now.Add(1 * time.Hour), // 1 hour from now
-		UserID:       1,
-		ClientType:   "web",
-		ClientInfo:   "test",
-		IPAddress:    "127.0.0.1",
-		UserAgent:    "test",
-		CreatedAt:    now,
-		UpdatedAt:    now,
-		LastActivity: now,
-	}
-
-	// The session should not be expired
-	assert.False(t, session.IsExpired(), "Session should not be expired when expiry is 1 hour in the future")
-
-	// Test with expired session
-	expiredSession := types.Session{
-		Username:     "testuser",
-		Token:        "expired-token",
-		Expiry:       now.Add(-1 * time.Hour), // 1 hour ago
-		UserID:       1,
-		ClientType:   "web",
-		ClientInfo:   "test",
-		IPAddress:    "127.0.0.1",
-		UserAgent:    "test",
-		CreatedAt:    now,
-		UpdatedAt:    now,
-		LastActivity: now,
-	}
-
-	// The session should be expired
-	assert.True(t, expiredSession.IsExpired(), "Session should be expired when expiry is 1 hour in the past")
-}
-
-func TestGetClientContext(t *testing.T) {
-	// Test with a web client
-	req := httptest.NewRequest("POST", "/login", nil)
-	req.Header.Set("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36")
-	req.Header.Set("Referer", "http://localhost:3000/")
-	clientType, clientInfo := getClientContext(req)
-	assert.Equal(t, "web", clientType)
-	var clientInfoMap map[string]string
-	json.Unmarshal([]byte(clientInfo), &clientInfoMap)
-	assert.Equal(t, "web", clientInfoMap["kind"])
-
-	// Test with a CLI client
-	req = httptest.NewRequest("POST", "/login", nil)
-	req.Header.Set("User-Agent", "Go-http-client/1.1")
-	clientType, clientInfo = getClientContext(req)
-	assert.Equal(t, "cli", clientType)
-	json.Unmarshal([]byte(clientInfo), &clientInfoMap)
-	assert.Equal(t, "cli", clientInfoMap["kind"])
-	assert.Equal(t, "local", clientInfoMap["source"])
-
-	// Test with an unknown client
-	req = httptest.NewRequest("POST", "/login", nil)
-	req.Header.Set("User-Agent", "some-other-client")
-	clientType, clientInfo = getClientContext(req)
-	assert.Equal(t, "unknown", clientType)
-	json.Unmarshal([]byte(clientInfo), &clientInfoMap)
-	assert.Equal(t, "unknown", clientInfoMap["kind"])
-	assert.Equal(t, "some-other-client", clientInfoMap["userAgent"])
+	var actualSessions map[string]types.Session
+	json.NewDecoder(rr.Body).Decode(&actualSessions)
+	assert.Equal(t, expectedSessions, actualSessions)
+	mockSession.AssertExpectations(t)
 }
