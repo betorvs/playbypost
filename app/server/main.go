@@ -89,6 +89,8 @@ func main() {
 	srv.Register("GET /api/v1/session/events", app.GetSessionEvents)
 	srv.Register("GET /api/v1/session/active", app.GetActiveSessions)
 	srv.Register("GET /api/v1/session", app.Session.GetAllSessions)
+	srv.Register("PUT /api/v1/session/cleanup", app.CleanupSessions)
+	srv.Register("DELETE /api/v1/session/{id}", app.DeleteSessionByID)
 
 	// writers
 	srv.Register("GET /api/v1/writer", app.GetWriters)

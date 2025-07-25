@@ -104,6 +104,18 @@ task zterm
 Go to [diagrams](./diagrams/README.md) 
 
 
+## Documentation
+
+### Core Features
+- [Session Event Logging and Maintenance Tools](./session_event_logging.md) - Comprehensive session tracking and management tools
+- [Writers Sessions Migration](./writers_sessions_migration.md) - Session table structure and migration
+- [Writer User Association API](./writer_user_association_api.md) - API for associating platform users with writers
+- [Writer Identification Command](./writer_identification_command.md) - Command structure for user identification
+
+### Database Migrations
+- [Writers Sessions Migration](./writers_sessions_migration.md) - Session management table
+- [Writer Users Migration](./writer_users_migration.md) - User association table
+
 ## References
 
 http://go-database-sql.org/errors.html  

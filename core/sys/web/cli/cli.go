@@ -2,6 +2,7 @@ package cli
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
@@ -197,12 +198,69 @@ func (c *Cli) putGenericWithHeaders(kind string, body []byte) ([]byte, error) {
 	if err != nil {
 		return []byte{}, err
 	}
-	respBody, err2 := io.ReadAll(resp.Body)
-	if err2 != nil {
-		return []byte{}, err2
+	reqBody, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return []byte{}, err
 	}
-	if resp.StatusCode == http.StatusOK || resp.StatusCode == http.StatusAccepted {
-		return respBody, nil
+	if resp.StatusCode != http.StatusOK {
+		return reqBody, fmt.Errorf("return code %v", resp.StatusCode)
 	}
-	return respBody, fmt.Errorf("status code not expected %d", resp.StatusCode)
+	return reqBody, nil
+}
+
+// Session management methods
+func (c *Cli) GetAllSessions() ([]types.Session, error) {
+	body, err := c.getGeneric("session")
+	if err != nil {
+		return nil, err
+	}
+	var sessions []types.Session
+	err = json.Unmarshal(body, &sessions)
+	if err != nil {
+		return nil, err
+	}
+	return sessions, nil
+}
+
+func (c *Cli) GetSessionEvents() ([]types.SessionEvent, error) {
+	body, err := c.getGeneric("session/events")
+	if err != nil {
+		return nil, err
+	}
+	var events []types.SessionEvent
+	err = json.Unmarshal(body, &events)
+	if err != nil {
+		return nil, err
+	}
+	return events, nil
+}
+
+func (c *Cli) DeleteExpiredSessions() error {
+	_, err := c.putEmptyBodyGeneric("session/cleanup")
+	return err
+}
+
+func (c *Cli) DeleteSessionByID(sessionID int64) error {
+	url := fmt.Sprintf("%s/api/v1/session/%d", c.baseURL, sessionID)
+	req, err := http.NewRequest(http.MethodDelete, url, nil)
+	if err != nil {
+		return err
+	}
+	req.Header.Set("Content-Type", "application/json")
+	if c.headers != nil {
+		for k, v := range c.headers {
+			if k != "" && v != "" {
+				req.Header.Set(k, v)
+			}
+		}
+	}
+	resp, err := c.Do(req)
+	if err != nil {
+		return err
+	}
+	if resp.StatusCode != http.StatusOK {
+		reqBody, _ := io.ReadAll(resp.Body)
+		return fmt.Errorf("return code %v: %s", resp.StatusCode, string(reqBody))
+	}
+	return nil
 }

@@ -1,6 +1,7 @@
 package sessionchecker
 
 import (
+	"context"
 	"net/http"
 
 	"github.com/betorvs/playbypost/core/sys/web/types"
@@ -48,4 +49,9 @@ func (m *MockSessionChecker) GetSessionEvents(w http.ResponseWriter, r *http.Req
 
 func (m *MockSessionChecker) GetAllSessions(w http.ResponseWriter, r *http.Request) {
 	m.Called(w, r)
+}
+
+func (m *MockSessionChecker) DeleteSessionByID(ctx context.Context, sessionID int64) error {
+	args := m.Called(ctx, sessionID)
+	return args.Error(0)
 }

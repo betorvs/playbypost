@@ -567,3 +567,68 @@ func (m *MockDBClient) GetAllSessions(ctx context.Context) ([]types.Session, err
 	args := m.Called(ctx)
 	return args.Get(0).([]types.Session), args.Error(1)
 }
+
+func (m *MockDBClient) DeleteSessionByID(ctx context.Context, id int64) error {
+	args := m.Called(ctx, id)
+	return args.Error(0)
+}
+
+func (m *MockDBClient) GetSessionIDByToken(ctx context.Context, token string) (int64, error) {
+	args := m.Called(ctx, token)
+	return args.Get(0).(int64), args.Error(1)
+}
+
+func (m *MockDBClient) UpdateSessionLastActivity(ctx context.Context, token string) error {
+	args := m.Called(ctx, token)
+	return args.Error(0)
+}
+
+func (m *MockDBClient) LogLoginAttempt(ctx context.Context, username, ipAddress, userAgent string, success bool) error {
+	args := m.Called(ctx, username, ipAddress, userAgent, success)
+	return args.Error(0)
+}
+
+func (m *MockDBClient) LogSessionCreated(ctx context.Context, session types.Session, sessionID int64) error {
+	args := m.Called(ctx, session, sessionID)
+	return args.Error(0)
+}
+
+func (m *MockDBClient) LogSessionDeleted(ctx context.Context, sessionID int64, reason string) error {
+	args := m.Called(ctx, sessionID, reason)
+	return args.Error(0)
+}
+
+func (m *MockDBClient) LogSessionExpired(ctx context.Context, sessionID int64) error {
+	args := m.Called(ctx, sessionID)
+	return args.Error(0)
+}
+
+func (m *MockDBClient) LogLogout(ctx context.Context, sessionID int64, username string) error {
+	args := m.Called(ctx, sessionID, username)
+	return args.Error(0)
+}
+
+func (m *MockDBClient) LogSessionValidated(ctx context.Context, sessionID int64, username string) error {
+	args := m.Called(ctx, sessionID, username)
+	return args.Error(0)
+}
+
+func (m *MockDBClient) LogSessionInvalid(ctx context.Context, sessionID int64, reason string) error {
+	args := m.Called(ctx, sessionID, reason)
+	return args.Error(0)
+}
+
+func (m *MockDBClient) LogActivityUpdated(ctx context.Context, sessionID int64, username string) error {
+	args := m.Called(ctx, sessionID, username)
+	return args.Error(0)
+}
+
+func (m *MockDBClient) LogCleanupExecuted(ctx context.Context, sessionsDeleted int) error {
+	args := m.Called(ctx, sessionsDeleted)
+	return args.Error(0)
+}
+
+func (m *MockDBClient) GetSessionByID(ctx context.Context, sessionID int64) (types.Session, error) {
+	args := m.Called(ctx, sessionID)
+	return args.Get(0).(types.Session), args.Error(1)
+}

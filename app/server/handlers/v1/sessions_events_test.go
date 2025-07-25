@@ -620,8 +620,8 @@ func TestGetSessionEvents(t *testing.T) {
 	// Use fixed timestamps to avoid time precision issues
 	fixedTime := time.Date(2025, time.July, 21, 16, 2, 21, 0, time.Local)
 	expectedEvents := []types.SessionEvent{
-		{ID: 1, SessionID: "session1", EventType: "login", Timestamp: fixedTime, Data: "{}"},
-		{ID: 2, SessionID: "session1", EventType: "logout", Timestamp: fixedTime, Data: "{}"},
+		{ID: 1, SessionID: 1, EventType: "login", Timestamp: fixedTime, Data: "{}"},
+		{ID: 2, SessionID: 1, EventType: "logout", Timestamp: fixedTime, Data: "{}"},
 	}
 	mockDB.On("GetSessionEvents", mock.Anything).Return(expectedEvents, nil)
 

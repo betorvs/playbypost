@@ -16,13 +16,25 @@ type DBClient interface {
 	// Sessions
 	CreateSession(ctx context.Context, session types.Session) error
 	GetSessionByToken(ctx context.Context, token string) (types.Session, error)
+	// GetSessionIDByToken(ctx context.Context, token string) (int64, error)
+	UpdateSessionLastActivity(ctx context.Context, token string) error
 	DeleteSessionByToken(ctx context.Context, token string) error
+	DeleteSessionByID(ctx context.Context, sessionID int64) error
 	DeleteExpiredSessions(ctx context.Context) error
 	GetAllSessions(ctx context.Context) ([]types.Session, error)
-
+	GetSessionByID(ctx context.Context, sessionID int64) (types.Session, error)
 	// Session Events
 	CreateSessionEvent(ctx context.Context, event types.SessionEvent) error
 	GetSessionEvents(ctx context.Context) ([]types.SessionEvent, error)
+	LogLoginAttempt(ctx context.Context, username, ipAddress, userAgent string, success bool) error
+	LogSessionCreated(ctx context.Context, session types.Session, sessionID int64) error
+	LogSessionDeleted(ctx context.Context, sessionID int64, reason string) error
+	LogSessionExpired(ctx context.Context, sessionID int64) error
+	LogLogout(ctx context.Context, sessionID int64, username string) error
+	LogSessionValidated(ctx context.Context, sessionID int64, username string) error
+	LogSessionInvalid(ctx context.Context, sessionID int64, reason string) error
+	LogActivityUpdated(ctx context.Context, sessionID int64, username string) error
+	LogCleanupExecuted(ctx context.Context, sessionsDeleted int) error
 	// Writers
 	GetWriters(ctx context.Context, active bool) ([]types.Writer, error)
 	CreateWriters(ctx context.Context, username, password string) (int, error)

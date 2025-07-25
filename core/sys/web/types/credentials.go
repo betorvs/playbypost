@@ -16,6 +16,7 @@ type Credentials struct {
 
 // each session contains the username of the user and the time at which it expires
 type Session struct {
+	ID           int64
 	Username     string
 	Token        string
 	Expiry       time.Time
@@ -45,14 +46,14 @@ type Login struct {
 
 type SessionEvent struct {
 	ID        int       `json:"id"`
-	SessionID string    `json:"session_id"`
+	SessionID int64     `json:"session_id"`
 	EventType string    `json:"event_type"`
 	Timestamp time.Time `json:"timestamp"`
 	Data      string    `json:"data"`
 }
 
 type SessionEventRequest struct {
-	SessionID string `json:"session_id"`
+	SessionID int64  `json:"session_id"`
 	EventType string `json:"event_type"`
 	Data      string `json:"data"`
 }
