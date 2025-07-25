@@ -398,6 +398,124 @@ func (db *DBX) GetStoriesByWriterID(ctx context.Context, writerID int) ([]types.
 }
 ```
 
+## **Event Logging Architecture**
+
+### **Integrated Event Logging**
+- Integrate event logging directly into database operations
+- Avoid creating separate service layers that cause import loops
+- Log events within the same transaction as the data operation
+
+```go
+// ✅ DO: Direct integration in database layer
+func (c *DBX) CreateSession(ctx context.Context, session types.Session) error {
+    createSession := `INSERT INTO writers_sessions (...) VALUES (...) RETURNING id`
+    var sessionID int64
+    err := c.Conn.QueryRowContext(ctx, createSession, ...).Scan(&sessionID)
+    if err != nil {
+        c.Logger.Error("failed to create session", "error", err)
+        return err
+    }
+
+    // Log event directly in database layer
+    event := types.SessionEvent{
+        SessionID: sessionID,
+        EventType: "session_created",
+        Data:      fmt.Sprintf(`{"username":"%s","client_type":"%s"}`, session.Username, session.ClientType),
+    }
+    err = c.CreateSessionEvent(ctx, event)
+    if err != nil {
+        c.Logger.Error("failed to log session created event", "error", err)
+        // Don't fail the operation if event logging fails
+    }
+
+    return nil
+}
+
+// ❌ DON'T: Separate service layer causing import loops
+type SessionEventService struct {
+    db     *pg.DBX
+    logger *slog.Logger
+}
+
+func (s *SessionEventService) LogSessionCreated(ctx context.Context, session types.Session) error {
+    // This creates import loops when used from handlers
+}
+```
+
+### **Event Data Structure**
+- Use structured JSON for event data
+- Include relevant context and metadata
+- Keep event data concise but informative
+
+```go
+// ✅ DO: Structured event data
+eventData := map[string]interface{}{
+    "username":    session.Username,
+    "client_type": session.ClientType,
+    "ip_address":  session.IPAddress,
+    "user_agent":  session.UserAgent,
+}
+data, _ := json.Marshal(eventData)
+
+event := types.SessionEvent{
+    SessionID: sessionID,
+    EventType: "session_created",
+    Data:      string(data),
+}
+
+// ❌ DON'T: Unstructured or missing data
+event := types.SessionEvent{
+    SessionID: sessionID,
+    EventType: "session_created",
+    Data:      "session created", // Too generic
+}
+```
+
+### **Error Handling in Event Logging**
+- Never fail primary operations due to event logging errors
+- Log event logging failures for debugging
+- Use non-blocking event logging patterns
+
+```go
+// ✅ DO: Non-blocking event logging
+err = c.CreateSessionEvent(ctx, event)
+if err != nil {
+    c.Logger.Error("failed to log session event", "error", err, "event_type", event.EventType)
+    // Continue with primary operation
+}
+
+// ❌ DON'T: Blocking event logging
+err = c.CreateSessionEvent(ctx, event)
+if err != nil {
+    return err // This would fail the session creation
+}
+```
+
+### **Interface Design for Event Logging**
+- Expose event logging methods through the main database interface
+- Keep event logging methods simple and focused
+- Maintain separation between data operations and event logging
+
+```go
+// ✅ DO: Clean interface design
+type DBClient interface {
+    // Data operations
+    CreateSession(ctx context.Context, session types.Session) error
+    DeleteSessionByToken(ctx context.Context, token string) error
+    
+    // Event logging
+    CreateSessionEvent(ctx context.Context, event types.SessionEvent) error
+    GetSessionEvents(ctx context.Context) ([]types.SessionEvent, error)
+}
+
+// ❌ DON'T: Complex service interfaces
+type SessionEventService interface {
+    LogSessionCreated(ctx context.Context, session types.Session, sessionID int64) error
+    LogSessionDeleted(ctx context.Context, sessionID int64, reason string) error
+    // Many specific methods create complexity
+}
+```
+
 ## **Security Best Practices**
 
 ### **SQL Injection Prevention**
