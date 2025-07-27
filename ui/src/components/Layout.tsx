@@ -59,6 +59,11 @@ const Layout = ({ Logoff }: Props) => {
             {t("common.auto-play", {ns: ['main','home']})}
             </NavLink>{" "}
           </li>
+          <li className="nav-item">
+            <NavLink className="nav-link" to="/admin/sessions">
+            {t("common.sessions", {ns: ['main','home']})}
+            </NavLink>{" "}
+          </li>
           <li>
               <select className="form-select" value={usedLanguage} onChange={onClickLanguageChange}>
                 <option value="en" >English</option>

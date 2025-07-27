@@ -16,6 +16,7 @@ import (
 	"time"
 
 	v1 "github.com/betorvs/playbypost/app/server/handlers/v1"
+	"github.com/betorvs/playbypost/app/server/worker"
 	"github.com/betorvs/playbypost/core/rpg"
 	"github.com/betorvs/playbypost/core/sys/db"
 	"github.com/betorvs/playbypost/core/sys/library"
@@ -77,10 +78,19 @@ func main() {
 	srv.RegisterStatic()
 
 	// sessions
-	srv.Register("POST /login", app.Session.Signin)
-	srv.Register("POST /logoff", app.Session.Logout)
-	srv.Register("POST /refresh", app.Session.Refresh)
+	// srv.Register("POST /login", app.Session.Signin)
+	// srv.Register("POST /logoff", app.Session.Logout)
+	// srv.Register("POST /refresh", app.Session.Refresh)
 	srv.Register("GET /api/v1/validate", app.Session.ValidateSession)
+	srv.Register("POST /api/v1/login", app.Session.Signin)
+	srv.Register("POST /api/v1/logout", app.Session.Logout)
+
+	// session events
+	srv.Register("GET /api/v1/session/events", app.GetSessionEvents)
+	srv.Register("GET /api/v1/session/active", app.GetActiveSessions)
+	srv.Register("GET /api/v1/session", app.Session.GetAllSessions)
+	srv.Register("PUT /api/v1/session/cleanup", app.CleanupSessions)
+	srv.Register("DELETE /api/v1/session/{id}", app.DeleteSessionByID)
 
 	// writers
 	srv.Register("GET /api/v1/writer", app.GetWriters)
@@ -217,6 +227,9 @@ func main() {
 	go func() {
 		jobSchedulerHourly.Start(ctxJobHourly)
 	}()
+
+	cleanupWorker := worker.NewCleanup(logger, db, ctx)
+	cleanupWorker.Start()
 
 	// starting a goroutine to server http requests
 	// start web server in a goroutine

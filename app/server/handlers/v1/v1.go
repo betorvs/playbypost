@@ -15,7 +15,7 @@ import (
 )
 
 type MainApi struct {
-	Session   *handlers.Session
+	Session   handlers.SessionChecker
 	Worker    *worker.WorkerAPI
 	Validator *validator.Validator
 	logger    *slog.Logger
@@ -35,7 +35,7 @@ func NewMainApi(admin string, ctx context.Context, dice rpg.Roll, db db.DBClient
 	validator := validator.New(l, db, ctx)
 	worker := worker.NewWorkerAPI(ctx, dice, db, l, client, rpgSystem, autoPlay, lib)
 	return &MainApi{
-		Session:   session,
+		Session:   *session,
 		Worker:    worker,
 		Validator: validator,
 		ctx:       ctx,

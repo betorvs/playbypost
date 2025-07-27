@@ -11,6 +11,7 @@ import Home from "./pages/Home";
 import Login from "./pages/Login";
 import StoriesPage from "./pages/Stories";
 import UsersPage from "./pages/Users";
+import SessionMonitorPage from "./pages/SessionMonitorPage";
 import StoryPlayers from "./pages/StoryPlayers";
 import StoryDetail from "./pages/StoryDetail";
 import NewStory from "./pages/NewStory";
@@ -116,6 +117,7 @@ const Routes = () => {
           <Route path="/users/:id" element={<UserAsStoryteller />} />
           <Route path="/users/player/:id" element={<UserAsPlayer />} />
         </Route>
+        <Route path="/admin/sessions" element={<SessionMonitorPage />} />
         <Route path="/characters"  >
           <Route path="/characters" element={<CharacterListPage />} />
           <Route path="/characters/:id/edit" element={<CharacterEditPage />} />

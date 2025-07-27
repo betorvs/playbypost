@@ -1,10 +1,10 @@
 ---
-description: Guide for using Taskmaster to manage task-driven development workflows
+description: Guide for using Taskmaster to manage task-driven development workflows and Task automation patterns
 globs: **/*
 alwaysApply: true
 ---
 
-# Taskmaster Development Workflow
+# Taskmaster Development Workflow & Task Automation
 
 This guide outlines the standard process for using Taskmaster to manage software development projects. It is written as a set of instructions for you, the AI agent.
 
@@ -422,3 +422,197 @@ Once a task has been broken down into subtasks using `expand_task` or similar me
 
 ---
 *This workflow provides a general guideline. Adapt it based on your specific project needs and team practices.*
+
+---
+
+# Task Automation Patterns
+
+## **Core Task Automation Principles**
+- **Always use Task for repetitive operations** instead of running commands manually
+- **Run `task build_assets` after any UI changes** in `ui/src/` to ensure React components are properly generated
+- **Use database migration tasks** for schema changes: `task migrate_up` and `task migrate_down`
+- **Leverage Task for development workflow** automation and consistency
+
+## **Critical Automation Tasks**
+
+### **UI Development Automation**
+- **After UI changes**: Always run `task build_assets` to rebuild React components
+- **UI dependencies**: Use `task install_ui_deps` when adding new npm packages
+- **UI development**: Use `task dev` for full development environment with Tilt
+- **UI remote development**: Use `task dev_remote` for remote development setup
+
+### **Database Management**
+- **Schema migrations**: Use `task migrate_up` to apply database changes
+- **Database reset**: Use `task migrate_down` to drop and recreate database
+- **Database status**: Use `task greet` to check database connection info
+- **Before database operations**: Always run `task build_local` to ensure latest code (including new migrations) is compiled
+
+### **Build and Development**
+- **Full build**: Use `task build_all` for complete build (tidy + assets + binaries)
+- **Local build**: Use `task build_local` for development builds with random version
+- **Production build**: Use `task build` for production builds with git commit version
+- **Watch mode**: Use `task build_watch` for automatic rebuilding on file changes
+
+### **Testing and Quality**
+- **Unit tests**: Use `task unit` or `task test` for Go unit tests
+- **Integration tests**: Use `task integration` for integration test suite
+- **Linting**: Use `task lint` for Go code linting with golangci-lint
+- **Querier linting**: Use `task querier-linter` for database query validation
+
+## **Development Workflow Automation**
+
+### **Service Management**
+- **Start services**: Use `task dev` for full development environment
+- **Stop services**: Use `task dev_down` to stop all services
+- **Service logs**: Use `task logs` to view server logs
+- **Service reload**: Use `task reload` to reload specific services
+
+### **Plugin Development**
+- **Discord plugin**: Use `task discord-run` or `task discord-we-run` (with watchexec)
+- **Slack plugin**: Use `task slack-run` or `task slack-we-run` (with watchexec)
+- **Mock server**: Use `task mock-run` for testing
+
+### **Terminal Management**
+- **Tilt terminal**: Use `task terminal` for zellij session with Tilt
+- **Watchexec terminal**: Use `task zterm` for zellij session with watchexec
+- **Session management**: Use `task terminal-list`, `task terminal-attach`, `task terminal-delete`
+
+## **Data Management Automation**
+
+### **Admin Operations**
+- **List operations**: Use `task list_writers`, `task list_stories`, `task list_encounters`, etc.
+- **Load test data**: Use `task load` to populate database with example data
+- **Individual loads**: Use specific load tasks like `task load_writers`, `task load_stories`
+
+### **Database Operations**
+- **PostgreSQL management**: Use `task start_postgres`, `task stop_postgres`, `task create_postgres`
+- **Migration workflow**: Always use `task migrate_up` after schema changes
+- **Pre-migration build**: Run `task build_local` before database operations to compile latest code
+
+## **Code Quality Automation**
+
+### **Go Development**
+- **Dependency management**: Use `task tidy` for go mod tidy and updates
+- **Code formatting**: Ensure consistent formatting across the codebase
+- **Query validation**: Use `task querier-linter` to validate database queries
+
+### **Frontend Development**
+- **Asset building**: Always run `task build_assets` after UI changes
+- **Development server**: Use `task dev` for full-stack development
+- **Remote development**: Use `task dev_remote` for remote development setup
+
+## **Automation Best Practices**
+
+### **When to Use Task**
+- **Any repetitive command sequence** should be converted to a Task
+- **Development workflow steps** should be automated
+- **Build and deployment processes** should use Task
+- **Database operations** should always use Task commands
+
+### **Task Naming Conventions**
+- **Use descriptive names**: `build_assets`, `migrate_up`, `load_writers`
+- **Use underscores**: Separate words with underscores for readability
+- **Group related tasks**: Use prefixes like `load_`, `list_`, `build_`
+
+### **Task Dependencies**
+- **Use task dependencies**: Reference other tasks with `task: taskname`
+- **Chain operations**: Use `build_all` for complete build workflows
+- **Environment setup**: Use `task dev` for complete development environment
+
+## **Critical Automation Rules**
+
+### **Build-Before-Database Workflow**
+- **Always build before database operations**: Run `task build_local` before `task migrate_up` or `task migrate_down`
+- **Why**: Ensures latest Go code (including new migration files) is compiled into admin-ctl binary
+- **Prevents**: "Migration not found" errors when new migrations are added
+- **Catches**: Go compilation errors before attempting database operations
+- **Workflow**: `task build_local && task migrate_up` or `task build_local && task migrate_down`
+
+## **Critical Automation Rules**
+
+### **UI Development**
+```bash
+# ❌ DON'T: Make UI changes without rebuilding
+# ✅ DO: Always rebuild after UI changes
+task build_assets
+
+# ❌ DON'T: Run npm commands directly in ui/
+# ✅ DO: Use Task commands
+task install_ui_deps
+```
+
+### **Database Operations**
+```bash
+# ❌ DON'T: Run migrations manually
+# ✅ DO: Use Task for all database operations
+task migrate_up
+task migrate_down
+
+# ❌ DON'T: Start/stop PostgreSQL manually
+# ✅ DO: Use Task for database management
+task start_postgres
+task stop_postgres
+
+# ❌ DON'T: Run database operations without building first
+# ✅ DO: Build latest code before database operations
+task build_local && task migrate_up
+task build_local && task migrate_down
+```
+
+### **Development Workflow**
+```bash
+# ❌ DON'T: Build components individually
+# ✅ DO: Use complete build workflows
+task build_all
+
+# ❌ DON'T: Start services manually
+# ✅ DO: Use Task for service management
+task dev
+task dev_down
+```
+
+## **Automation Integration**
+
+### **With Cursor/IDE**
+- **Use Task commands** in terminal integration
+- **Automate common workflows** with Task
+- **Ensure consistency** across development environments
+
+### **With Git Workflow**
+- **Pre-commit hooks**: Consider adding Task commands to git hooks
+- **CI/CD integration**: Use Task commands in CI/CD pipelines
+- **Environment consistency**: Use Task for environment setup
+
+### **With Development Tools**
+- **Tilt integration**: Use `task dev` for Tilt-based development
+- **Zellij integration**: Use Task for terminal session management
+- **Watchexec integration**: Use Task for file watching and rebuilding
+
+## **Troubleshooting Automation**
+
+### **Common Issues**
+- **UI not updating**: Run `task build_assets` after UI changes
+- **Database connection issues**: Use `task greet` to check database status
+- **Build failures**: Use `task tidy` to fix dependency issues
+- **Service not starting**: Use `task dev_down` then `task dev` to restart
+- **Migration not found**: Run `task build_local` before database operations to compile latest migrations
+
+### **Debugging Tasks**
+- **Check Task syntax**: Validate Taskfile.yml syntax
+- **Environment variables**: Ensure proper environment setup
+- **Dependencies**: Verify all required tools are installed
+- **Permissions**: Check file permissions for Task execution
+
+## **Performance Optimization**
+
+### **Task Efficiency**
+- **Use task dependencies** to avoid redundant operations
+- **Cache build artifacts** when possible
+- **Parallel execution** for independent tasks
+- **Incremental builds** for faster development cycles
+
+### **Development Speed**
+- **Use watch modes** for automatic rebuilding
+- **Leverage hot reloading** for faster feedback
+- **Optimize build times** with proper task organization
+- **Use development shortcuts** for common operations

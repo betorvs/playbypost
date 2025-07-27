@@ -2,7 +2,7 @@ import GetUsername from "../context/GetUsername";
 import GetToken from "../context/GetToken";
 import Players from "../types/Players";
 import UseLocation from "../context/UseLocation";
-import CleanSession from "../context/CleanSession";
+// import CleanSession from "../context/CleanSession";
 
 const FetchPlayers = async (
   id: string,
@@ -23,7 +23,7 @@ const FetchPlayers = async (
     setPlayer(JSON.parse(data));
   } else if (response.status === 403) {
     console.log("Not authorized");
-    CleanSession();
+    // CleanSession();
   }
 };
 export default FetchPlayers;

@@ -1,0 +1,133 @@
+# Architecture Patterns and Decisions
+
+## **Database Layer Integration Patterns**
+
+### **Event Logging Architecture**
+- **DO**: Integrate event logging directly into database operations
+- **DON'T**: Create separate service layers that cause import loops
+- **Why**: Avoids circular dependencies and maintains clean separation of concerns
+
+**Example Pattern:**
+```go
+// ✅ DO: Integrate event logging directly in database methods
+func (c *DBX) CreateSession(ctx context.Context, session types.Session) error {
+    // Database operation
+    var sessionID int64
+    err := c.Conn.QueryRowContext(ctx, createSession, ...).Scan(&sessionID)
+    if err != nil {
+        return err
+    }
+    
+    // Event logging integrated directly
+    event := types.SessionEvent{
+        SessionID: sessionID,
+        EventType: "session_created",
+        Timestamp: time.Now(),
+        Data:      sessionData,
+    }
+    return c.CreateSessionEvent(ctx, event)
+}
+
+// ❌ DON'T: Create separate service that causes import loops
+// This would require importing pg package in handlers, creating circular dependencies
+```
+
+### **Database Interface Design**
+- **DO**: Add new methods to `db.DBClient` interface first
+- **DO**: Implement methods in `pg.DBX` struct
+- **DO**: Update mock interfaces in `core/tests/mock/dbclient`
+- **Why**: Ensures consistent interface across all database implementations
+
+**Example Pattern:**
+```go
+// 1. Add to interface
+type DBClient interface {
+    GetSessionIDByToken(ctx context.Context, token string) (int64, error)
+    UpdateSessionLastActivity(ctx context.Context, token string) error
+    DeleteSessionByID(ctx context.Context, sessionID int64) error
+}
+
+// 2. Implement in pg package
+func (c *DBX) GetSessionIDByToken(ctx context.Context, token string) (int64, error) {
+    // Implementation
+}
+
+// 3. Update mock interfaces
+type MockDBClient struct {
+    // Mock implementation
+}
+```
+
+### **Session Event Logging**
+- **DO**: Use structured JSON data for event payloads
+- **DO**: Include comprehensive context (username, ip_address, user_agent, etc.)
+- **DO**: Handle event logging errors gracefully (don't fail main operations)
+- **DO**: Use consistent event type constants
+
+**Event Types:**
+```go
+const (
+    EventTypeSessionCreated    = "session_created"
+    EventTypeSessionDeleted    = "session_deleted"
+    EventTypeSessionExpired    = "session_expired"
+    EventTypeLoginSuccess      = "login_success"
+    EventTypeLoginFailed       = "login_failed"
+    EventTypeLogout            = "logout"
+    EventTypeSessionValidated  = "session_validated"
+    EventTypeSessionInvalid    = "session_invalid"
+    EventTypeActivityUpdated   = "activity_updated"
+    EventTypeCleanupExecuted   = "cleanup_executed"
+)
+```
+
+### **Error Handling in Event Logging**
+- **DO**: Log errors but don't fail main operations
+- **DO**: Use structured logging with context
+- **Why**: Event logging should be non-blocking for core functionality
+
+**Example Pattern:**
+```go
+// Log session created event
+err = c.CreateSessionEvent(ctx, event)
+if err != nil {
+    c.Logger.Error("failed to log session created event", "error", err)
+    // Don't fail the session creation if event logging fails
+}
+```
+
+## **Import Loop Prevention**
+
+### **Service Layer Design**
+- **DO**: Keep services within their respective packages
+- **DON'T**: Create cross-package service dependencies that cause import loops
+- **Why**: Maintains clean architecture and prevents compilation issues
+
+### **Database Operations**
+- **DO**: Integrate related functionality directly into database layer
+- **DO**: Use interfaces for testability
+- **DON'T**: Create separate service packages that import database packages
+
+## **Maintenance Tools Architecture**
+
+### **Admin CLI Commands**
+- **DO**: Add new commands to `app/admin-ctl/cmd/`
+- **DO**: Use consistent flag patterns and output formats
+- **DO**: Add variables to `app/admin-ctl/cmd/vars.go`
+- **DO**: Update CLI interface in `core/sys/web/cli/cli.go`
+
+### **API Endpoints**
+- **DO**: Register new endpoints in `app/server/main.go`
+- **DO**: Implement handlers in `app/server/handlers/v1/`
+- **DO**: Use consistent authentication and error handling patterns
+
+## **Testing Architecture**
+
+### **Mock Interfaces**
+- **DO**: Update `core/tests/mock/dbclient` when adding new database methods
+- **DO**: Ensure mock implementations match the real interface
+- **DO**: Use consistent naming patterns for mock methods
+
+### **Test Coverage**
+- **DO**: Test both success and failure scenarios for event logging
+- **DO**: Verify that event data is correctly structured
+- **DO**: Test that main operations succeed even when event logging fails

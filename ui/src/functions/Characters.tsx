@@ -1,7 +1,7 @@
 import GetUsername from "../context/GetUsername";
 import GetToken from "../context/GetToken";
 import UseLocation from "../context/UseLocation";
-import CleanSession from "../context/CleanSession";
+// import CleanSession from "../context/CleanSession";
 import Players from "../types/Players";
 
 const FetchCharacters = async (
@@ -23,7 +23,7 @@ const FetchCharacters = async (
     setCharacters(JSON.parse(data));
   } else if (response.status === 403) {
     console.log("Not authorized");
-    CleanSession();
+    // CleanSession();
   }
 };
 export default FetchCharacters;

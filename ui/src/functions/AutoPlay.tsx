@@ -1,4 +1,4 @@
-import CleanSession from "../context/CleanSession";
+// import CleanSession from "../context/CleanSession";
 import GetToken from "../context/GetToken";
 import GetUsername from "../context/GetUsername";
 import UseLocation from "../context/UseLocation";
@@ -25,7 +25,7 @@ const FetchAutoPlay = async (
     setAutoPlay(JSON.parse(data));
   } else if (response.status === 403) {
     console.log("Not authorized");
-    CleanSession();
+    // CleanSession();
   }
 };
 
@@ -48,7 +48,7 @@ const FetchAutoPlayByID = async (
     setAutoPlay(JSON.parse(data));
   } else if (response.status === 403) {
     console.log("Not authorized");
-    CleanSession();
+    // CleanSession();
   }
 };
 
@@ -71,7 +71,7 @@ const FetchEncounterListAutoPlay = async (
     setEncounters(JSON.parse(data));
   } else if (response.status === 403) {
     console.log("Not authorized");
-    CleanSession();
+    // CleanSession();
   }
 };
 
@@ -92,7 +92,7 @@ const ChangePublishAutoPlay = async (
     console.log("Publish flag changed");
   } else if (response.status === 403) {
     console.log("Not authorized");
-    CleanSession();
+    // CleanSession();
   }
 }
 
@@ -113,7 +113,7 @@ const DeleteAutoPlayNextEncounter = async (
     console.log("Deleted");
   } else if (response.status === 403) {
     console.log("Not authorized");
-    CleanSession();
+    // CleanSession();
   }
 }
 

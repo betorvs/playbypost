@@ -5,6 +5,7 @@ import { Form } from "react-bootstrap";
 import Button from "react-bootstrap/Button";
 import SaveToken from "../context/SaveToken";
 import UseLocation from "../context/UseLocation";
+import { SessionToken } from "../types/Session";
 
 const Login = () => {
   const { setAuthenticated } = useContext(AuthContext);
@@ -21,7 +22,8 @@ const Login = () => {
   async function clickLogin(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const apiURL = UseLocation();
-    const urlAPI = new URL("login", apiURL);
+    const urlAPI = new URL("api/v1/login", apiURL);
+    console.log("urlAPI to call login", urlAPI);
     const response = await fetch(urlAPI, {
       method: "POST",
       headers: {

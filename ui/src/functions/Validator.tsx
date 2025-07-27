@@ -1,4 +1,3 @@
-import CleanSession from "../context/CleanSession";
 import GetToken from "../context/GetToken";
 import GetUsername from "../context/GetUsername";
 import UseLocation from "../context/UseLocation";
@@ -27,7 +26,7 @@ const ValidatorPut = async (
     console.log("Request to validator done");
   } else if (response.status === 403) {
     console.log("Not authorized");
-    CleanSession();
+    // CleanSession();
   }
 }
 
@@ -49,7 +48,7 @@ const FetchValidator = async (
     setValidator(JSON.parse(data));
   } else if (response.status === 403) {
     console.log("Not authorized");
-    CleanSession();
+    // CleanSession();
   }
 };
 
@@ -77,7 +76,7 @@ const FetchValidatorByIDKind = async (
       setValidator(JSON.parse(data));
     } else if (response.status === 403) {
       console.log("Not authorized");
-      CleanSession();
+      // CleanSession();
     }
   };
 

@@ -2,7 +2,7 @@ import GetUsername from "../context/GetUsername";
 import GetToken from "../context/GetToken";
 import UseLocation from "../context/UseLocation";
 import Task from "../types/Task";
-import CleanSession from "../context/CleanSession";
+// import CleanSession from "../context/CleanSession";
 
 const FetchTasks = async (
   setTask: React.Dispatch<React.SetStateAction<Task[]>>
@@ -23,7 +23,7 @@ const FetchTasks = async (
     setTask(JSON.parse(data));
   } else if (response.status === 403) {
     console.log("Not authorized");
-    CleanSession();
+    // CleanSession();
   }
 };
 
@@ -46,7 +46,7 @@ const FetchTask = async (
     setTask(JSON.parse(data));
   } else if (response.status === 403) {
     console.log("Not authorized");
-    CleanSession();
+    // CleanSession();
   }
 }
 
@@ -65,7 +65,7 @@ const DeleteTaskByID = async (id: number): Promise<void> => {
     console.log("Task deleted");
   } else if (response.status === 403) {
     console.log("Not authorized");
-    CleanSession();
+    // CleanSession();
   }
 }
 

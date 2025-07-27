@@ -48,7 +48,20 @@
         "character-name": "Character Name",
         "character-rpg": "RPG System",
         "save-changes": "Save Changes",
-        "character-updated-successfully": "Character updated successfully"
+        "character-updated-successfully": "Character updated successfully",
+        "sessions": "sessions",
+        "active-sessions": "Active Sessions",
+        "no-active-sessions": "No active sessions found.",
+        "username": "Username",
+        "client-type": "Client Type",
+        "ip-address": "IP Address",
+        "last-activity": "Last Activity",
+        "session-events": "Session Events",
+        "no-session-events-found": "No session events found.",
+        "event-type": "Event Type",
+        "timestamp": "Timestamp",
+        "session-id": "Session ID",
+        "event-data": "Event Data"
     },
     "home": {
         "menu": "Home",
