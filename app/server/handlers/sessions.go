@@ -102,7 +102,10 @@ func (a Session) Signin(w http.ResponseWriter, r *http.Request) {
 	user, err := a.db.GetWriterByUsername(a.ctx, creds.Username)
 	if err != nil {
 		// Log failed login attempt
-		a.db.LogLoginAttempt(a.ctx, creds.Username, remoteAddr, r.UserAgent(), false)
+		err = a.db.LogLoginAttempt(a.ctx, creds.Username, remoteAddr, r.UserAgent(), false)
+		if err != nil {
+			a.logger.Error("failed to log login attempt", "error", err)
+		}
 
 		a.s.ErrJSON(w, http.StatusBadRequest, "user not found")
 		return
@@ -110,7 +113,10 @@ func (a Session) Signin(w http.ResponseWriter, r *http.Request) {
 
 	if err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(creds.Password)); err != nil {
 		// Log failed login attempt
-		a.db.LogLoginAttempt(a.ctx, creds.Username, remoteAddr, r.UserAgent(), false)
+		err = a.db.LogLoginAttempt(a.ctx, creds.Username, remoteAddr, r.UserAgent(), false)
+		if err != nil {
+			a.logger.Error("failed to log login attempt", "error", err)
+		}
 
 		// If the two passwords don't match, return a 401 status
 		a.s.ErrJSON(w, http.StatusUnauthorized, "username or password does not match")
@@ -143,7 +149,10 @@ func (a Session) Signin(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Log successful login attempt
-	a.db.LogLoginAttempt(a.ctx, creds.Username, remoteAddr, r.UserAgent(), true)
+	err = a.db.LogLoginAttempt(a.ctx, creds.Username, remoteAddr, r.UserAgent(), true)
+	if err != nil {
+		a.logger.Error("failed to log login attempt", "error", err)
+	}
 
 	// add session to cache after creating it in the database
 	a.Sessions.AddToCache(sessionToken, session)
@@ -172,7 +181,10 @@ func (a Session) Logout(w http.ResponseWriter, r *http.Request) {
 		// Continue with logout even if we can't get session details
 	} else {
 		// Log logout event
-		a.db.LogLogout(a.ctx, session.ID, session.Username)
+		err = a.db.LogLogout(a.ctx, session.ID, session.Username)
+		if err != nil {
+			a.logger.Error("failed to log logout event", "error", err)
+		}
 	}
 
 	err = a.db.DeleteSessionByToken(a.ctx, headerToken)
@@ -233,7 +245,10 @@ func (a Session) CheckAuth(r *http.Request) bool {
 		// Log successful session validation from cache
 		session, err := a.db.GetSessionByToken(a.ctx, headerToken)
 		if err == nil {
-			a.db.LogSessionValidated(a.ctx, session.ID, v.Username)
+			err = a.db.LogSessionValidated(a.ctx, session.ID, v.Username)
+			if err != nil {
+				a.logger.Error("failed to log session validated", "error", err)
+			}
 		}
 		return false
 	}
@@ -242,14 +257,20 @@ func (a Session) CheckAuth(r *http.Request) bool {
 	if err != nil {
 		a.logger.Error("failed to get session by token", "error", err)
 		// Log session invalid event
-		a.db.LogSessionInvalid(a.ctx, 0, "session_not_found")
+		err = a.db.LogSessionInvalid(a.ctx, 0, "session_not_found")
+		if err != nil {
+			a.logger.Error("failed to log session invalid", "error", err)
+		}
 		return true
 	}
 	// check if the session is expired
 	if session.IsExpired() {
 		a.logger.Error("session expired", "session", session)
 		// Log session invalid event
-		a.db.LogSessionInvalid(a.ctx, session.ID, "session_expired")
+		err = a.db.LogSessionInvalid(a.ctx, session.ID, "session_expired")
+		if err != nil {
+			a.logger.Error("failed to log session invalid", "error", err)
+		}
 		return true
 	}
 	// add the session to the cache
@@ -257,7 +278,10 @@ func (a Session) CheckAuth(r *http.Request) bool {
 	a.Sessions.AddToCache(headerToken, session)
 
 	// Log successful session validation from database
-	a.db.LogSessionValidated(a.ctx, session.ID, session.Username)
+	err = a.db.LogSessionValidated(a.ctx, session.ID, session.Username)
+	if err != nil {
+		a.logger.Error("failed to log session validated", "error", err)
+	}
 	return false
 }
 

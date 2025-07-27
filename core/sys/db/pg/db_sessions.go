@@ -13,7 +13,12 @@ func (db *DBX) GetAllSessions(ctx context.Context) ([]types.Session, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
+	defer func() {
+		err := rows.Close()
+		if err != nil {
+			db.Logger.Error("failed to close rows", "error", err)
+		}
+	}()
 
 	var sessions []types.Session
 	for rows.Next() {
@@ -215,7 +220,12 @@ func (db *DBX) GetSessionEvents(ctx context.Context) ([]types.SessionEvent, erro
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
+	defer func() {
+		err := rows.Close()
+		if err != nil {
+			db.Logger.Error("failed to close rows", "error", err)
+		}
+	}()
 
 	events := []types.SessionEvent{}
 	for rows.Next() {

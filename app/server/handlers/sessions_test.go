@@ -700,7 +700,7 @@ func TestGetClientContext(t *testing.T) {
 	clientType, clientInfo := getClientContext(req)
 	assert.Equal(t, "web", clientType)
 	var clientInfoMap map[string]string
-	json.Unmarshal([]byte(clientInfo), &clientInfoMap)
+	_ = json.Unmarshal([]byte(clientInfo), &clientInfoMap)
 	assert.Equal(t, "web", clientInfoMap["kind"])
 
 	// Test with a CLI client
@@ -708,7 +708,7 @@ func TestGetClientContext(t *testing.T) {
 	req.Header.Set("User-Agent", "Go-http-client/1.1")
 	clientType, clientInfo = getClientContext(req)
 	assert.Equal(t, "cli", clientType)
-	json.Unmarshal([]byte(clientInfo), &clientInfoMap)
+	_ = json.Unmarshal([]byte(clientInfo), &clientInfoMap)
 	assert.Equal(t, "cli", clientInfoMap["kind"])
 	assert.Equal(t, "local", clientInfoMap["source"])
 
@@ -717,7 +717,7 @@ func TestGetClientContext(t *testing.T) {
 	req.Header.Set("User-Agent", "some-other-client")
 	clientType, clientInfo = getClientContext(req)
 	assert.Equal(t, "unknown", clientType)
-	json.Unmarshal([]byte(clientInfo), &clientInfoMap)
+	_ = json.Unmarshal([]byte(clientInfo), &clientInfoMap)
 	assert.Equal(t, "unknown", clientInfoMap["kind"])
 	assert.Equal(t, "some-other-client", clientInfoMap["userAgent"])
 }

@@ -634,7 +634,7 @@ func TestGetSessionEvents(t *testing.T) {
 	assert.Equal(t, http.StatusOK, rr.Code)
 
 	var actualEvents []types.SessionEvent
-	json.NewDecoder(rr.Body).Decode(&actualEvents)
+	_ = json.NewDecoder(rr.Body).Decode(&actualEvents)
 
 	// Compare events without timestamps first, then compare timestamps separately
 	for i, expected := range expectedEvents {
@@ -680,7 +680,7 @@ func TestGetActiveSessions(t *testing.T) {
 	assert.Equal(t, http.StatusOK, rr.Code)
 
 	var actualSessions map[string]types.Session
-	json.NewDecoder(rr.Body).Decode(&actualSessions)
+	_ = json.NewDecoder(rr.Body).Decode(&actualSessions)
 	assert.Equal(t, expectedSessions, actualSessions)
 	mockSession.AssertExpectations(t)
 }
