@@ -593,6 +593,7 @@ func TestSignin(t *testing.T) {
 	writer := types.Writer{ID: 1, Username: "testuser", Password: string(hashedPassword)}
 	mockDB.On("GetWriterByUsername", mock.Anything, "testuser").Return(writer, nil)
 	mockDB.On("CreateSession", mock.Anything, mock.AnythingOfType("types.Session")).Return(nil)
+	mockDB.On("LogLoginAttempt", mock.Anything, "testuser", "192.0.2.1:1234", "", true).Return(nil)
 
 	s.Signin(rr, req)
 
