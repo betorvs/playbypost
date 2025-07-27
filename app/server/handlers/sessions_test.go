@@ -618,6 +618,8 @@ func TestLogout(t *testing.T) {
 	req.Header.Set("X-Access-Token", "testtoken")
 	rr := httptest.NewRecorder()
 
+	mockDB.On("GetSessionByToken", mock.Anything, "testtoken").Return(types.Session{ID: 1, Username: "testuser"}, nil)
+	mockDB.On("LogLogout", mock.Anything, int64(1), "testuser").Return(nil)
 	mockDB.On("DeleteSessionByToken", mock.Anything, "testtoken").Return(nil)
 
 	s.Logout(rr, req)
