@@ -13,7 +13,7 @@
     "@lightenna/react-mermaid-diagram": "^1.0.17",
     "bootstrap": "^5.3.3",
     "i18next": "^23.15.2",
-    "mermaid": "^11.6.0",
+    "mermaid": "^11.10.0",
     "react": "^18.2.0",
     "react-bootstrap": "^2.10.2",
     "react-dom": "^18.2.0",
